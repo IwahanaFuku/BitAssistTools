@@ -277,17 +277,17 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
 
     private void RotateDuplicate()
     {
-        GameObject selectedObject;
-        List<GameObject> boundsObjectsList;
-        selectedObject = Selection.activeObject as GameObject;
-        boundsObjectsList = new List<GameObject>();
+        GameObject selectedObject = Selection.activeObject as GameObject;
+        List<GameObject> boundsObjectsList = new List<GameObject>();
 
         if(selectedObject.transform.childCount == 0)
         {
+            //選択したトランスフォームに子がなく、それ自体で回転処理を行う場合
             boundsObjectsList.Add(selectedObject);
         }
         else
         {
+            //選択したトランスフォームに子があって、選択したオブジェクト自体はピボッドとして扱う場合
             foreach (Transform childTransform in selectedObject.transform)
             {
                 boundsObjectsList.Add(childTransform.gameObject);
@@ -298,6 +298,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         Bounds bounds = new Bounds();
         bool hasBounds = false;
 
+        //複数子がある場合に、バウンディングボックスをそれに合わせて拡大する
         foreach (GameObject boundsObject in boundsObjects)
         {
             Renderer renderer = boundsObject.GetComponent<Renderer>();
@@ -314,8 +315,10 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
                 }
             }
         }
+        var selectedPosition = selectedObject.transform.position;
 
-        Vector3 absCenter = new Vector3(Mathf.Abs(bounds.center.x), Mathf.Abs(bounds.center.y), Mathf.Abs(bounds.center.z)) - selectedObject.transform.position;
+        Vector3 absCenter = new Vector3(Mathf.Abs(bounds.center.x), Mathf.Abs(bounds.center.y), Mathf.Abs(bounds.center.z))
+                          - new Vector3(Mathf.Abs(selectedPosition.x), Mathf.Abs(selectedPosition.y), Mathf.Abs(selectedPosition.z));
         Vector3 edgeCenterX = new Vector3(absCenter.x + bounds.size.x / 2, absCenter.y, absCenter.z);
         Vector3 edgeCenterZ = new Vector3(absCenter.x, absCenter.y, absCenter.z + bounds.size.z / 2);
 
@@ -327,13 +330,13 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         {
             theta = Mathf.Atan2(bounds.size.z / 2, edgeCenterX.x) * Mathf.Rad2Deg * 2;
             numOfCopy = ToInt32(rotationalFrequency / theta);
-            Debug.Log("Z");
+            Debug.Log("X");
         }
         else
         {
             theta = Mathf.Atan2(bounds.size.x / 2, edgeCenterZ.z) * Mathf.Rad2Deg * 2;
             numOfCopy = ToInt32(rotationalFrequency / theta);
-            Debug.Log("X");
+            Debug.Log("Z");
         }
 
         Undo.RecordObjects(boundsObjects, "Create Cube");
@@ -400,7 +403,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
             
             if(copyCount < 2){break;}
 
-            for(int i = 1; i < copyCount; i++)
+            for(int i = 0; i < copyCount; i++)
             {
                 newTransform.position = newTransform.position + duplicateTransform.position;
                 newTransform.rotation = newTransform.rotation * duplicateTransform.rotation;
