@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace PlacemenAssistance
 {
-    public class ObjectTransformChanger : MonoBehaviour
+    public class ObjectTransformChanger
     {
         public void ObjectTransformChange(CoordinateReference coordinateReference, TransformData changeTransform)
     {
@@ -30,7 +30,7 @@ namespace PlacemenAssistance
     }     
     }
 
-    public class ObjectDistributor : MonoBehaviour
+    public class ObjectDistributor
     {
         public void SortAndDistributeObjects(Axis axis)
         {
@@ -78,7 +78,7 @@ namespace PlacemenAssistance
     }
 
 
-    public class ObjectAligner : MonoBehaviour
+    public class ObjectAligner
     {
         private Transform[] selectedTransforms;
 
@@ -151,7 +151,7 @@ namespace PlacemenAssistance
     }
 
 
-    public class ObjectPaddinger : MonoBehaviour
+    public class ObjectPaddinger
     {
         public void PaddingObjects(bool isPaddingReferencePointExpanded, float paddingSpace,
                                    Transform referencePoint, AxisFlags axisFlags)
