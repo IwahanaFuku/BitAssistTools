@@ -7,6 +7,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
 {
     private bool isRotationalFrequencyExpanded = false;
     private bool isSpecialDuplicateExpanded = false;
+    private bool isSpecialTransformChangeExpanded = false;
     private bool isDistributeExpanded = false;
     private bool isArrangerExpanded = false;
     private bool isArrangerpaddingerExpanded = false;
@@ -16,6 +17,8 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
 
     private int copyCount = 5;
     private float rotationalFrequency = 360f;
+    TransformData duplicateTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.one);
+    TransformData ChangeTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.zero);
     private Axis distributeAxis = Axis.X;
     private AlignType alignType = AlignType.Center;
     private Axis arrangerAxis = Axis.X;
@@ -31,7 +34,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     private float rotationAmount = 1f;
     private AxisFlags rotateFlags = new AxisFlags {X = false, Y = true, Z = false};
 
-    TransformData duplicateTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.one);
+    
 
     [MenuItem("Iwahana Tools/配置支援ツール", false, 10)]
     public static void ShowWindow()
@@ -51,6 +54,12 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         if (isSpecialDuplicateExpanded)
         {
             SpecialDuplicateGUI();
+        }
+
+        isSpecialTransformChangeExpanded = EditorGUILayout.Foldout(isSpecialTransformChangeExpanded, "現在の値をもとにトランスフォームの変更");
+        if (isSpecialTransformChangeExpanded)
+        {
+            SpecialTransformChangeGUI();
         }
 
         isDistributeExpanded = EditorGUILayout.Foldout(isDistributeExpanded, "分布");
@@ -115,6 +124,25 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         if (GUILayout.Button("複製"))
         {
             SpecialDuplicaterInstance.SpecialDuplicate(duplicateTransform, copyCount);
+        }
+    }
+
+    void SpecialTransformChangeGUI()
+    {
+        ObjectTransformChanger ObjectTransformChangerInstance = new ObjectTransformChanger();
+
+        ChangeTransform.position = EditorGUILayout.Vector3Field("Position", ChangeTransform.position);
+        ChangeTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", 
+                                        new Vector3(
+                                            Mathf.Round(ChangeTransform.rotation.eulerAngles.x * 1000f) / 1000f,
+                                            Mathf.Round(ChangeTransform.rotation.eulerAngles.y * 1000f) / 1000f,
+                                            Mathf.Round(ChangeTransform.rotation.eulerAngles.z * 1000f) / 1000f
+                                        )
+                                        ));
+        ChangeTransform.localScale = EditorGUILayout.Vector3Field("Scale", ChangeTransform.localScale);
+        if (GUILayout.Button("変更"))
+        {
+            ObjectTransformChangerInstance.ObjectTransformChange(ChangeTransform);
         }
     }
 

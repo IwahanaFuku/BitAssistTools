@@ -1,10 +1,26 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace PlacemenAssistance
 {
+    public class ObjectTransformChanger : MonoBehaviour
+    {
+        public void ObjectTransformChange(TransformData changeTransform)
+        {
+            foreach (GameObject gameObject in Selection.gameObjects)
+            {
+                Undo.RecordObject(gameObject.transform, "Transform Adder");
+
+                gameObject.transform.position += changeTransform.position;
+                gameObject.transform.rotation *= changeTransform.rotation;
+                gameObject.transform.localScale += changeTransform.localScale;
+            }
+        }       
+    }
+
     public class ObjectDistributor : MonoBehaviour
     {
         public void SortAndDistributeObjects(Axis axis)
@@ -53,77 +69,77 @@ namespace PlacemenAssistance
     }
 
 
-public class ObjectAligner : MonoBehaviour
-{
-    private Transform[] selectedTransforms;
-
-    public void AlignObjects(Axis axis, AlignType alignType)
+    public class ObjectAligner : MonoBehaviour
     {
-        selectedTransforms = Selection.transforms;
-        var targetValue = CalculateTargetValue(selectedTransforms, axis, alignType);
-        UpdatePositions(selectedTransforms, axis, targetValue);
-    }
+        private Transform[] selectedTransforms;
 
-    private float CalculateTargetValue(Transform[] transforms, Axis axis, AlignType alignType)
-    {
-        var values = new float[transforms.Length];
-
-        for (int i = 0; i < transforms.Length; i++)
+        public void AlignObjects(Axis axis, AlignType alignType)
         {
-            switch (axis)
+            selectedTransforms = Selection.transforms;
+            var targetValue = CalculateTargetValue(selectedTransforms, axis, alignType);
+            UpdatePositions(selectedTransforms, axis, targetValue);
+        }
+
+        private float CalculateTargetValue(Transform[] transforms, Axis axis, AlignType alignType)
+        {
+            var values = new float[transforms.Length];
+
+            for (int i = 0; i < transforms.Length; i++)
             {
-                case Axis.X:
-                    values[i] = transforms[i].position.x;
-                    break;
-                case Axis.Y:
-                    values[i] = transforms[i].position.y;
-                    break;
-                case Axis.Z:
-                    values[i] = transforms[i].position.z;
-                    break;
+                switch (axis)
+                {
+                    case Axis.X:
+                        values[i] = transforms[i].position.x;
+                        break;
+                    case Axis.Y:
+                        values[i] = transforms[i].position.y;
+                        break;
+                    case Axis.Z:
+                        values[i] = transforms[i].position.z;
+                        break;
+                }
+            }
+
+            switch (alignType)
+            {
+                case AlignType.Maximum:
+                    return Mathf.Max(values);
+                case AlignType.Center:
+                    return values.Average();
+                case AlignType.Minimum:
+                    return Mathf.Min(values);
+                default:
+                    return 0f;
             }
         }
 
-        switch (alignType)
+        private void UpdatePositions(Transform[] transforms, Axis axis, float targetValue)
         {
-            case AlignType.Maximum:
-                return Mathf.Max(values);
-            case AlignType.Center:
-                return values.Average();
-            case AlignType.Minimum:
-                return Mathf.Min(values);
-            default:
-                return 0f;
-        }
-    }
+            Undo.RecordObjects(transforms, "Align Objects");
 
-    private void UpdatePositions(Transform[] transforms, Axis axis, float targetValue)
-    {
-        Undo.RecordObjects(transforms, "Align Objects");
-
-        foreach (Transform transform in transforms)
-        {
-            var pos = transform.position;
-
-            switch (axis)
+            foreach (Transform transform in transforms)
             {
-                case Axis.X:
-                    pos.x = targetValue;
-                    break;
-                case Axis.Y:
-                    pos.y = targetValue;
-                    break;
-                case Axis.Z:
-                    pos.z = targetValue;
-                    break;
+                var pos = transform.position;
+
+                switch (axis)
+                {
+                    case Axis.X:
+                        pos.x = targetValue;
+                        break;
+                    case Axis.Y:
+                        pos.y = targetValue;
+                        break;
+                    case Axis.Z:
+                        pos.z = targetValue;
+                        break;
+                }
+
+                transform.position = pos;
             }
 
-            transform.position = pos;
+            Undo.FlushUndoRecordObjects();
         }
-
-        Undo.FlushUndoRecordObjects();
     }
-}
 
 
     public class ObjectPaddinger : MonoBehaviour
