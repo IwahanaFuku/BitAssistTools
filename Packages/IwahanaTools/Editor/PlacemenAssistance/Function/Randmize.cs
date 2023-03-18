@@ -74,4 +74,43 @@ namespace PlacemenAssistance
             }
         }
     }
+
+    public class RandomPosition : MonoBehaviour
+    {
+        public void RandomPositionObjects(float radius, AxisFlags axisFlags)
+        {
+            Transform[] selectedTransforms = Selection.transforms;
+
+            Undo.RegisterCompleteObjectUndo(selectedTransforms, "Random Position");
+
+            foreach (Transform selectedTransform in selectedTransforms)
+            {
+                Vector3 randomPosition = Random.insideUnitSphere * radius;
+
+                if (!axisFlags.X)
+                {
+                    randomPosition.x = 0;
+                }
+
+                if (!axisFlags.Y)
+                {
+                    randomPosition.y = 0;
+                }
+
+                if (!axisFlags.Z)
+                {
+                    randomPosition.z = 0;
+                }
+
+                selectedTransform.position += randomPosition;
+            }
+
+            Undo.RecordObjects(selectedTransforms, "Random Position");
+
+            foreach (Transform selectedTransform in selectedTransforms)
+            {
+                EditorUtility.SetDirty(selectedTransform.gameObject);
+            }
+        }
+    }
 }

@@ -12,12 +12,17 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     private bool isArrangerExpanded = false;
     private bool isArrangerpaddingerExpanded = false;
     private bool isPaddingReferencePointExpanded = false;
+    private bool isRandomPositionExpanded = false;
     private bool isRandomScalenExpanded = false;
     private bool isRandomRotationExpanded = false;
 
     private int copyCount = 5;
     private float rotationalFrequency = 360f;
+
+    CoordinateReference duplicateTransformCoordinate = CoordinateReference.Global;
     TransformData duplicateTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.one);
+
+    CoordinateReference ChangeTransformCoordinate = CoordinateReference.Global;
     TransformData ChangeTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.zero);
     private Axis distributeAxis = Axis.X;
     private AlignType alignType = AlignType.Center;
@@ -25,16 +30,16 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     private float paddingSpace = 1f;
     private Transform referencePoint;
     private AxisFlags padingAxisFlags = new AxisFlags {X = true, Y = true, Z = true};
+    private float radius = 1f;
+    private AxisFlags positionFlags = new AxisFlags {X = true, Y = true, Z = true};
+    private float rotationAmount = 1f;
+    private AxisFlags rotateFlags = new AxisFlags {X = false, Y = true, Z = false};
     private float scaleRatio = 1f;
     private static float minimum = 0.5f;
     private static float maximum = 1.5f;
     Vector3 minScale = new Vector3(minimum, minimum, minimum);
     Vector3 maxScale = new Vector3(maximum, maximum, maximum);
     private bool isDetail = false;
-    private float rotationAmount = 1f;
-    private AxisFlags rotateFlags = new AxisFlags {X = false, Y = true, Z = false};
-
-    
 
     [MenuItem("Iwahana Tools/配置支援ツール", priority = 10)]
     public static void ShowWindow()
@@ -80,16 +85,22 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
             PaddingerObjectsGUI();
         }
 
-        isRandomScalenExpanded = EditorGUILayout.Foldout(isRandomScalenExpanded, "ランダムスケール");
-        if (isRandomScalenExpanded)
+        isRandomPositionExpanded = EditorGUILayout.Foldout(isRandomPositionExpanded, "ランダムポジション");
+        if (isRandomPositionExpanded)
         {
-            RandomScalenGUI();
+            randomPositionGUI();
         }
 
         isRandomRotationExpanded = EditorGUILayout.Foldout(isRandomRotationExpanded, "ランダム回転");
         if (isRandomRotationExpanded)
         {
             randomRotationGUI();
+        }
+
+        isRandomScalenExpanded = EditorGUILayout.Foldout(isRandomScalenExpanded, "ランダムスケール");
+        if (isRandomScalenExpanded)
+        {
+            RandomScalenGUI();
         }
     }
 
@@ -109,6 +120,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     {
         SpecialDuplicater SpecialDuplicaterInstance = new SpecialDuplicater();
 
+        duplicateTransformCoordinate = (CoordinateReference)GUILayout.SelectionGrid((int)duplicateTransformCoordinate, new string[] {"Global", "Local"}, 2);
         int maxCopyCount = 100;
 
         duplicateTransform.position = EditorGUILayout.Vector3Field("Position", duplicateTransform.position);
@@ -123,13 +135,15 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         copyCount = EditorGUILayout.IntSlider("コピー数", copyCount, 0, maxCopyCount);
         if (GUILayout.Button("複製"))
         {
-            SpecialDuplicaterInstance.SpecialDuplicate(duplicateTransform, copyCount);
+            SpecialDuplicaterInstance.SpecialDuplicate(duplicateTransformCoordinate, duplicateTransform, copyCount);
         }
     }
 
     void SpecialTransformChangeGUI()
     {
         ObjectTransformChanger ObjectTransformChangerInstance = new ObjectTransformChanger();
+
+        ChangeTransformCoordinate = (CoordinateReference)GUILayout.SelectionGrid((int)ChangeTransformCoordinate, new string[] {"Global", "Local"}, 2);
 
         ChangeTransform.position = EditorGUILayout.Vector3Field("Position", ChangeTransform.position);
         ChangeTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", 
@@ -142,7 +156,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         ChangeTransform.localScale = EditorGUILayout.Vector3Field("Scale", ChangeTransform.localScale);
         if (GUILayout.Button("変更"))
         {
-            ObjectTransformChangerInstance.ObjectTransformChange(ChangeTransform);
+            ObjectTransformChangerInstance.ObjectTransformChange(ChangeTransformCoordinate, ChangeTransform);
         }
     }
 
@@ -181,7 +195,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     {
         ObjectPaddinger PaddingObjectsInstance = new ObjectPaddinger();
 
-        paddingSpace = EditorGUILayout.Slider("パディング間隔", paddingSpace, 0f, 10f);
+        paddingSpace = EditorGUILayout.Slider("パディング間隔", paddingSpace, 0f, 2f);
         padingAxisFlags.X = EditorGUILayout.Toggle("X軸", padingAxisFlags.X);
         padingAxisFlags.Y = EditorGUILayout.Toggle("Y軸", padingAxisFlags.Y);
         padingAxisFlags.Z = EditorGUILayout.Toggle("Z軸", padingAxisFlags.Z);
@@ -195,6 +209,34 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         if (GUILayout.Button("パディング"))
         {
             PaddingObjectsInstance.PaddingObjects(isPaddingReferencePointExpanded, paddingSpace, referencePoint, padingAxisFlags);
+        }
+    }
+
+    void randomPositionGUI()
+    {
+        RandomPosition RandomPositionInstance = new RandomPosition();
+        radius = EditorGUILayout.Slider("半径:", radius, 0, 10);
+        positionFlags.X = EditorGUILayout.Toggle("X軸", positionFlags.X);
+        positionFlags.Y = EditorGUILayout.Toggle("Y軸", positionFlags.Y);
+        positionFlags.Z = EditorGUILayout.Toggle("Z軸", positionFlags.Z);
+
+        if (GUILayout.Button("移動"))
+        {
+            RandomPositionInstance.RandomPositionObjects(radius, positionFlags);
+        }
+    }
+
+    void randomRotationGUI()
+    {
+        RandomRotate RandomRotationInstance = new RandomRotate();
+        rotationAmount = EditorGUILayout.Slider("閾値:", rotationAmount, 1, 360);
+        rotateFlags.X = EditorGUILayout.Toggle("X軸", rotateFlags.X);
+        rotateFlags.Y = EditorGUILayout.Toggle("Y軸", rotateFlags.Y);
+        rotateFlags.Z = EditorGUILayout.Toggle("Z軸", rotateFlags.Z);
+
+        if (GUILayout.Button("回転"))
+        {
+            RandomRotationInstance.RandomRotateObjects(rotationAmount, rotateFlags);
         }
     }
 
@@ -231,17 +273,4 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         }
     }
 
-    void randomRotationGUI()
-    {
-        RandomRotate RandomRotationInstance = new RandomRotate();
-        rotationAmount = EditorGUILayout.Slider("閾値:", rotationAmount, 1, 360);
-        rotateFlags.X = EditorGUILayout.Toggle("X軸", rotateFlags.X);
-        rotateFlags.Y = EditorGUILayout.Toggle("Y軸", rotateFlags.Y);
-        rotateFlags.Z = EditorGUILayout.Toggle("Z軸", rotateFlags.Z);
-
-        if (GUILayout.Button("回転"))
-        {
-            RandomRotationInstance.RandomRotateObjects(rotationAmount, rotateFlags);
-        }
-    }
 }

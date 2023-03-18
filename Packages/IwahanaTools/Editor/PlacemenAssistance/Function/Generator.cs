@@ -119,22 +119,31 @@ namespace PlacemenAssistance
     }
     public class SpecialDuplicater : MonoBehaviour
     {
-        public void SpecialDuplicate(TransformData duplicateTransform, int copyCount)
+        public void SpecialDuplicate(CoordinateReference coordinateReference, TransformData duplicateTransform, int copyCount)
         {
             Transform[] selectedTransforms = Selection.transforms;
             foreach (Transform selectedTransform in selectedTransforms)
             {
                 TransformData newTransform = new TransformData(selectedTransform.position, selectedTransform.rotation, selectedTransform.localScale);
-                var copyTransforms= new List<Transform>();
+                var copyTransforms = new List<Transform>();
                 copyTransforms.Add(selectedTransform);
-                
-                if(copyCount < 2){break;}
 
-                for(int i = 0; i < copyCount; i++)
+                if (copyCount < 2) { break; }
+
+                for (int i = 0; i < copyCount; i++)
                 {
-                    newTransform.position = newTransform.position + duplicateTransform.position;
-                    newTransform.rotation = newTransform.rotation * duplicateTransform.rotation;
-                    newTransform.localScale = Vector3.Scale(newTransform.localScale, duplicateTransform.localScale);
+                    if (coordinateReference == CoordinateReference.Local)
+                    {
+                        newTransform.position = newTransform.position + duplicateTransform.position;
+                        newTransform.rotation = newTransform.rotation * duplicateTransform.rotation;
+                        newTransform.localScale = Vector3.Scale(newTransform.localScale, duplicateTransform.localScale);
+                    }
+                    else if (coordinateReference == CoordinateReference.Global)
+                    {
+                        newTransform.position = newTransform.position + selectedTransform.TransformDirection(duplicateTransform.position);
+                        newTransform.rotation = newTransform.rotation * Quaternion.Euler(selectedTransform.TransformDirection(duplicateTransform.rotation.eulerAngles));
+                        newTransform.localScale = Vector3.Scale(newTransform.localScale, duplicateTransform.localScale);
+                    }
 
                     GameObject newObject = Instantiate(selectedTransform.gameObject, newTransform.position, newTransform.rotation);
                     newObject.transform.localScale = newTransform.localScale;

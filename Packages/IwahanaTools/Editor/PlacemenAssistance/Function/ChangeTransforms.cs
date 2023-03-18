@@ -8,17 +8,26 @@ namespace PlacemenAssistance
 {
     public class ObjectTransformChanger : MonoBehaviour
     {
-        public void ObjectTransformChange(TransformData changeTransform)
+        public void ObjectTransformChange(CoordinateReference coordinateReference, TransformData changeTransform)
+    {
+        foreach (GameObject gameObject in Selection.gameObjects)
         {
-            foreach (GameObject gameObject in Selection.gameObjects)
-            {
-                Undo.RecordObject(gameObject.transform, "Transform Adder");
+            Undo.RecordObject(gameObject.transform, "Transform Adder");
 
+            if (coordinateReference == CoordinateReference.Global)
+            {
+                gameObject.transform.localPosition += changeTransform.position;
+                gameObject.transform.localRotation *= changeTransform.rotation;
+                gameObject.transform.localScale += changeTransform.localScale;
+            }
+            else if (coordinateReference == CoordinateReference.Local)
+            {
                 gameObject.transform.position += changeTransform.position;
                 gameObject.transform.rotation *= changeTransform.rotation;
                 gameObject.transform.localScale += changeTransform.localScale;
             }
-        }       
+        }
+    }     
     }
 
     public class ObjectDistributor : MonoBehaviour

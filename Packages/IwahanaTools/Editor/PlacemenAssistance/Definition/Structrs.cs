@@ -36,4 +36,10 @@ namespace PlacemenAssistance
         Y,
         Z
     }
+
+    public enum CoordinateReference
+    {
+        Local,
+        Global
+    }
 }
