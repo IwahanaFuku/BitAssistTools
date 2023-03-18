@@ -36,7 +36,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
 
     
 
-    [MenuItem("Iwahana Tools/配置支援ツール", false, 10)]
+    [MenuItem("Iwahana Tools/配置支援ツール", priority = 10)]
     public static void ShowWindow()
     {
         GetWindow<PlacemenAssistanceEditorWindow>("配置支援ツール");

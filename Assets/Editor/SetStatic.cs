@@ -38,7 +38,7 @@ public class SetStatic : EditorWindow
     private bool isClose = false;
 
 
-    [MenuItem("Iwahana Tools/スタティック設定", false, 50)]
+    [MenuItem("Tools/スタティック設定", false, 50)]
     static void Init()
     {
         SetStatic window = EditorWindow.GetWindow<SetStatic>();
