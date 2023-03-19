@@ -2,30 +2,17 @@
 
 namespace SelectionAsistance
 {
-    public struct TransformData
+    public struct SelectionObjectsData
     {
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 localScale;
+        public bool isChecked;
+        public string name;
+        public Object[] objects;
 
-        public TransformData(Vector3 position, Quaternion rotation, Vector3 localScale)
+        public SelectionObjectsData(bool isChecked, string name, Object[] objects)
         {
-            this.position = position;
-            this.rotation = rotation;
-            this.localScale = localScale;
-        }
-    }
-
-    public struct AxisFlags
-    {
-        public bool X;
-        public bool Y;
-        public bool Z;
-        public AxisFlags(bool x, bool y, bool z)
-        {
-            X = x;
-            Y = y;
-            Z = z;
+            this.isChecked = isChecked;
+            this.name = name;
+            this.objects = objects;
         }
     }
 }
