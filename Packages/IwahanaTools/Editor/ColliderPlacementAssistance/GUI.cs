@@ -5,10 +5,11 @@ using ColliderPlacemenAssistancer;
 
 public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
 {
-    private bool isRotationalFrequencyExpanded = false;
+
     private bool isConvertBoxColliderToTransformExpanded = true;
     private bool isConvertTransformToBoxColliderExpanded = false;
-
+    private bool isRotationalFrequencyExpanded = false;
+    
     private float rotationalFrequency = 360f;
 
     [MenuItem("Iwahana Tools/コライダー配置支援ツール", priority = 11)]
@@ -19,13 +20,6 @@ public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
 
     void OnGUI()
     {
-        
-        isRotationalFrequencyExpanded = EditorGUILayout.Foldout(isRotationalFrequencyExpanded, "回転複製");
-        if (isRotationalFrequencyExpanded)
-        {
-            RotationalFrequencyeGUI();
-        }
-
         isConvertBoxColliderToTransformExpanded = EditorGUILayout.Foldout(isConvertBoxColliderToTransformExpanded, "トランスフォームからボックスコライダー変換");
         if (isConvertBoxColliderToTransformExpanded)
         {
@@ -49,6 +43,12 @@ public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
             {
                 ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxColliderReset();
             }
+        }
+
+        isRotationalFrequencyExpanded = EditorGUILayout.Foldout(isRotationalFrequencyExpanded, "回転複製");
+        if (isRotationalFrequencyExpanded)
+        {
+            RotationalFrequencyeGUI();
         }
     }
 

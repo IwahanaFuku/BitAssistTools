@@ -11,6 +11,13 @@ namespace ColliderPlacemenAssistancer
         {
             foreach (var selectedObject in Selection.gameObjects)
             {
+                BoxCollider boxCollider = selectedObject.GetComponent<BoxCollider>();
+                if (boxCollider == null)
+                {
+                    Debug.LogError("Selected GameObject does not have a BoxCollider component.");
+                    continue;
+                }
+
                 if (selectedObject.GetComponent<MeshRenderer>() == null)
                 {
                     MeshRenderer meshRenderer = Undo.AddComponent<MeshRenderer>(selectedObject);
@@ -22,8 +29,6 @@ namespace ColliderPlacemenAssistancer
                     MeshFilter meshFilter = Undo.AddComponent<MeshFilter>(selectedObject);
                     meshFilter.mesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
                 }
-
-                BoxCollider boxCollider = selectedObject.GetComponent<BoxCollider>();
 
                 if (boxCollider == null)
                 {

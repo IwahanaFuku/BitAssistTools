@@ -1,31 +1,24 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 
 public class CommonFunctions
 {
     public static void ParentCenterAligner(Transform[] selectedTransforms)
     {
-        Undo.RecordObjects(selectedTransforms, "Align Group Objects");
+        int firstIndex = selectedTransforms.Min(t => t.GetSiblingIndex());
 
-        Vector3 center = Vector3.zero;
-        foreach (Transform transform in selectedTransforms)
+        var go = new GameObject("Group");
+        Undo.RegisterCreatedObjectUndo(go, "Group Selected");
+        go.transform.SetSiblingIndex(firstIndex);
+
+        go.transform.SetParent(Selection.activeTransform.parent, false);
+        foreach (var transform in selectedTransforms.OrderBy(t => t.GetSiblingIndex()))
         {
-            center += transform.position;
+            Undo.SetTransformParent(transform, go.transform, "Group Selected");
         }
-        center /= selectedTransforms.Length;
-
-        Transform parentTransform = selectedTransforms[0].transform.parent;
-        GameObject group = new GameObject("Group");
-        Undo.RegisterCreatedObjectUndo(group, "Create Group");
-        group.transform.position = center;
-        group.transform.parent = parentTransform;
-
-        foreach (Transform transform in selectedTransforms)
-        {
-            Undo.SetTransformParent(transform, group.transform, "Set Group");
-        }
-
-        Selection.activeGameObject = group;
+        Selection.activeGameObject = go;
     }
 }
+
