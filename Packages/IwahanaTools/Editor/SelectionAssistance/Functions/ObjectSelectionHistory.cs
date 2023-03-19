@@ -6,7 +6,7 @@ namespace SelectionAsistance
 {
     public class SelectionHistoryFunction
     {    
-        public List<SelectionObjectsData> SaveSelection(int maxHistoryCount, List<SelectionObjectsData> historyList)
+        public List<SelectionObjectsData> AddSelection(int maxHistoryCount, List<SelectionObjectsData> historyList)
         {
             SelectionObjectsData[] selectionObjectsData = new SelectionObjectsData[1];
             Object[] selectedObjects = Selection.objects;

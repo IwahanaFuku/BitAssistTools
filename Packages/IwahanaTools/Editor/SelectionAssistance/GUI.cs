@@ -37,9 +37,9 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     {
         SelectionHistoryFunction SelectionHistoryFunctionInstance = new SelectionHistoryFunction();
         EditorGUILayout.LabelField("選択履歴");
-        if (GUILayout.Button("保存"))
+        if (GUILayout.Button("追加"))
         {
-            historyList = SelectionHistoryFunctionInstance.SaveSelection(maxHistoryCount, historyList);
+            historyList = SelectionHistoryFunctionInstance.AddSelection(maxHistoryCount, historyList);
         }
 
         if (historyList.Count > 0)
