@@ -255,7 +255,6 @@ public class SetStatic : EditorWindow
                 cnt++;
             }
         }
-        
         return result;
     }
 

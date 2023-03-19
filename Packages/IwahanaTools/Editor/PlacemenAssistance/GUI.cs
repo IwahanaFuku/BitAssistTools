@@ -164,7 +164,7 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     {
         ObjectDistributor ObjectDistributorInstance = new ObjectDistributor();
 
-        GUILayout.Label("軸", EditorStyles.boldLabel);
+        GUILayout.Label("軸");
         distributeAxis = (Axis)GUILayout.SelectionGrid((int)distributeAxis, new string[] { "X軸", "Y軸", "Z軸" }, 3);
 
         if (GUILayout.Button("分布"))
@@ -177,11 +177,11 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     {
         ObjectAligner AlignObjectsInstance = new ObjectAligner();
         
-        GUILayout.Label("基準値", EditorStyles.boldLabel);
+        GUILayout.Label("基準値");
         alignType = (AlignType)GUILayout.SelectionGrid((int)alignType, 
             new string[] { "最大", "中央", "最小" }, 3);
 
-        GUILayout.Label("軸", EditorStyles.boldLabel);
+        GUILayout.Label("軸");
         arrangerAxis = (Axis)GUILayout.SelectionGrid((int)arrangerAxis, 
             new string[] { "X軸", "Y軸", "Z軸" }, 3);
 

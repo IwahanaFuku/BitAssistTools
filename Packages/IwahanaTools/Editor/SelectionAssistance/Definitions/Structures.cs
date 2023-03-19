@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace PlacemenAssistance
+namespace SelectionAsistance
 {
     public struct TransformData
     {
@@ -21,25 +21,11 @@ namespace PlacemenAssistance
         public bool X;
         public bool Y;
         public bool Z;
-    }
-
-    public enum AlignType
-    {
-        Maximum,
-        Center,
-        Minimum
-    }
-
-    public enum Axis
-    {
-        X,
-        Y,
-        Z
-    }
-
-    public enum CoordinateReference
-    {
-        Local,
-        Global
+        public AxisFlags(bool x, bool y, bool z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
     }
 }

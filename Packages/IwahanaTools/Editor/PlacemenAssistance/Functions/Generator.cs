@@ -132,15 +132,15 @@ namespace PlacemenAssistance
 
                 for (int i = 0; i < copyCount; i++)
                 {
-                    if (coordinateReference == CoordinateReference.Local)
+                    if (coordinateReference == CoordinateReference.Global)
                     {
-                        newTransform.position = newTransform.position + duplicateTransform.position;
+                        newTransform.position += duplicateTransform.position;
                         newTransform.rotation = newTransform.rotation * duplicateTransform.rotation;
                         newTransform.localScale = Vector3.Scale(newTransform.localScale, duplicateTransform.localScale);
                     }
-                    else if (coordinateReference == CoordinateReference.Global)
+                    else if (coordinateReference == CoordinateReference.Local)
                     {
-                        newTransform.position = newTransform.position + selectedTransform.TransformDirection(duplicateTransform.position);
+                        newTransform.position += selectedTransform.TransformDirection(duplicateTransform.position);
                         newTransform.rotation = newTransform.rotation * Quaternion.Euler(selectedTransform.TransformDirection(duplicateTransform.rotation.eulerAngles));
                         newTransform.localScale = Vector3.Scale(newTransform.localScale, duplicateTransform.localScale);
                     }

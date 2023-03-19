@@ -16,14 +16,15 @@ namespace PlacemenAssistance
 
             if (coordinateReference == CoordinateReference.Global)
             {
-                gameObject.transform.localPosition += changeTransform.position;
-                gameObject.transform.localRotation *= changeTransform.rotation;
+                gameObject.transform.position += changeTransform.position;
+                gameObject.transform.rotation *= changeTransform.rotation;
                 gameObject.transform.localScale += changeTransform.localScale;
             }
             else if (coordinateReference == CoordinateReference.Local)
             {
-                gameObject.transform.position += changeTransform.position;
-                gameObject.transform.rotation *= changeTransform.rotation;
+                Transform transform = gameObject.transform;
+                gameObject.transform.localPosition += transform.TransformDirection(changeTransform.position);
+                gameObject.transform.localRotation *= changeTransform.rotation;
                 gameObject.transform.localScale += changeTransform.localScale;
             }
         }
