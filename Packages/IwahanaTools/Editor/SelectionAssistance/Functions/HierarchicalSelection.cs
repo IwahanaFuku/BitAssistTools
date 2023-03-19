@@ -15,6 +15,10 @@ namespace SelectionAsistance
             if(onlyOrder)
             {
                 GameObject[] childObjects = GetChildObjects(parentObject, parentCount);
+                for(int i = 0; i < childObjects.Length; i++)
+                {
+                    Debug.Log(childObjects[i].name);
+                }
                 GameObject[] sameOrderObjects = SameOrder(childObjects, objectIndex);
                 Selection.objects = sameOrderObjects;
             }
@@ -26,10 +30,14 @@ namespace SelectionAsistance
 
         private GameObject GetPalentObject(GameObject gameObject, int parentCount)
         {
-            GameObject parentObject = gameObject.transform.parent.gameObject;
+            GameObject parentObject = gameObject.transform.parent?.gameObject;
             if (parentCount == 0)
             {
-                parentObject = gameObject;
+                return gameObject;
+            }
+
+            if (parentCount == 1 || parentObject == null)
+            {
                 return parentObject;
             }
 
@@ -37,7 +45,7 @@ namespace SelectionAsistance
             {                
                 if (parentObject != null)
                 {
-                    parentObject = parentObject.transform.parent.gameObject;
+                    parentObject = parentObject.transform.parent?.gameObject;
                 }
             }
             return parentObject;

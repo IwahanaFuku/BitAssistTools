@@ -5,7 +5,6 @@ using PlacemenAssistance;
 
 public class PlacemenAssistanceEditorWindow : EditorWindow
 {
-    private bool isRotationalFrequencyExpanded = false;
     private bool isSpecialDuplicateExpanded = false;
     private bool isSpecialTransformChangeExpanded = false;
     private bool isDistributeExpanded = false;
@@ -17,8 +16,6 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
     private bool isRandomRotationExpanded = false;
 
     private int copyCount = 5;
-    private float rotationalFrequency = 360f;
-
     CoordinateReference duplicateTransformCoordinate = CoordinateReference.Global;
     TransformData duplicateTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.one);
 
@@ -49,11 +46,6 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        isRotationalFrequencyExpanded = EditorGUILayout.Foldout(isRotationalFrequencyExpanded, "回転複製");
-        if (isRotationalFrequencyExpanded)
-        {
-            RotationalFrequencyeGUI();
-        }
 
         isSpecialDuplicateExpanded = EditorGUILayout.Foldout(isSpecialDuplicateExpanded, "特殊な複製");
         if (isSpecialDuplicateExpanded)
@@ -101,18 +93,6 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         if (isRandomScalenExpanded)
         {
             RandomScalenGUI();
-        }
-    }
-
-    void RotationalFrequencyeGUI()
-    {
-        RotateDuplicater RotateDuplicaterInstance = new RotateDuplicater();
-
-        rotationalFrequency = EditorGUILayout.Slider("度数制限:", rotationalFrequency, 1, 360);
-
-        if (GUILayout.Button("回転複製"))
-        {
-            RotateDuplicaterInstance.RotateDuplicate(rotationalFrequency);
         }
     }
 

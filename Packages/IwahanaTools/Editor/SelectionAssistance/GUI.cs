@@ -18,7 +18,7 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     private bool onlyOrder = true;
     private bool selectChild = false;
     
-    [MenuItem("Iwahana Tools/選択支援ツール", priority = 10)]
+    [MenuItem("Iwahana Tools/選択支援ツール", priority = 12)]
     public static void ShowWindow()
     {
         GetWindow<SelectionsAssistanceEditorWindow>("選択支援ツール");
