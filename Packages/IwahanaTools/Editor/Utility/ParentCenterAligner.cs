@@ -9,16 +9,23 @@ public class CommonFunctions
     {
         int firstIndex = selectedTransforms.Min(t => t.GetSiblingIndex());
 
-        var go = new GameObject("Group");
-        Undo.RegisterCreatedObjectUndo(go, "Group Selected");
-        go.transform.SetSiblingIndex(firstIndex);
+        Vector3 center = Vector3.zero;
+        foreach (Transform transform in selectedTransforms)
+        {
+            center += transform.position;
+        }
+        center /= selectedTransforms.Length;
+        var group = new GameObject("Group");
+        group.transform.position = center;
+        Undo.RegisterCreatedObjectUndo(group, "Group Selected");
+        group.transform.SetSiblingIndex(firstIndex);
 
-        go.transform.SetParent(Selection.activeTransform.parent, false);
+        group.transform.SetParent(Selection.activeTransform.parent, false);
         foreach (var transform in selectedTransforms.OrderBy(t => t.GetSiblingIndex()))
         {
-            Undo.SetTransformParent(transform, go.transform, "Group Selected");
+            Undo.SetTransformParent(transform, group.transform, "Group Selected");
         }
-        Selection.activeGameObject = go;
+        Selection.activeGameObject = group;
     }
 }
 
