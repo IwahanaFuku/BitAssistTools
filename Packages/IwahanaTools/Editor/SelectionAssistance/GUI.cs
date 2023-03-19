@@ -12,6 +12,11 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     private List<SelectionObjectsData> historyList = new List<SelectionObjectsData>();
     private int maxHistoryCount = 20;
     private Vector2 scrollPos;
+
+    private bool isHierarchicalSelectionExpanded = true;
+    private int parentCount = 1;
+    private bool onlyOrder = true;
+    private bool selectChild = false;
     
     [MenuItem("Iwahana Tools/選択支援ツール", priority = 10)]
     public static void ShowWindow()
@@ -82,7 +87,26 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     void SelectionFunctionsGUI()
     {
-        EditorGUILayout.LabelField("選択ツール");
+        isHierarchicalSelectionExpanded = EditorGUILayout.Foldout(isHierarchicalSelectionExpanded, "階層選択");
+        if (isHierarchicalSelectionExpanded)
+        {
+            hierarchicalSelectionGUI();
+        }
+    }
+
+    void hierarchicalSelectionGUI()
+    {
+        HierarchicalSelectionObjects HierarchicalSelecterInstance = new HierarchicalSelectionObjects();
+        parentCount = EditorGUILayout.IntSlider("基準とする親の階層", parentCount, 0, 5);
+        onlyOrder = EditorGUILayout.Toggle("選択したオブジェクトと同じ順番", onlyOrder);
+        selectChild = EditorGUILayout.Toggle("子オブジェクトをすべて選択する", selectChild);
+        
+
+        if (GUILayout.Button("選択"))
+        {
+            HierarchicalSelecterInstance.HierarchicalSelecter(parentCount, onlyOrder);
+        }
+        
     }
 
     private void CalculateRects()
