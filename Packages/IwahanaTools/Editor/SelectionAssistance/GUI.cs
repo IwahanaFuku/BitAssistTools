@@ -35,10 +35,11 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     void SelectionHistoryGUI()
     {
+        SelectionHistoryFunction SelectionHistoryFunctionInstance = new SelectionHistoryFunction();
         EditorGUILayout.LabelField("選択履歴");
         if (GUILayout.Button("保存"))
         {
-            SaveSelectionGUI();
+            historyList = SelectionHistoryFunctionInstance.SaveSelection(maxHistoryCount, historyList);
         }
 
         if (historyList.Count > 0)
@@ -49,37 +50,17 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
          GUILayout.FlexibleSpace();
         if (GUILayout.Button("ロード"))
         {
-            LoadSelectionGUI();
+            SelectionHistoryFunctionInstance.LoadSelection(historyList);
         }
 
         if (GUILayout.Button("削除"))
         {
-            DeleatSelectionGUI();
+            historyList = SelectionHistoryFunctionInstance.DeleatSelection(historyList);
         }
 
         if (GUILayout.Button("全選択"))
         {
-            AllSelectionGUI();
-        }
-    }
-
-    void SaveSelectionGUI()
-    {
-        SelectionObjectsData[] selectionObjectsData = new SelectionObjectsData[1];
-        Object[] selectedObjects = Selection.objects;
-        if (selectedObjects.Length > 0)
-        {
-            if (historyList.Count >= maxHistoryCount)
-            {
-                historyList.RemoveAt(0);
-            }
-
-            SelectionObjectsData newData = new SelectionObjectsData(false, "Selection " + historyList.Count, selectedObjects);
-            historyList.Add(newData);
-        }
-        else
-        {
-            Debug.LogError("Select one or more objects.");
+            historyList = SelectionHistoryFunctionInstance.AllSelection(historyList);
         }
     }
 
@@ -98,64 +79,6 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
             }
         EditorGUILayout.EndScrollView();
     }
-
-    void LoadSelectionGUI()
-    {
-        List<Object> selectedObjects = new List<Object>();
-        foreach (SelectionObjectsData data in historyList)
-        {
-            if (data.isChecked && data.objects != null)
-            {
-                selectedObjects.AddRange(data.objects);
-            }
-        }
-        Selection.objects = selectedObjects.ToArray();
-    }
-
-    void DeleatSelectionGUI()
-    {
-        List<int> indicesToRemove = new List<int>();
-        for (int i = 0; i < historyList.Count; i++)
-        {
-            SelectionObjectsData data = historyList[i];
-            if (data.isChecked)
-            {
-                indicesToRemove.Add(i);
-            }
-        }
-
-        if (indicesToRemove.Count > 0)
-        {
-            indicesToRemove.Sort();
-            indicesToRemove.Reverse();
-            foreach (int index in indicesToRemove)
-            {
-                historyList.RemoveAt(index);
-            }
-        }
-    }
-
-
-    void AllSelectionGUI()
-    {
-        bool allTrue = true;
-        foreach (SelectionObjectsData data in historyList)
-        {
-            if (!data.isChecked)
-            {
-                allTrue = false;
-                break;
-            }
-        }
-
-        for (int i = 0; i < historyList.Count; i++)
-        {
-            SelectionObjectsData data = historyList[i];
-            data.isChecked = !allTrue;
-            historyList[i] = data;
-        }
-    }
-
 
     void SelectionFunctionsGUI()
     {

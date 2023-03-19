@@ -4,16 +4,11 @@ using System.Collections.Generic;
 
 namespace SelectionAsistance
 {
-    public class SelectionHistory : EditorWindow
+    public class SelectionHistoryFunction
     {    
-        List<Object[]> historyList = new List<Object[]>();
-        int maxHistoryCount = 10;
-        List<int> selectedIndex = new List<int>();
-        List<bool> selected = new List<bool>();
-        Vector2 scrollPos;
-
-        void SaveSelection()
+        public List<SelectionObjectsData> SaveSelection(int maxHistoryCount, List<SelectionObjectsData> historyList)
         {
+            SelectionObjectsData[] selectionObjectsData = new SelectionObjectsData[1];
             Object[] selectedObjects = Selection.objects;
             if (selectedObjects.Length > 0)
             {
@@ -21,12 +16,74 @@ namespace SelectionAsistance
                 {
                     historyList.RemoveAt(0);
                 }
-                historyList.Add(selectedObjects);
-                selectedIndex.Clear();
-                selectedIndex.Add(historyList.Count - 1);
-                selected.Clear();
-                selected.Add(false);
+
+                SelectionObjectsData newData = new SelectionObjectsData(true, "Selections " + "(" + historyList.Count + ")", selectedObjects);
+                historyList.Add(newData);
             }
+            else
+            {
+                Debug.LogError("Select one or more objects.");
+            }
+
+            return historyList;
+        }
+
+        public void LoadSelection(List<SelectionObjectsData> historyList)
+        {
+            List<Object> selectedObjects = new List<Object>();
+            foreach (SelectionObjectsData data in historyList)
+            {
+                if (data.isChecked && data.objects != null)
+                {
+                    selectedObjects.AddRange(data.objects);
+                }
+            }
+            Selection.objects = selectedObjects.ToArray();
+        }
+
+        public List<SelectionObjectsData> DeleatSelection(List<SelectionObjectsData> historyList)
+        {
+            List<int> indicesToRemove = new List<int>();
+            for (int i = 0; i < historyList.Count; i++)
+            {
+                SelectionObjectsData data = historyList[i];
+                if (data.isChecked)
+                {
+                    indicesToRemove.Add(i);
+                }
+            }
+
+            if (indicesToRemove.Count > 0)
+            {
+                indicesToRemove.Sort();
+                indicesToRemove.Reverse();
+                foreach (int index in indicesToRemove)
+                {
+                    historyList.RemoveAt(index);
+                }
+            }
+            return historyList;
+        }
+
+        public List<SelectionObjectsData> AllSelection(List<SelectionObjectsData> historyList)
+        {
+            bool allTrue = true;
+            foreach (SelectionObjectsData data in historyList)
+            {
+                if (!data.isChecked)
+                {
+                    allTrue = false;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < historyList.Count; i++)
+            {
+                SelectionObjectsData data = historyList[i];
+                data.isChecked = !allTrue;
+                historyList[i] = data;
+            }
+            return historyList;
         }
     }
 }
