@@ -9,7 +9,7 @@ public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
     private bool isConvertBoxColliderToTransformExpanded = true;
     private bool isConvertTransformToBoxColliderExpanded = false;
     private bool isRotationalFrequencyExpanded = false;
-    
+
     private float rotationalFrequency = 360f;
 
     [MenuItem("Iwahana Tools/コライダー配置支援ツール", priority = 11)]
@@ -34,7 +34,7 @@ public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
         if (isConvertTransformToBoxColliderExpanded)
         {
             ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
-            if (GUILayout.Button("ボックスコライダーからトランスフォームへ"))
+            if (GUILayout.Button("トランスフォームからボックスコライダーへ"))
             {
                 ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxCollider();
             }
