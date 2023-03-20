@@ -22,6 +22,7 @@ namespace ColliderPlacemenAssistancer
                 {
                     MeshRenderer meshRenderer = Undo.AddComponent<MeshRenderer>(selectedObject);
                     meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+                    meshRenderer.enabled = false;
                 }
 
                 if (selectedObject.GetComponent<MeshFilter>() == null)
