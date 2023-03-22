@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
+using System.Collections;
+
 
 namespace SelectionAsistance
 {
+    [System.Serializable]
     public struct SelectionObjectsData
     {
         public bool isChecked;

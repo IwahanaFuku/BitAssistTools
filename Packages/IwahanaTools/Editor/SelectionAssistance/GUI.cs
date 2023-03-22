@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 using SelectionAsistance;
+using System.IO;
 
 public class SelectionsAssistanceEditorWindow : EditorWindow
 {
@@ -41,7 +42,9 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     void SelectionHistoryGUI()
     {
         SelectionHistoryFunction SelectionHistoryFunctionInstance = new SelectionHistoryFunction();
+        maxHistoryCount = (int)EditorGUILayout.FloatField("履歴保存数", maxHistoryCount);
         EditorGUILayout.LabelField("選択履歴");
+
         if (GUILayout.Button("追加"))
         {
             historyList = SelectionHistoryFunctionInstance.AddSelection(maxHistoryCount, historyList);
@@ -87,7 +90,7 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     void SelectionFunctionsGUI()
     {
-        isHierarchicalSelectionExpanded = EditorGUILayout.Foldout(isHierarchicalSelectionExpanded, "階層選択");
+        isHierarchicalSelectionExpanded = EditorGUILayout.Foldout(isHierarchicalSelectionExpanded, "階層選択（WIP）");
         if (isHierarchicalSelectionExpanded)
         {
             hierarchicalSelectionGUI();
