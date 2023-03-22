@@ -85,17 +85,17 @@ namespace PlacemenAssistance
         public void RandomScaleObjects(bool isDetail, float scaleRatio, float minimum, float maximum)
         {
             Undo.RecordObjects(Selection.objects, "Randomize Scale");
-            foreach (var selectedObject in Selection.objects)
+            foreach (Object selectedObject in Selection.objects)
             {
-                var transform = (selectedObject as GameObject).transform;
-                var newscale = 1f;
+                Transform transform = (selectedObject as GameObject).transform;
+                float newscale = 1f;
 
                 if(isDetail == false)
                 {
                     newscale = newscale * Random.Range(minimum, maximum);
                 }
 
-                var scale = scaleRatio * newscale;
+                float scale = scaleRatio * newscale;
                 transform.localScale = new Vector3(scale, scale, scale);
             }
         }

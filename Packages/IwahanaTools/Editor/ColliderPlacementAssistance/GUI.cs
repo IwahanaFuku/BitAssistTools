@@ -5,6 +5,7 @@ using ColliderPlacemenAssistancer;
 
 public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
 {
+    Vector2 scrollPos;
 
     private bool isConvertBoxColliderToTransformExpanded = true;
     private bool isConvertTransformToBoxColliderExpanded = false;
@@ -20,6 +21,8 @@ public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
 
     void OnGUI()
     {
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+
         isConvertBoxColliderToTransformExpanded = EditorGUILayout.Foldout(isConvertBoxColliderToTransformExpanded, "トランスフォームからボックスコライダー変換");
         if (isConvertBoxColliderToTransformExpanded)
         {
@@ -50,6 +53,8 @@ public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
         {
             RotationalFrequencyeGUI();
         }
+
+        EditorGUILayout.EndScrollView();
     }
 
     void RotationalFrequencyeGUI()

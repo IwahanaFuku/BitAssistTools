@@ -22,4 +22,11 @@ namespace PlacemenAssistance
         public bool Y;
         public bool Z;
     }
+
+    public struct TransformFlags
+    {
+        public bool position;
+        public bool rotation;
+        public bool scale;
+    }
 }

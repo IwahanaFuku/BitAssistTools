@@ -63,7 +63,7 @@ namespace ColliderPlacemenAssistancer
 
         public static int ReturnNumOfCopy(GameObject selectedObject, Bounds bounds, float rotationalFrequency)
         {
-            var selectedPosition = selectedObject.transform.position;
+            Vector3 selectedPosition = selectedObject.transform.position;
 
             Vector3 absCenter = new Vector3(Mathf.Abs(bounds.center.x), Mathf.Abs(bounds.center.y), Mathf.Abs(bounds.center.z))
                             - new Vector3(Mathf.Abs(selectedPosition.x), Mathf.Abs(selectedPosition.y), Mathf.Abs(selectedPosition.z));

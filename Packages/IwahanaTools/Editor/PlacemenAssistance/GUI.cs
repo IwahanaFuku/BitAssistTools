@@ -5,38 +5,43 @@ using PlacemenAssistance;
 
 public class PlacemenAssistanceEditorWindow : EditorWindow
 {
-    private bool isSpecialDuplicateExpanded = false;
-    private bool isSpecialTransformChangeExpanded = false;
-    private bool isDistributeExpanded = false;
-    private bool isArrangerExpanded = false;
-    private bool isArrangerpaddingerExpanded = false;
-    private bool isPaddingReferencePointExpanded = false;
-    private bool isRandomPositionExpanded = false;
-    private bool isRandomScalenExpanded = false;
-    private bool isRandomRotationExpanded = false;
+    Vector2 scrollPos;
 
-    private int copyCount = 5;
+    bool isSpecialDuplicateExpanded = false;
+    bool isRoundingExpanded = false;
+    bool isRoundingDetailExpanded = false;
+    bool isSpecialTransformChangeExpanded = false;
+    bool isDistributeExpanded = false;
+    bool isArrangerExpanded = false;
+    bool isArrangerpaddingerExpanded = false;
+    bool isPaddingReferencePointExpanded = false;
+    bool isRandomPositionExpanded = false;
+    bool isRandomScalenExpanded = false;
+    bool isRandomRotationExpanded = false;
+
+    int copyCount = 5;
     CoordinateReference duplicateTransformCoordinate = CoordinateReference.Global;
     TransformData duplicateTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.one);
-
+    TransformFlags roundingTransformFlags = new TransformFlags {position = true, rotation = true, scale = true};
+    int multiplier = 2;
     CoordinateReference ChangeTransformCoordinate = CoordinateReference.Global;
     TransformData ChangeTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.zero);
-    private Axis distributeAxis = Axis.X;
-    private AlignType alignType = AlignType.Center;
-    private Axis arrangerAxis = Axis.X;
-    private float paddingSpace = 1f;
-    private Transform referencePoint;
-    private AxisFlags padingAxisFlags = new AxisFlags {X = true, Y = true, Z = true};
-    private float radius = 1f;
-    private AxisFlags positionFlags = new AxisFlags {X = true, Y = true, Z = true};
-    private float rotationAmount = 1f;
-    private AxisFlags rotateFlags = new AxisFlags {X = false, Y = true, Z = false};
-    private float scaleRatio = 1f;
-    private static float minimum = 0.5f;
-    private static float maximum = 1.5f;
+    Axis distributeAxis = Axis.X;
+    AlignType alignType = AlignType.Center;
+    Axis arrangerAxis = Axis.X;
+    float paddingSpace = 1f;
+    Transform referencePoint;
+    AxisFlags padingAxisFlags = new AxisFlags {X = true, Y = true, Z = true};
+    float radius = 1f;
+    AxisFlags positionFlags = new AxisFlags {X = true, Y = true, Z = true};
+    float rotationAmount = 1f;
+    AxisFlags rotateFlags = new AxisFlags {X = false, Y = true, Z = false};
+    float scaleRatio = 1f;
+    static float minimum = 0.5f;
+    static float maximum = 1.5f;
     Vector3 minScale = new Vector3(minimum, minimum, minimum);
     Vector3 maxScale = new Vector3(maximum, maximum, maximum);
-    private bool isDetail = false;
+    bool isDetail = false;
 
     [MenuItem("Iwahana Tools/配置支援ツール", priority = 10)]
     public static void ShowWindow()
@@ -44,8 +49,9 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         GetWindow<PlacemenAssistanceEditorWindow>("配置支援ツール");
     }
 
-    private void OnGUI()
+    void OnGUI()
     {
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
         isSpecialDuplicateExpanded = EditorGUILayout.Foldout(isSpecialDuplicateExpanded, "特殊な複製");
         if (isSpecialDuplicateExpanded)
@@ -53,6 +59,11 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
             SpecialDuplicateGUI();
         }
 
+        isRoundingExpanded = EditorGUILayout.Foldout(isRoundingExpanded, "端数を丸める");
+        if (isRoundingExpanded)
+        {
+            RoundingGUI();
+        }
         isSpecialTransformChangeExpanded = EditorGUILayout.Foldout(isSpecialTransformChangeExpanded, "現在の値をもとにトランスフォームの変更");
         if (isSpecialTransformChangeExpanded)
         {
@@ -94,6 +105,8 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         {
             RandomScalenGUI();
         }
+        
+        EditorGUILayout.EndScrollView();
     }
 
     void SpecialDuplicateGUI()
@@ -116,6 +129,21 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
         if (GUILayout.Button("複製"))
         {
             SpecialDuplicaterInstance.SpecialDuplicate(duplicateTransformCoordinate, duplicateTransform, copyCount);
+        }
+    }
+
+    void RoundingGUI()
+    {
+        Roundinger RoundingerInstance = new Roundinger();
+
+        multiplier = (int)EditorGUILayout.Slider("乗数", multiplier, 0f, 6f);
+        roundingTransformFlags.position = EditorGUILayout.Toggle("Position", roundingTransformFlags.position);
+        roundingTransformFlags.rotation = EditorGUILayout.Toggle("Rotation", roundingTransformFlags.rotation);
+        roundingTransformFlags.scale = EditorGUILayout.Toggle("Scale", roundingTransformFlags.scale);
+
+        if (GUILayout.Button("丸める"))
+        {
+            RoundingerInstance.Rounding(multiplier, roundingTransformFlags);
         }
     }
 
@@ -252,5 +280,4 @@ public class PlacemenAssistanceEditorWindow : EditorWindow
             }
         }
     }
-
 }

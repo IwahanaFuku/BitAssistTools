@@ -6,18 +6,18 @@ using System.IO;
 
 public class SelectionsAssistanceEditorWindow : EditorWindow
 {
-    private Rect firstRect = new Rect();
-    private Rect secondRect = new Rect();
-    private GUIStyle firstStyle = null;
+    Rect firstRect = new Rect();
+    Rect secondRect = new Rect();
+    GUIStyle firstStyle = null;
 
-    private List<SelectionObjectsData> historyList = new List<SelectionObjectsData>();
-    private int maxHistoryCount = 20;
-    private Vector2 scrollPos;
+    List<SelectionObjectsData> historyList = new List<SelectionObjectsData>();
+    int maxHistoryCount = 20;
+    Vector2 scrollPos;
 
-    private bool isHierarchicalSelectionExpanded = true;
-    private int parentCount = 1;
-    private bool onlyOrder = true;
-    private bool selectChild = false;
+    bool isHierarchicalSelectionExpanded = true;
+    int parentCount = 1;
+    bool onlyOrder = true;
+    bool selectChild = false;
     
     [MenuItem("Iwahana Tools/選択支援ツール", priority = 12)]
     public static void ShowWindow()

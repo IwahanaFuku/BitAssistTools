@@ -13,10 +13,10 @@ namespace PlacemenAssistance
             foreach (Transform selectedTransform in selectedTransforms)
             {
                 TransformData newTransform = new TransformData(selectedTransform.position, selectedTransform.rotation, selectedTransform.localScale);
-                var copyTransforms = new List<Transform>();
+                List<Transform> copyTransforms = new List<Transform>();
                 copyTransforms.Add(selectedTransform);
 
-                if (copyCount < 2) { break; }
+                if (copyCount < 1) { break; }
 
                 for (int i = 0; i < copyCount; i++)
                 {
