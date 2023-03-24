@@ -255,7 +255,12 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("回転"))
             {
-                RandomRotationInstance.RandomRotateObjects(rotationAmount, rotateFlags, curve);
+                AnimationCurve curve_result = curve;
+                if (! isRandomRotateDetail)
+                {
+                    curve_result = AnimationCurve.Linear(0, -180, 1, 180);
+                }
+                RandomRotationInstance.RandomRotateObjects(rotationAmount, rotateFlags, curve_result);
             }
         }
 
