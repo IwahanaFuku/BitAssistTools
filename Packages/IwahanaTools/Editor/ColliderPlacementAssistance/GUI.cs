@@ -1,71 +1,73 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using ColliderPlacemenAssistancer;
 
-public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
-{
-    Vector2 scrollPos;
-
-    private bool isConvertBoxColliderToTransformExpanded = true;
-    private bool isConvertTransformToBoxColliderExpanded = false;
-    private bool isRotationalFrequencyExpanded = false;
-
-    private float rotationalFrequency = 360f;
-
-    [MenuItem("Iwahana Tools/コライダー配置支援ツール", priority = 11)]
-    public static void ShowWindow()
+namespace ColliderPlacemenAssistancer
     {
-        GetWindow<ColliderPlacemenAssistanceEditorWindow>("コライダー配置支援ツール");
-    }
-
-    void OnGUI()
+    public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
     {
-        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+        Vector2 scrollPos;
 
-        isConvertBoxColliderToTransformExpanded = EditorGUILayout.Foldout(isConvertBoxColliderToTransformExpanded, "トランスフォームからボックスコライダー変換");
-        if (isConvertBoxColliderToTransformExpanded)
+        private bool isConvertBoxColliderToTransformExpanded = true;
+        private bool isConvertTransformToBoxColliderExpanded = false;
+        private bool isRotationalFrequencyExpanded = false;
+
+        private float rotationalFrequency = 360f;
+
+        [MenuItem("Iwahana Tools/コライダー配置支援ツール", priority = 11)]
+        public static void ShowWindow()
         {
-            ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
-            if (GUILayout.Button("ボックスコライダーからトランスフォームへ"))
-            {
-                ConvertBoxColliderToTransformerInstance.ConvertBoxColliderToTransform();
-            }
+            GetWindow<ColliderPlacemenAssistanceEditorWindow>("コライダー配置支援ツール");
         }
 
-        isConvertTransformToBoxColliderExpanded = EditorGUILayout.Foldout(isConvertTransformToBoxColliderExpanded, "ボックスコライダーからトランスフォーム変換");
-        if (isConvertTransformToBoxColliderExpanded)
+        void OnGUI()
         {
-            ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
-            if (GUILayout.Button("トランスフォームからボックスコライダーへ"))
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+
+            isConvertBoxColliderToTransformExpanded = EditorGUILayout.Foldout(isConvertBoxColliderToTransformExpanded, "トランスフォームからボックスコライダー変換");
+            if (isConvertBoxColliderToTransformExpanded)
             {
-                ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxCollider();
+                ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
+                if (GUILayout.Button("ボックスコライダーからトランスフォームへ"))
+                {
+                    ConvertBoxColliderToTransformerInstance.ConvertBoxColliderToTransform();
+                }
             }
 
-            if (GUILayout.Button("トランスフォームをリセットしてボックスコライダーへ　※Rotate不可※"))
+            isConvertTransformToBoxColliderExpanded = EditorGUILayout.Foldout(isConvertTransformToBoxColliderExpanded, "ボックスコライダーからトランスフォーム変換");
+            if (isConvertTransformToBoxColliderExpanded)
             {
-                ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxColliderReset();
+                ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
+                if (GUILayout.Button("トランスフォームからボックスコライダーへ"))
+                {
+                    ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxCollider();
+                }
+
+                if (GUILayout.Button("トランスフォームをリセットしてボックスコライダーへ　※Rotate不可※"))
+                {
+                    ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxColliderReset();
+                }
             }
+
+            isRotationalFrequencyExpanded = EditorGUILayout.Foldout(isRotationalFrequencyExpanded, "回転複製");
+            if (isRotationalFrequencyExpanded)
+            {
+                RotationalFrequencyeGUI();
+            }
+
+            EditorGUILayout.EndScrollView();
         }
 
-        isRotationalFrequencyExpanded = EditorGUILayout.Foldout(isRotationalFrequencyExpanded, "回転複製");
-        if (isRotationalFrequencyExpanded)
+        void RotationalFrequencyeGUI()
         {
-            RotationalFrequencyeGUI();
-        }
+            RotateDuplicater RotateDuplicaterInstance = new RotateDuplicater();
 
-        EditorGUILayout.EndScrollView();
-    }
+            rotationalFrequency = EditorGUILayout.Slider("度数制限:", rotationalFrequency, 1, 360);
 
-    void RotationalFrequencyeGUI()
-    {
-        RotateDuplicater RotateDuplicaterInstance = new RotateDuplicater();
-
-        rotationalFrequency = EditorGUILayout.Slider("度数制限:", rotationalFrequency, 1, 360);
-
-        if (GUILayout.Button("回転複製"))
-        {
-            RotateDuplicaterInstance.RotateDuplicate(rotationalFrequency);
+            if (GUILayout.Button("回転複製"))
+            {
+                RotateDuplicaterInstance.RotateDuplicate(rotationalFrequency);
+            }
         }
     }
 }

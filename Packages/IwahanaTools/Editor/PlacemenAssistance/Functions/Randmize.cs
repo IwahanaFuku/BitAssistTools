@@ -47,7 +47,7 @@ namespace PlacemenAssistance
 
     public class RandomRotate
     {
-        public void RandomRotateObjects(float rotationAmount, AxisFlags axisFlags)
+        public void RandomRotateObjects(float rotationAmount, AxisFlags axisFlags, AnimationCurve curve)
         {
             Undo.RecordObjects(Selection.transforms, "Random Rotate Objects");
 
@@ -61,17 +61,23 @@ namespace PlacemenAssistance
 
                     if (axisFlags.X)
                     {
-                        xRotation = Mathf.Floor(Random.Range(0, 360) / rotationAmount) * rotationAmount;
+                        float value = Random.value;
+                        float curveValue = curve.Evaluate(value);
+                        xRotation = Mathf.Floor(curveValue / rotationAmount) * rotationAmount;
                     }
 
                     if (axisFlags.Y)
                     {
-                        yRotation = Mathf.Floor(Random.Range(0, 360) / rotationAmount) * rotationAmount;
+                        float value = Random.value;
+                        float curveValue = curve.Evaluate(value);
+                        yRotation = Mathf.Floor(curveValue / rotationAmount) * rotationAmount;
                     }
 
                     if (axisFlags.Z)
                     {
-                        zRotation = Mathf.Floor(Random.Range(0, 360) / rotationAmount) * rotationAmount;
+                        float value = Random.value;
+                        float curveValue = curve.Evaluate(value);
+                        zRotation = Mathf.Floor(curveValue / rotationAmount) * rotationAmount;
                     }
 
                     selectedObject.transform.rotation = Quaternion.Euler(xRotation, yRotation, zRotation);
