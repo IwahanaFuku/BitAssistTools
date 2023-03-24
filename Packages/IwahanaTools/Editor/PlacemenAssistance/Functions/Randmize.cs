@@ -64,6 +64,7 @@ namespace PlacemenAssistance
                         float value = Random.value;
                         float curveValue = curve.Evaluate(value);
                         xRotation = Mathf.Floor(curveValue / rotationAmount) * rotationAmount;
+                        selectedObject.transform.Rotate(Vector3.right, xRotation, Space.World);
                     }
 
                     if (axisFlags.Y)
@@ -71,6 +72,7 @@ namespace PlacemenAssistance
                         float value = Random.value;
                         float curveValue = curve.Evaluate(value);
                         yRotation = Mathf.Floor(curveValue / rotationAmount) * rotationAmount;
+                        selectedObject.transform.Rotate(Vector3.up, yRotation, Space.World);
                     }
 
                     if (axisFlags.Z)
@@ -78,9 +80,8 @@ namespace PlacemenAssistance
                         float value = Random.value;
                         float curveValue = curve.Evaluate(value);
                         zRotation = Mathf.Floor(curveValue / rotationAmount) * rotationAmount;
-                    }
-
-                    selectedObject.transform.rotation = Quaternion.Euler(xRotation, yRotation, zRotation);
+                        selectedObject.transform.Rotate(Vector3.forward, zRotation, Space.World);
+                    }                    
                 }
             }
         }
