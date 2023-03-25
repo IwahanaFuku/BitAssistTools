@@ -65,9 +65,9 @@ namespace PlacemenAssistance
             if (coordinateReference == CoordinateReference.Global)
             {
                 gameObject.transform.position += changeTransform.position;
-                gameObject.transform.Rotate(Vector3.right, changeTransform.rotation.eulerAngles.x, Space.World);
-                gameObject.transform.Rotate(Vector3.up, changeTransform.rotation.eulerAngles.y, Space.World);
-                gameObject.transform.Rotate(Vector3.forward, changeTransform.rotation.eulerAngles.z, Space.World);
+                gameObject.transform.rotation = Quaternion.AngleAxis(changeTransform.rotation.eulerAngles.x, Vector3.right) * gameObject.transform.rotation;
+                gameObject.transform.rotation = Quaternion.AngleAxis(changeTransform.rotation.eulerAngles.y, Vector3.up) * gameObject.transform.rotation;
+                gameObject.transform.rotation = Quaternion.AngleAxis(changeTransform.rotation.eulerAngles.z, Vector3.forward) * gameObject.transform.rotation;
                 gameObject.transform.localScale += changeTransform.localScale;
             }
             else if (coordinateReference == CoordinateReference.Local)
