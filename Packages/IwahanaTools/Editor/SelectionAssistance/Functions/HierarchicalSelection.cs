@@ -9,21 +9,18 @@ namespace SelectionAsistance
         public void HierarchicalSelecter(int parentCount, bool onlyOrder)
         {
             GameObject gameObject = Selection.activeGameObject;
+            int targetCurrentDepth = GetDepth(gameObject);
             int objectIndex = gameObject.transform.GetSiblingIndex();
             GameObject parentObject = GetPalentObject(gameObject, parentCount);
 
             if(onlyOrder)
             {
-                GameObject[] childObjects = GetChildObjects(parentObject, parentCount);
-                for(int i = 0; i < childObjects.Length; i++)
-                {
-                    Debug.Log(childObjects[i].name);
-                }
+                GameObject[] childObjects = GetChildObjects(parentObject, parentCount + 1, targetCurrentDepth - 1);
                 GameObject[] sameOrderObjects = SameOrder(childObjects, objectIndex);
                 Selection.objects = sameOrderObjects;
             }
             if(! onlyOrder){
-                GameObject[] childObjects = GetChildObjects(parentObject, parentCount + 1);
+                GameObject[] childObjects = GetChildObjects(parentObject, parentCount + 1, targetCurrentDepth);
                 Selection.objects = childObjects;
             }
         }
@@ -51,7 +48,7 @@ namespace SelectionAsistance
             return parentObject;
         }
 
-        GameObject[] GetChildObjects(GameObject targetObject, int childDepth)
+        GameObject[] GetChildObjects(GameObject targetObject, int childDepth, int targetCurrentDepth)
         {
             List<GameObject> childObjects = new List<GameObject>();
             GetChildObjectsRecursive(targetObject, 1, childDepth, ref childObjects);
@@ -59,7 +56,7 @@ namespace SelectionAsistance
             List<GameObject> selectedObjects = new List<GameObject>();
             foreach (GameObject childObject in childObjects)
             {
-                if (GetDepth(childObject) == childDepth)
+                if (GetDepth(childObject) == targetCurrentDepth)
                 {
                     selectedObjects.Add(childObject);
                 }
