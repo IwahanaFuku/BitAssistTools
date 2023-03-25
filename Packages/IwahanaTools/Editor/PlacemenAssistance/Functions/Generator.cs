@@ -13,7 +13,7 @@ namespace PlacemenAssistance
             foreach (Transform selectedTransform in selectedTransforms)
             {
                 GameObject selectedObject = selectedTransform.gameObject;
-                GameObject newObject = new GameObject();
+                GameObject newObject;
                 TransformData newTransform = new TransformData(selectedTransform.position, selectedTransform.rotation, selectedTransform.localScale);
                 List<Transform> copyTransforms = new List<Transform>();
                 copyTransforms.Add(selectedTransform);
@@ -47,6 +47,7 @@ namespace PlacemenAssistance
                     {
                         newObject = UnityEngine.Object.Instantiate(selectedTransform.gameObject);
                     }
+                    
                     newObject.transform.position = newTransform.position;
                     newObject.transform.rotation = newTransform.rotation;
                     newObject.transform.localScale = newTransform.localScale;
