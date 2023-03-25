@@ -5,7 +5,7 @@ using System;
 
 namespace ColliderPlacemenAssistancer
 {
-    public class RotateDuplicater : MonoBehaviour
+    public class RotateDuplicater
     {
         public void RotateDuplicate(float rotationalFrequency)
         {
@@ -105,7 +105,7 @@ namespace ColliderPlacemenAssistancer
             for(int i = 0; i < numOfCopy + 1; i++)
             {
                 Quaternion rotationQuaternion = Quaternion.AngleAxis(theta * i, rotationAxis);
-                GameObject newObject = Instantiate(selectedObject, selectedObject.transform.position, selectedObject.transform.rotation * rotationQuaternion);
+                GameObject newObject = UnityEngine.Object.Instantiate(selectedObject, selectedObject.transform.position, selectedObject.transform.rotation * rotationQuaternion);
                 newObject.name = selectedObject.name;
                 copyTransformsList.Add(newObject.transform);
 

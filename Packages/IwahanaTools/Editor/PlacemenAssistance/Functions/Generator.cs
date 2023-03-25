@@ -5,7 +5,7 @@ using System;
 
 namespace PlacemenAssistance
 {
-    public class SpecialDuplicater : MonoBehaviour
+    public class SpecialDuplicater
     {
         public void SpecialDuplicate(CoordinateReference coordinateReference, TransformData duplicateTransform, int copyCount)
         {
@@ -45,7 +45,7 @@ namespace PlacemenAssistance
                     }
                     else
                     {
-                        newObject = Instantiate(selectedTransform.gameObject);
+                        newObject = UnityEngine.Object.Instantiate(selectedTransform.gameObject);
                     }
                     newObject.transform.position = newTransform.position;
                     newObject.transform.rotation = newTransform.rotation;
