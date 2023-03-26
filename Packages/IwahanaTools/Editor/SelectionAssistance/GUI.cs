@@ -17,7 +17,7 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     bool isHierarchicalSelectionExpanded = true;
     int parentCount = 1;
     bool onlyOrder = true;
-    bool selectChild = false;
+    bool selectChildlen = false;
     
     [MenuItem("Iwahana Tools/選択支援ツール", priority = 12)]
     public static void ShowWindow()
@@ -90,7 +90,7 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     void SelectionFunctionsGUI()
     {
-        isHierarchicalSelectionExpanded = EditorGUILayout.Foldout(isHierarchicalSelectionExpanded, "階層選択（WIP）");
+        isHierarchicalSelectionExpanded = EditorGUILayout.Foldout(isHierarchicalSelectionExpanded, "階層選択");
         if (isHierarchicalSelectionExpanded)
         {
             hierarchicalSelectionGUI();
@@ -100,14 +100,13 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     void hierarchicalSelectionGUI()
     {
         HierarchicalSelectionObjects HierarchicalSelecterInstance = new HierarchicalSelectionObjects();
-        parentCount = EditorGUILayout.IntSlider("基準とする親の階層", parentCount, 0, 5);
+        parentCount = EditorGUILayout.IntSlider("基準とする親の階層", parentCount, 1, 5);
         onlyOrder = EditorGUILayout.Toggle("選択したオブジェクトと同じ順番", onlyOrder);
-        selectChild = EditorGUILayout.Toggle("子オブジェクトをすべて選択する", selectChild);
-        
+        selectChildlen = EditorGUILayout.Toggle("子オブジェクトをすべて選択する", selectChildlen);
 
         if (GUILayout.Button("選択"))
         {
-            HierarchicalSelecterInstance.HierarchicalSelecter(parentCount, onlyOrder);
+            HierarchicalSelecterInstance.HierarchicalSelecter(parentCount, onlyOrder, selectChildlen);
         }
         
     }

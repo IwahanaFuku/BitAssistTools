@@ -6,26 +6,51 @@ namespace SelectionAsistance
 {
     public class HierarchicalSelectionObjects
     {    
-        public void HierarchicalSelecter(int parentCount, bool onlyOrder)
+        public void HierarchicalSelecter(int parentCount, bool onlyOrder, bool selectChildlen)
         {
             GameObject gameObject = Selection.activeGameObject;
             int targetCurrentDepth = GetDepth(gameObject);
             int objectIndex = gameObject.transform.GetSiblingIndex();
             GameObject parentObject = GetPalentObject(gameObject, parentCount);
+            GameObject[] childObjects = SameOrderSelecter(onlyOrder, parentObject, objectIndex, parentCount, targetCurrentDepth);
+            ChildlenSelecter(selectChildlen, childObjects);
+        }
+
+        GameObject[] SameOrderSelecter(bool onlyOrder, GameObject parentObject, int objectIndex, int parentCount, int targetCurrentDepth)
+        {
+            GameObject[] childObjects = new GameObject[0];
 
             if(onlyOrder)
             {
-                GameObject[] childObjects = GetChildObjects(parentObject, parentCount + 1, targetCurrentDepth - 1);
-                GameObject[] sameOrderObjects = SameOrder(childObjects, objectIndex);
-                Selection.objects = sameOrderObjects;
+                childObjects = SameOrder(GetChildObjects(parentObject, parentCount + 1, targetCurrentDepth - 1), objectIndex);
+                Selection.objects = childObjects;
             }
             if(! onlyOrder){
-                GameObject[] childObjects = GetChildObjects(parentObject, parentCount + 1, targetCurrentDepth);
+                childObjects = GetChildObjects(parentObject, parentCount + 1, targetCurrentDepth);
                 Selection.objects = childObjects;
+            }
+
+            return childObjects;
+        }
+
+        void ChildlenSelecter(bool selectChildlen, GameObject[] childObjects)
+        {
+            if(selectChildlen)
+            {
+                List<GameObject> selectedObjects = new List<GameObject>();
+                for(int i = 0; i < childObjects.Length; i++)
+                {
+                    GameObject childObject = childObjects[i];
+                    foreach (Transform childTransform in childObject.transform)
+                    {
+                        selectedObjects.Add(childTransform.gameObject);
+                    } 
+                }
+                Selection.objects = selectedObjects.ToArray();
             }
         }
 
-        private GameObject GetPalentObject(GameObject gameObject, int parentCount)
+        GameObject GetPalentObject(GameObject gameObject, int parentCount)
         {
             GameObject parentObject = gameObject.transform.parent?.gameObject;
             if (parentCount == 0)
@@ -50,8 +75,14 @@ namespace SelectionAsistance
 
         GameObject[] GetChildObjects(GameObject targetObject, int childDepth, int targetCurrentDepth)
         {
+            if (childDepth == 0)
+            {
+                GameObject[] targetObjectList = {targetObject};
+                return targetObjectList;
+            }
+            
             List<GameObject> childObjects = new List<GameObject>();
-            GetChildObjectsRecursive(targetObject, 1, childDepth, ref childObjects);
+            GetChildObjectsRecursive(targetObject, 0, childDepth, ref childObjects);
 
             List<GameObject> selectedObjects = new List<GameObject>();
             foreach (GameObject childObject in childObjects)
