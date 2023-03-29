@@ -65,27 +65,28 @@ namespace ColliderPlacemenAssistancer
         {
             Vector3 selectedPosition = selectedObject.transform.position;
 
-            Vector3 absCenter = new Vector3(Mathf.Abs(bounds.center.x), Mathf.Abs(bounds.center.y), Mathf.Abs(bounds.center.z))
-                            - new Vector3(Mathf.Abs(selectedPosition.x), Mathf.Abs(selectedPosition.y), Mathf.Abs(selectedPosition.z));
+            Vector3 absCenter = bounds.center - selectedPosition;
             Vector3 edgeCenterX = new Vector3(absCenter.x + bounds.size.x / 2, absCenter.y, absCenter.z);
             Vector3 edgeCenterZ = new Vector3(absCenter.x, absCenter.y, absCenter.z + bounds.size.z / 2);
 
             float theta;
             int numOfCopy;
 
-            if(edgeCenterZ.sqrMagnitude < edgeCenterX.sqrMagnitude)
+            if (Mathf.Abs(edgeCenterZ.sqrMagnitude) < Mathf.Abs(edgeCenterX.sqrMagnitude))
             {
-                theta = Mathf.Atan2(bounds.size.z / 2, edgeCenterX.x) * Mathf.Rad2Deg * 2;
-                numOfCopy = Convert.ToInt32(rotationalFrequency / theta);
+                theta = Mathf.Atan2(Mathf.Abs(bounds.size.z / 2), Mathf.Abs(edgeCenterX.x)) * Mathf.Rad2Deg * 2;
+                numOfCopy = Mathf.FloorToInt(rotationalFrequency / theta);
+                Debug.Log("X");
             }
             else
             {
-                theta = Mathf.Atan2(bounds.size.x / 2, edgeCenterZ.z) * Mathf.Rad2Deg * 2;
-                numOfCopy = Convert.ToInt32(rotationalFrequency / theta);
+                theta = Mathf.Atan2(Mathf.Abs(bounds.size.x / 2), Mathf.Abs(edgeCenterZ.z)) * Mathf.Rad2Deg * 2;
+                numOfCopy = Mathf.FloorToInt(rotationalFrequency / theta);
             }
 
             return numOfCopy;
         }
+
 
         public static float CalculateRotationalFrequencyPerCopy(int numOfCopy, float rotationalFrequency)
         {
