@@ -5,7 +5,7 @@ public class SelectAssetEditor : EditorWindow
 {
     private string filePath = "Assets/";
 
-    [MenuItem("Iwahana Tools/ファイルパス選択", priority = 18)]
+    [MenuItem("Iwahana Tools/ファイルパス選択", priority = 51)]
     public static void ShowWindow()
     {
         EditorWindow.GetWindow<SelectAssetEditor>("ファイルパス選択");
