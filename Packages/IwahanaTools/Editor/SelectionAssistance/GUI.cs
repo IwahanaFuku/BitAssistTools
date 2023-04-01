@@ -41,9 +41,11 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     void SelectionHistoryGUI()
     {
+        GUILayout.Label("選択履歴の保存");
+
         SelectionHistoryFunction SelectionHistoryFunctionInstance = new SelectionHistoryFunction();
-        maxHistoryCount = (int)EditorGUILayout.FloatField("履歴保存数", maxHistoryCount);
-        EditorGUILayout.LabelField("選択履歴");
+        maxHistoryCount = (int)EditorGUILayout.FloatField("  履歴保存数", maxHistoryCount);
+        EditorGUILayout.LabelField("  選択履歴");
 
         if (GUILayout.Button("追加"))
         {

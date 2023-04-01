@@ -7,6 +7,7 @@ namespace ColliderPlacemenAssistancer
     public class ColliderPlacemenAssistanceEditorWindow : EditorWindow
     {
         Vector2 scrollPos;
+        int spacePixel = 8;
 
         private bool isConvertBoxColliderToTransformExpanded = true;
         private bool isConvertTransformToBoxColliderExpanded = false;
@@ -24,20 +25,28 @@ namespace ColliderPlacemenAssistancer
         {
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-            isConvertBoxColliderToTransformExpanded = EditorGUILayout.Foldout(isConvertBoxColliderToTransformExpanded, "トランスフォームからボックスコライダー変換");
+            isConvertBoxColliderToTransformExpanded = EditorGUILayout.Foldout(isConvertBoxColliderToTransformExpanded, "ボックスコライダーからトランスフォームへ変換");
             if (isConvertBoxColliderToTransformExpanded)
             {
                 ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
+
+                GUILayout.Space(spacePixel);
+
                 if (GUILayout.Button("ボックスコライダーからトランスフォームへ"))
                 {
                     ConvertBoxColliderToTransformerInstance.ConvertBoxColliderToTransform();
                 }
+
+                GUILayout.Space(spacePixel);
             }
 
-            isConvertTransformToBoxColliderExpanded = EditorGUILayout.Foldout(isConvertTransformToBoxColliderExpanded, "ボックスコライダーからトランスフォーム変換");
+            isConvertTransformToBoxColliderExpanded = EditorGUILayout.Foldout(isConvertTransformToBoxColliderExpanded, "トランスフォームからボックスコライダーへ変換");
             if (isConvertTransformToBoxColliderExpanded)
             {
                 ConvertBoxColliderToTransformer ConvertBoxColliderToTransformerInstance = new ConvertBoxColliderToTransformer();
+
+                GUILayout.Space(spacePixel);
+
                 if (GUILayout.Button("トランスフォームからボックスコライダーへ"))
                 {
                     ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxCollider();
@@ -47,6 +56,8 @@ namespace ColliderPlacemenAssistancer
                 {
                     ConvertBoxColliderToTransformerInstance.ConvertTransformeToBoxColliderReset();
                 }
+
+                GUILayout.Space(spacePixel);
             }
 
             isRotationalFrequencyExpanded = EditorGUILayout.Foldout(isRotationalFrequencyExpanded, "回転複製");
@@ -64,10 +75,14 @@ namespace ColliderPlacemenAssistancer
 
             rotationalFrequency = EditorGUILayout.Slider("度数制限:", rotationalFrequency, 1, 360);
 
+            GUILayout.Space(spacePixel);
+
             if (GUILayout.Button("回転複製"))
             {
                 RotateDuplicaterInstance.RotateDuplicate(rotationalFrequency);
             }
+            
+            GUILayout.Space(spacePixel);
         }
     }
 }

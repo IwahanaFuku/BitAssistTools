@@ -7,6 +7,7 @@ namespace PlacemenAssistance
     public class PlacemenAssistanceEditorWindow : EditorWindow
     {
         Vector2 scrollPos;
+        int spacePixel = 8;
 
         bool isSpecialDuplicateExpanded = false;
         bool isRoundingExpanded = false;
@@ -119,36 +120,46 @@ namespace PlacemenAssistance
 
             duplicateTransformCoordinate = (CoordinateReference)GUILayout.SelectionGrid((int)duplicateTransformCoordinate, new string[] {"Global", "Local"}, 2);
             int maxCopyCount = 100;
-
-            duplicateTransform.position = EditorGUILayout.Vector3Field("Position", duplicateTransform.position);
-            duplicateTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", 
+            duplicateTransform.position = EditorGUILayout.Vector3Field("  Position", duplicateTransform.position);
+            duplicateTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("  Rotation", 
                                             new Vector3(
                                                 Mathf.Round(duplicateTransform.rotation.eulerAngles.x * 1000f) / 1000f,
                                                 Mathf.Round(duplicateTransform.rotation.eulerAngles.y * 1000f) / 1000f,
                                                 Mathf.Round(duplicateTransform.rotation.eulerAngles.z * 1000f) / 1000f
                                             )
                                             ));
-            duplicateTransform.localScale = EditorGUILayout.Vector3Field("Scale", duplicateTransform.localScale);
-            copyCount = EditorGUILayout.IntSlider("コピー数", copyCount, 0, maxCopyCount);
+            duplicateTransform.localScale = EditorGUILayout.Vector3Field("  Scale", duplicateTransform.localScale);
+
+            copyCount = EditorGUILayout.IntSlider("コピー数", copyCount, 1, maxCopyCount);
+
+            GUILayout.Space(spacePixel);
+
             if (GUILayout.Button("複製"))
             {
                 SpecialDuplicaterInstance.SpecialDuplicate(duplicateTransformCoordinate, duplicateTransform, copyCount);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void RoundingGUI()
         {
             Roundinger RoundingerInstance = new Roundinger();
 
-            multiplier = (int)EditorGUILayout.Slider("乗数", multiplier, 0f, 6f);
-            roundingTransformFlags.position = EditorGUILayout.Toggle("Position", roundingTransformFlags.position);
-            roundingTransformFlags.rotation = EditorGUILayout.Toggle("Rotation", roundingTransformFlags.rotation);
-            roundingTransformFlags.scale = EditorGUILayout.Toggle("Scale", roundingTransformFlags.scale);
+            multiplier = (int)EditorGUILayout.Slider("小数点の位", multiplier, 0f, 6f);
+
+            roundingTransformFlags.position = EditorGUILayout.Toggle("  Position", roundingTransformFlags.position);
+            roundingTransformFlags.rotation = EditorGUILayout.Toggle("  Rotation", roundingTransformFlags.rotation);
+            roundingTransformFlags.scale = EditorGUILayout.Toggle("  Scale", roundingTransformFlags.scale);
+
+            GUILayout.Space(spacePixel);
 
             if (GUILayout.Button("丸める"))
             {
                 RoundingerInstance.Rounding(multiplier, roundingTransformFlags);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void SpecialTransformChangeGUI()
@@ -156,20 +167,25 @@ namespace PlacemenAssistance
             ObjectTransformChanger ObjectTransformChangerInstance = new ObjectTransformChanger();
 
             ChangeTransformCoordinate = (CoordinateReference)GUILayout.SelectionGrid((int)ChangeTransformCoordinate, new string[] {"Global", "Local"}, 2);
-
-            ChangeTransform.position = EditorGUILayout.Vector3Field("Position", ChangeTransform.position);
-            ChangeTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", 
+            
+            ChangeTransform.position = EditorGUILayout.Vector3Field("  Position", ChangeTransform.position);
+            ChangeTransform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("  Rotation", 
                                             new Vector3(
                                                 Mathf.Round(ChangeTransform.rotation.eulerAngles.x * 1000f) / 1000f,
                                                 Mathf.Round(ChangeTransform.rotation.eulerAngles.y * 1000f) / 1000f,
                                                 Mathf.Round(ChangeTransform.rotation.eulerAngles.z * 1000f) / 1000f
                                             )
                                             ));
-            ChangeTransform.localScale = EditorGUILayout.Vector3Field("Scale", ChangeTransform.localScale);
+            ChangeTransform.localScale = EditorGUILayout.Vector3Field("  Scale", ChangeTransform.localScale);
+
+            GUILayout.Space(spacePixel);
+
             if (GUILayout.Button("変更"))
             {
                 ObjectTransformChangerInstance.ObjectTransformChange(ChangeTransformCoordinate, ChangeTransform);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void SortAndDistributeObjectsGUI()
@@ -179,28 +195,36 @@ namespace PlacemenAssistance
             GUILayout.Label("軸");
             distributeAxis = (Axis)GUILayout.SelectionGrid((int)distributeAxis, new string[] { "X軸", "Y軸", "Z軸" }, 3);
 
+            GUILayout.Space(spacePixel);
+
             if (GUILayout.Button("分布"))
             {
                 ObjectDistributorInstance.SortAndDistributeObjects(distributeAxis);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void ArrangerObjectsGUI()
         {
             ObjectAligner AlignObjectsInstance = new ObjectAligner();
-            
-            GUILayout.Label("基準値");
-            alignType = (AlignType)GUILayout.SelectionGrid((int)alignType, 
-                new string[] { "最大", "中央", "最小" }, 3);
 
             GUILayout.Label("軸");
             arrangerAxis = (Axis)GUILayout.SelectionGrid((int)arrangerAxis, 
                 new string[] { "X軸", "Y軸", "Z軸" }, 3);
 
+            GUILayout.Label("基準値");
+            alignType = (AlignType)GUILayout.SelectionGrid((int)alignType, 
+                new string[] { "最大", "中央", "最小" }, 3);
+
+            GUILayout.Space(spacePixel);
+
             if (GUILayout.Button("整列"))
             {
                 AlignObjectsInstance.AlignObjects(arrangerAxis, alignType);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void PaddingerObjectsGUI()
@@ -208,9 +232,11 @@ namespace PlacemenAssistance
             ObjectPaddinger PaddingObjectsInstance = new ObjectPaddinger();
 
             paddingSpace = EditorGUILayout.Slider("パディング間隔", paddingSpace, 0f, 2f);
-            padingAxisFlags.X = EditorGUILayout.Toggle("X軸", padingAxisFlags.X);
-            padingAxisFlags.Y = EditorGUILayout.Toggle("Y軸", padingAxisFlags.Y);
-            padingAxisFlags.Z = EditorGUILayout.Toggle("Z軸", padingAxisFlags.Z);
+
+            GUILayout.Label("軸");
+            padingAxisFlags.X = EditorGUILayout.Toggle("  X軸", padingAxisFlags.X);
+            padingAxisFlags.Y = EditorGUILayout.Toggle("  Y軸", padingAxisFlags.Y);
+            padingAxisFlags.Z = EditorGUILayout.Toggle("  Z軸", padingAxisFlags.Z);
 
             isPaddingReferencePointExpanded = EditorGUILayout.Toggle("基準点を追加", isPaddingReferencePointExpanded);
             if (isPaddingReferencePointExpanded)
@@ -218,24 +244,34 @@ namespace PlacemenAssistance
                 referencePoint = (Transform)EditorGUILayout.ObjectField("基準点", referencePoint, typeof(Transform), true);
             }
 
+            GUILayout.Space(spacePixel);
+
             if (GUILayout.Button("パディング"))
             {
                 PaddingObjectsInstance.PaddingObjects(isPaddingReferencePointExpanded, paddingSpace, referencePoint, padingAxisFlags);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void randomPositionGUI()
         {
             RandomPosition RandomPositionInstance = new RandomPosition();
             radius = EditorGUILayout.Slider("半径:", radius, 0, 10);
-            positionFlags.X = EditorGUILayout.Toggle("X軸", positionFlags.X);
-            positionFlags.Y = EditorGUILayout.Toggle("Y軸", positionFlags.Y);
-            positionFlags.Z = EditorGUILayout.Toggle("Z軸", positionFlags.Z);
+
+            GUILayout.Label("軸");
+            positionFlags.X = EditorGUILayout.Toggle("  X軸", positionFlags.X);
+            positionFlags.Y = EditorGUILayout.Toggle("  Y軸", positionFlags.Y);
+            positionFlags.Z = EditorGUILayout.Toggle("  Z軸", positionFlags.Z);
+
+            GUILayout.Space(spacePixel);
 
             if (GUILayout.Button("移動"))
             {
                 RandomPositionInstance.RandomPositionObjects(radius, positionFlags);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void randomRotationGUI()
@@ -246,12 +282,15 @@ namespace PlacemenAssistance
             
             if (isRandomRotateDetail)
             {
-                curve = EditorGUILayout.CurveField("制限度数", curve);
+                curve = EditorGUILayout.CurveField("  制限度数", curve);
             }
 
-            rotateFlags.X = EditorGUILayout.Toggle("X軸", rotateFlags.X);
-            rotateFlags.Y = EditorGUILayout.Toggle("Y軸", rotateFlags.Y);
-            rotateFlags.Z = EditorGUILayout.Toggle("Z軸", rotateFlags.Z);
+            GUILayout.Label("軸");
+            rotateFlags.X = EditorGUILayout.Toggle("  X軸", rotateFlags.X);
+            rotateFlags.Y = EditorGUILayout.Toggle("  Y軸", rotateFlags.Y);
+            rotateFlags.Z = EditorGUILayout.Toggle("  Z軸", rotateFlags.Z);
+
+            GUILayout.Space(spacePixel);
 
             if (GUILayout.Button("回転"))
             {
@@ -262,6 +301,8 @@ namespace PlacemenAssistance
                 }
                 RandomRotationInstance.RandomRotateObjects(rotationAmount, rotateFlags, curve_result);
             }
+
+            GUILayout.Space(spacePixel);
         }
 
         void RandomScalenGUI()
@@ -271,29 +312,39 @@ namespace PlacemenAssistance
 
             using (new EditorGUI.DisabledGroupScope(isRandomScaleDetail))
             {
-                minimum = EditorGUILayout.FloatField("最小", minimum);
-                maximum = EditorGUILayout.FloatField("最大", maximum);
+                minimum = EditorGUILayout.FloatField("  最小", minimum);
+                maximum = EditorGUILayout.FloatField("  最大", maximum);
             }
 
             isRandomScaleDetail = EditorGUILayout.Toggle("詳細", isRandomScaleDetail);
 
             if(isRandomScaleDetail == false)
             {
+
+                GUILayout.Space(spacePixel);
+
                 if (GUILayout.Button("スケール"))
                 {
                     Undo.RecordObjects(Selection.transforms, "Random Scale Objects");
                     RandomScaleInstance.RandomScaleObjects(isRandomScaleDetail, scaleRatio, minimum, maximum);
                 }
+
+                GUILayout.Space(spacePixel);
             }
             else
             {            
-                minScale = EditorGUILayout.Vector3Field("最小", minScale);
-                maxScale = EditorGUILayout.Vector3Field("最大", maxScale);
+                minScale = EditorGUILayout.Vector3Field("  最小", minScale);
+                maxScale = EditorGUILayout.Vector3Field("  最大", maxScale);
+
+                GUILayout.Space(spacePixel);
+
                 if (GUILayout.Button("スケール"))
                 {
                     Undo.RecordObjects(Selection.transforms, "Random Detail Scale Objects");                   
                     RandomScaleInstance.RandomDetailScaleObjects(scaleRatio, minScale, maxScale);
                 }
+
+                GUILayout.Space(spacePixel);
             }
         }
     }
