@@ -2,7 +2,6 @@
 using UnityEditor;
 using System.Linq;
 
-
 public class CommonFunctions
 {
     public static void ParentCenterAligner(Transform[] selectedTransforms)
@@ -15,12 +14,19 @@ public class CommonFunctions
             center += transform.position;
         }
         center /= selectedTransforms.Length;
+
+        var parent = Selection.activeTransform.parent;
+        if (parent != null)
+        {
+            center = parent.InverseTransformPoint(center);
+        }
+
         var group = new GameObject("Group");
         group.transform.position = center;
         Undo.RegisterCreatedObjectUndo(group, "Group Selected");
         group.transform.SetSiblingIndex(firstIndex);
 
-        group.transform.SetParent(Selection.activeTransform.parent, false);
+        group.transform.SetParent(parent, false);
         foreach (var transform in selectedTransforms.OrderBy(t => t.GetSiblingIndex()))
         {
             Undo.SetTransformParent(transform, group.transform, "Group Selected");
@@ -28,4 +34,3 @@ public class CommonFunctions
         Selection.activeGameObject = group;
     }
 }
-
