@@ -69,4 +69,34 @@ namespace PlacemenAssistance
             return AssetDatabase.LoadAssetAtPath<GameObject>(path);
         }
     }
+    
+    public class ObjectSwapper
+    {
+        public void ObjectSwapping(GameObject prefabObject)
+        {
+            if (prefabObject == null)
+            {
+                Debug.LogError("Prefab is not set.");
+                return;
+            }
+
+            foreach (GameObject obj in Selection.gameObjects)
+            {
+                GameObject newObject = (GameObject)PrefabUtility.InstantiatePrefab(prefabObject);
+                if (newObject == null)
+                {
+                    Debug.LogError("Error instantiating prefab.");
+                    return;
+                }
+
+                newObject.transform.position = obj.transform.position;
+                newObject.transform.rotation = obj.transform.rotation;
+                newObject.transform.localScale = obj.transform.localScale;
+                newObject.transform.SetParent(obj.transform.parent, true);
+
+                Undo.RegisterCreatedObjectUndo(newObject, "Swap Prefab");
+                Undo.DestroyObjectImmediate(obj);
+            }
+        }
+    }
 }

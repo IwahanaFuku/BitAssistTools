@@ -11,6 +11,7 @@ namespace PlacemenAssistance
 
         bool isSpecialDuplicateExpanded = false;
         bool isRoundingExpanded = false;
+        bool isObjectSwapper = false;
         bool isRoundingDetailExpanded = false;
         bool isSpecialTransformChangeExpanded = false;
         bool isDistributeExpanded = false;
@@ -27,6 +28,7 @@ namespace PlacemenAssistance
         TransformData duplicateTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.one);
         TransformFlags roundingTransformFlags = new TransformFlags {position = true, rotation = true, scale = true};
         int multiplier = 2;
+        GameObject objectSwapperPrefab = null;
         CoordinateReference ChangeTransformCoordinate = CoordinateReference.Global;
         TransformData ChangeTransform = new TransformData(Vector3.zero, Quaternion.identity, Vector3.zero);
         Axis distributeAxis = Axis.X;
@@ -69,6 +71,13 @@ namespace PlacemenAssistance
             {
                 RoundingGUI();
             }
+
+            isObjectSwapper = EditorGUILayout.Foldout(isObjectSwapper, "選択したオブジェクトを入れ替える");
+            if (isObjectSwapper)
+            {
+                ObjectSwapperGUI();
+            }
+
             isSpecialTransformChangeExpanded = EditorGUILayout.Foldout(isSpecialTransformChangeExpanded, "現在の値をもとにトランスフォームの変更");
             if (isSpecialTransformChangeExpanded)
             {
@@ -157,6 +166,21 @@ namespace PlacemenAssistance
             if (GUILayout.Button("丸める"))
             {
                 RoundingerInstance.Rounding(multiplier, roundingTransformFlags);
+            }
+
+            GUILayout.Space(spacePixel);
+        }
+
+        void ObjectSwapperGUI()
+        {
+            ObjectSwapper ObjectSwapperInstance = new ObjectSwapper();
+            objectSwapperPrefab = (GameObject)EditorGUILayout.ObjectField("オブジェクト", objectSwapperPrefab, typeof(GameObject), false);
+
+            GUILayout.Space(spacePixel);
+
+            if (GUILayout.Button("入れ替え"))
+            {
+                ObjectSwapperInstance.ObjectSwapping(objectSwapperPrefab);
             }
 
             GUILayout.Space(spacePixel);
