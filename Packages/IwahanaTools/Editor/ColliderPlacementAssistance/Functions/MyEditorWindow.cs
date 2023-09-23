@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ColliderPlacemenAssistancer
 {
@@ -131,12 +132,18 @@ namespace ColliderPlacemenAssistancer
             }
         }
 
-
-
         private void Remove(ReorderableList list)
         {
-            Debug.Log("要素を削除");
             int selectedIndex = _reorderableList.index;
+            GameObjectInfo removedItem = _gameObjectList[selectedIndex];
+
+            // ゲームオブジェクトをシーンから削除
+            if (removedItem.GameObject != null)
+            {
+                Undo.DestroyObjectImmediate(removedItem.GameObject);
+            }
+
+            // リストから要素を削除
             _gameObjectList.RemoveAt(selectedIndex);
 
             if (selectedIndex > 0)
@@ -151,11 +158,14 @@ namespace ColliderPlacemenAssistancer
 
         private void OutputListContents()
         {
+            BoxColliderPlacementer.GenerateBoxesBetweenObjects(_gameObjectList.Select(info => info.GameObject).ToList());
+            
             foreach (var gameObjectInfo in _gameObjectList)
             {
                 Debug.Log("GameObject: " + gameObjectInfo.GameObject);
             }
         }
+
 
         private void CreatePointListParent()
         {
