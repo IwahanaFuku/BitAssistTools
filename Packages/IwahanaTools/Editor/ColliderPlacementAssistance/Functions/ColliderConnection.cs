@@ -25,7 +25,7 @@ namespace ColliderPlacemenAssistancer
                 
                 result.Add(DistanceBoxBetweenObjects(GenerateBox(), parent, lastObjectPosition, firstObjectPosition, boxWidth, boxHeight, position));
             }
-            
+
             return result;
         }
 
@@ -48,17 +48,15 @@ namespace ColliderPlacemenAssistancer
             switch (position)
             {
                 case AbstractPosition.Inside:
-                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) - (box.transform.up * (boxHeight / 2.0f)) - (box.transform.right * (boxWidth / 2.0f));
+                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f)) - (box.transform.right * (boxWidth / 2.0f));
                     break;
 
                 case AbstractPosition.Center:
-                    // 中心に移動するための計算ロジックを実装
-                    Vector3 centerOffset = (position2 - position1).normalized * (size / 2.0f);
-                    box.transform.position = position1 + centerOffset - (box.transform.up * (boxHeight / 2.0f)) - (box.transform.right * (boxWidth / 2.0f));
+                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f));
                     break;
 
                 case AbstractPosition.Outside:
-                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) - (box.transform.up * (boxHeight / 2.0f)) + (box.transform.right * (boxWidth / 2.0f));
+                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f)) + (box.transform.right * (boxWidth / 2.0f));
                     break;
 
                 default:

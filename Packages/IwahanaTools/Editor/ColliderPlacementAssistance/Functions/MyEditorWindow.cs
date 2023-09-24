@@ -70,19 +70,40 @@ namespace ColliderPlacemenAssistancer
             isLineSettingExpanded_ = EditorGUILayout.Foldout(isLineSettingExpanded_, "ラインの設定");
             if (isLineSettingExpanded_)
             {
+                bool isClosed = isClosed_; // 変更前の値を保持
                 isClosed_ = EditorGUILayout.Toggle("始点と終点を閉じる", isClosed_);
+                if (isClosed_ != isClosed)
+                {
+                    OutputListContents();
+                }
 
                 GUILayout.Space(spacePixel);
                 
                 GUILayout.Label("基準");
+                AbstractPosition boxColliderAbstractPosition = boxColliderAbstractPosition_;
                 boxColliderAbstractPosition_ = (AbstractPosition)GUILayout.SelectionGrid((int)boxColliderAbstractPosition_, 
                     new string[] { "左揃え", "中心", "右揃え" }, 3);
 
+                if (boxColliderAbstractPosition_ != boxColliderAbstractPosition)
+                {
+                    OutputListContents();
+                }
                 GUILayout.Space(spacePixel);
 
                 GUILayout.Label("ボックスのスケール");
+                float boxWidth = boxWidth_;
                 boxWidth_ = EditorGUILayout.Slider("  幅", boxWidth_, 0f, 2f);
+                if (boxWidth_ != boxWidth)
+                {
+                    OutputListContents();
+                }
+
+                float boxHeight = boxHeight_;
                 boxHeight_ = EditorGUILayout.Slider("  高さ", boxHeight_, 0f, 10f);
+                if (boxHeight_ != boxHeight)
+                {
+                    OutputListContents();
+                }
             }
 
             isCornerSettingExpanded_ = EditorGUILayout.Foldout(isCornerSettingExpanded_, "角の設定");
@@ -93,7 +114,7 @@ namespace ColliderPlacemenAssistancer
                 placementType.Outside = EditorGUILayout.Toggle("  外側", placementType.Outside);
             }
 
-            if (GUILayout.Button("決定"))
+            if (GUILayout.Button("生成"))
             {
                 OutputListContents();
             }
@@ -114,6 +135,7 @@ namespace ColliderPlacemenAssistancer
             reorderableList_.drawElementCallback = DrawElementCallback;
             reorderableList_.onAddCallback += Add;
             reorderableList_.onRemoveCallback += Remove;
+            reorderableList_.onChangedCallback += OnChanged;
 
             EditorApplication.update += CheckObjectPositions;
         }
@@ -167,10 +189,19 @@ namespace ColliderPlacemenAssistancer
 
                 // 新しいゲームオブジェクトをポイントリストペアレントの子に設定
                 newGameObject.transform.parent = pointListParent_.transform;
+                newGameObject.transform.position = pointObjectList_.Last().GameObject.transform.position;
 
                 // レコーダブルオブジェクトのリストにも新しい要素を追加
                 pointObjectList_.Add(new PointObjectInfo { GameObject = newGameObject });
 
+            }
+        }
+
+        void OnChanged(ReorderableList list)
+        {
+            if(isAutoUpdate_)
+            {
+                OutputListContents();
             }
         }
 
@@ -200,6 +231,19 @@ namespace ColliderPlacemenAssistancer
 
         void OutputListContents()
         {
+            // boxColliderObjects_ の要素をすべて削除
+            if (boxColliderObjects_ != null)
+            {
+                foreach (var box in boxColliderObjects_)
+                {
+                    if (box != null)
+                    {
+                        Undo.DestroyObjectImmediate(box);
+                    }
+                }
+                boxColliderObjects_.Clear();
+            }
+
             List<GameObject> objects = pointObjectList_.Select(info => info.GameObject).ToList();
             boxColliderObjects_ = BoxColliderPlacementer.GenerateBoxesBetweenObjects(objects, boxListParent_, isClosed_, boxWidth_, boxHeight_, boxColliderAbstractPosition_);
         }
@@ -214,7 +258,6 @@ namespace ColliderPlacemenAssistancer
         {
             GameObject newBoxListParent = new GameObject("BoxListParent");
             boxListParent_ = newBoxListParent;
-            // ここで新しいボックスペアレントをカスタマイズできる場合、例えば位置の設定などを行うことができます。
         }
         
         private void CheckObjectPositions()
@@ -230,10 +273,6 @@ namespace ColliderPlacemenAssistancer
                 
                 if (pointObjectList_[i].GameObject.transform.hasChanged)
                 {
-
-                    Debug.Log("pointObjectList_ の要素数: " + pointObjectList_.Count);
-                    Debug.Log("boxColliderObjects_ の要素数: " + boxColliderObjects_.Count);
-                    Debug.Log(pointObjectList_[i].GameObject.name + " の位置が変更されました。");
                     if(i == 0)
                     {
                         if(isClosed_)
