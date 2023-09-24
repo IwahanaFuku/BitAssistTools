@@ -9,7 +9,7 @@ namespace ColliderPlacemenAssistancer
     public class WallColliderPlacemenAssistanceEditorWindow : EditorWindow
     {
         int spacePixel = 8;
-        bool isAutoUpdate_ = true;
+        bool isAutoUpdate_ = false;
         bool isPointListExpanded_ = true;
         bool isLineSettingExpanded_ = false;
         bool isCornerSettingExpanded_ = false;
@@ -189,7 +189,10 @@ namespace ColliderPlacemenAssistancer
 
                 // 新しいゲームオブジェクトをポイントリストペアレントの子に設定
                 newGameObject.transform.parent = pointListParent_.transform;
-                newGameObject.transform.position = pointObjectList_.Last().GameObject.transform.position;
+                if(pointObjectList_.Count() > 0)
+                {
+                    newGameObject.transform.position = pointObjectList_.Last().GameObject.transform.position;
+                }
 
                 // レコーダブルオブジェクトのリストにも新しい要素を追加
                 pointObjectList_.Add(new PointObjectInfo { GameObject = newGameObject });
@@ -250,7 +253,7 @@ namespace ColliderPlacemenAssistancer
 
         void CreatepointListParent()
         {
-            GameObject pointListParent = new GameObject("pointListParent_");
+            GameObject pointListParent = new GameObject("PointListParent");
             pointListParent_ = pointListParent;
         }
         
@@ -262,7 +265,13 @@ namespace ColliderPlacemenAssistancer
         
         private void CheckObjectPositions()
         {
-            if (!isAutoUpdate_ || pointObjectList_ == null)
+            if (! isAutoUpdate_)
+                return;
+
+            if(pointObjectList_ == null)
+                return;
+
+            if(pointObjectList_.Count() < 2)
                 return;
 
             for(int i = 0; i < pointObjectList_.Count(); i++)
@@ -277,11 +286,15 @@ namespace ColliderPlacemenAssistancer
                     {
                         if(isClosed_)
                         {
+                            /* Debug.Log("pointObjectList_ の要素数: " + pointObjectList_.Count);
+                            Debug.Log("boxColliderObjects_ の要素数: " + boxColliderObjects_.Count);
+                            Debug.Log(pointObjectList_[i].GameObject.name + " の位置が変更されました。"); */
                             BoxColliderPlacementer.DistanceBoxBetweenObjects
                             (
-                                boxColliderObjects_[boxColliderObjects_.Count()],
+
+                                boxColliderObjects_[pointObjectList_.Count() - 1],
                                 boxListParent_,
-                                pointObjectList_[pointObjectList_.Count()].GameObject.transform.position,
+                                pointObjectList_[boxColliderObjects_.Count() - 1].GameObject.transform.position,
                                 pointObjectList_[i].GameObject.transform.position,
                                 boxWidth_,
                                 boxHeight_,
