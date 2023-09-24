@@ -8,10 +8,10 @@ namespace ColliderPlacemenAssistancer
 {
     // カスタムクラスを定義
     [System.Serializable]
-    public class GameObjectInfo
+    public class PointObjectInfo
     {
         [SerializeField] // シリアライズ属性を追加
-        private GameObject _gameObject;
+        GameObject _gameObject;
 
         // ゲッターとセッターを追加
         public GameObject GameObject
@@ -20,13 +20,37 @@ namespace ColliderPlacemenAssistancer
             set { _gameObject = value; }
         }
     }
+    public enum AbstractPosition
+    {
+        Inside,
+        Center,
+        Outside
+    }
+
+    public struct PlacementType
+    {
+        public bool Inside;
+        public bool Outside;
+    }
 
     public class WallColliderPlacemenAssistanceEditorWindow : EditorWindow
     {
-        private bool isPointListExpanded = true;
-        GameObject pointListParent = null;
-        private ReorderableList _reorderableList;
-        private List<GameObjectInfo> _gameObjectList = new List<GameObjectInfo>(); // 表示する要素
+        int spacePixel = 8;
+        bool isAutoUpdate_ = true;
+        bool isPointListExpanded_ = true;
+        bool isLineSettingExpanded_ = false;
+        bool isCornerSettingExpanded_ = false;
+        PlacementType placementType = new PlacementType {Inside = false, Outside = false};
+        GameObject pointListParent_ = null;
+        GameObject boxListParent_ = null;
+        ReorderableList reorderableList_;
+        List<PointObjectInfo> pointObjectList_ = new List<PointObjectInfo>(); // 表示する要素
+        bool isClosed_ = false;
+
+        float boxWidth_ = 1f;
+        float boxHeight_ = 1f;
+        
+        AbstractPosition boxColliderAbstractPosition_ = AbstractPosition.Center;
 
         [MenuItem("MyTools/ウォールコライダー配置支援ツール", priority = 11)]
         public static void ShowWindow()
@@ -34,30 +58,65 @@ namespace ColliderPlacemenAssistancer
             GetWindow<WallColliderPlacemenAssistanceEditorWindow>("コライダー配置支援ツール");
         }
 
-        private void OnGUI()
+        void OnGUI()
         {
-            EditorGUILayout.Space(); // 間隔を空ける
+            isAutoUpdate_ = EditorGUILayout.Toggle("自動アップデート", isAutoUpdate_);
+
+            GUILayout.Space(spacePixel);
 
             // シーン上のオブジェクトを選択可能にする
-            GameObject newPointListParent = (GameObject)EditorGUILayout.ObjectField("ポイントリストペアレント", pointListParent, typeof(GameObject), true);
+            GameObject pointListParent = (GameObject)EditorGUILayout.ObjectField("ポイントリストペアレント", pointListParent_, typeof(GameObject), true);
 
-            if (newPointListParent != pointListParent)
+            if (pointListParent != pointListParent_)
             {
                 // ポイントリストペアレントが変更された場合、既存のリストを破棄して新しいリストを構築
-                pointListParent = newPointListParent;
-                _gameObjectList.Clear(); // 既存のリストをクリア
+                pointListParent_ = pointListParent;
+                pointObjectList_.Clear(); // 既存のリストをクリア
                 AddChildrenToGameObjectList(); // 新しいリストを構築
             }
 
             if (GUILayout.Button("ポイントリストペアレントを追加"))
             {
-                CreatePointListParent();
+                CreatepointListParent();
             }
 
-            isPointListExpanded = EditorGUILayout.Foldout(isPointListExpanded, "ポイントリスト");
-            if (isPointListExpanded)
+            boxListParent_ = (GameObject)EditorGUILayout.ObjectField("ボックスリストペアレント", boxListParent_, typeof(GameObject), true);
+
+            if (GUILayout.Button("ボックスペアレントを追加"))
             {
-                _reorderableList.DoLayoutList();
+                CreateBoxListParent();
+            }
+
+            isPointListExpanded_ = EditorGUILayout.Foldout(isPointListExpanded_, "ポイントリスト");
+            if (isPointListExpanded_)
+            {
+                reorderableList_.DoLayoutList();
+            }
+
+            isLineSettingExpanded_ = EditorGUILayout.Foldout(isLineSettingExpanded_, "ラインの設定");
+            if (isLineSettingExpanded_)
+            {
+                GUILayout.Label("基準");
+                boxColliderAbstractPosition_ = (AbstractPosition)GUILayout.SelectionGrid((int)boxColliderAbstractPosition_, 
+                    new string[] { "左揃え", "中心", "右揃え" }, 3);
+
+                GUILayout.Space(spacePixel);
+
+                GUILayout.Label("ボックスのスケール");
+                boxWidth_ = EditorGUILayout.Slider("  幅", boxWidth_, 0f, 2f);
+                boxHeight_ = EditorGUILayout.Slider("  高さ", boxHeight_, 0f, 10f);
+
+                GUILayout.Space(spacePixel);
+
+                isClosed_ = EditorGUILayout.Toggle("始点と終点を閉じる", isClosed_);
+            }
+
+            isCornerSettingExpanded_ = EditorGUILayout.Foldout(isCornerSettingExpanded_, "角の設定");
+            if (isCornerSettingExpanded_)
+            {
+                GUILayout.Label("配置オプション");
+                placementType.Inside = EditorGUILayout.Toggle("  内側", placementType.Inside);
+                placementType.Outside = EditorGUILayout.Toggle("  外側", placementType.Outside);
             }
 
             if (GUILayout.Button("決定"))
@@ -66,24 +125,24 @@ namespace ColliderPlacemenAssistancer
             }
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
-            _reorderableList = new ReorderableList
+            reorderableList_ = new ReorderableList
                 (
-                elements: _gameObjectList,
-                elementType: typeof(GameObjectInfo),
+                elements: pointObjectList_,
+                elementType: typeof(PointObjectInfo),
                 draggable: true,
                 displayHeader: false,
                 displayAddButton: true,
                 displayRemoveButton: true
                 );
 
-            _reorderableList.drawElementCallback = DrawElementCallback;
-            _reorderableList.onAddCallback += Add;
-            _reorderableList.onRemoveCallback += Remove;
+            reorderableList_.drawElementCallback = DrawElementCallback;
+            reorderableList_.onAddCallback += Add;
+            reorderableList_.onRemoveCallback += Remove;
         }
 
-        private void DrawElementCallback(Rect rect, int index, bool isactive, bool isfocused)
+        void DrawElementCallback(Rect rect, int index, bool isactive, bool isfocused)
         {
             float originalWidth = rect.width;
             int ratio = 6;
@@ -93,24 +152,24 @@ namespace ColliderPlacemenAssistancer
             rect.x += originalWidth / ratio;
 
             // オブジェクトを選択するフィールドを描画
-            _gameObjectList[index].GameObject = (GameObject)EditorGUI.ObjectField(rect, _gameObjectList[index].GameObject, typeof(GameObject), true);
+            pointObjectList_[index].GameObject = (GameObject)EditorGUI.ObjectField(rect, pointObjectList_[index].GameObject, typeof(GameObject), true);
 
             // rectを元の幅に戻す
             rect.width = originalWidth;
         }
 
-        private void Add(ReorderableList list)
+        void Add(ReorderableList list)
         {
             string baseName = "Point_";
             int index = 0;
 
-            if (pointListParent != null)
+            if (pointListParent_ != null)
             {
                 // 既存の子オブジェクトから穴を埋める番号を見つける
                 while (true)
                 {
                     string candidateName = baseName + index;
-                    Transform existingChild = pointListParent.transform.Find(candidateName);
+                    Transform existingChild = pointListParent_.transform.Find(candidateName);
 
                     if (existingChild == null)
                     {
@@ -125,17 +184,18 @@ namespace ColliderPlacemenAssistancer
                 GameObject newGameObject = new GameObject(newName);
 
                 // 新しいゲームオブジェクトをポイントリストペアレントの子に設定
-                newGameObject.transform.parent = pointListParent.transform;
+                newGameObject.transform.parent = pointListParent_.transform;
 
                 // レコーダブルオブジェクトのリストにも新しい要素を追加
-                _gameObjectList.Add(new GameObjectInfo { GameObject = newGameObject });
+                pointObjectList_.Add(new PointObjectInfo { GameObject = newGameObject });
+
             }
         }
 
-        private void Remove(ReorderableList list)
+        void Remove(ReorderableList list)
         {
-            int selectedIndex = _reorderableList.index;
-            GameObjectInfo removedItem = _gameObjectList[selectedIndex];
+            int selectedIndex = reorderableList_.index;
+            PointObjectInfo removedItem = pointObjectList_[selectedIndex];
 
             // ゲームオブジェクトをシーンから削除
             if (removedItem.GameObject != null)
@@ -144,47 +204,50 @@ namespace ColliderPlacemenAssistancer
             }
 
             // リストから要素を削除
-            _gameObjectList.RemoveAt(selectedIndex);
+            pointObjectList_.RemoveAt(selectedIndex);
 
             if (selectedIndex > 0)
             {
-                _reorderableList.index = selectedIndex - 1;
+                reorderableList_.index = selectedIndex - 1;
             }
-            else if (_gameObjectList.Count > 0)
+            else if (pointObjectList_.Count > 0)
             {
-                _reorderableList.index = 0;
+                reorderableList_.index = 0;
             }
         }
 
-        private void OutputListContents()
+        void OutputListContents()
         {
-            BoxColliderPlacementer.GenerateBoxesBetweenObjects(_gameObjectList.Select(info => info.GameObject).ToList());
-            
-            foreach (var gameObjectInfo in _gameObjectList)
-            {
-                Debug.Log("GameObject: " + gameObjectInfo.GameObject);
-            }
+            List<GameObject> objects = pointObjectList_.Select(info => info.GameObject).ToList();
+            BoxColliderPlacementer.GenerateBoxesBetweenObjects(objects, isClosed_, boxWidth_, boxHeight_, boxColliderAbstractPosition_, boxListParent_);
+        }
+
+        void CreatepointListParent()
+        {
+            GameObject pointListParent = new GameObject("pointListParent_");
+            pointListParent_ = pointListParent;
+        }
+        
+        void CreateBoxListParent()
+        {
+            GameObject newBoxListParent = new GameObject("BoxListParent");
+            boxListParent_ = newBoxListParent;
+            // ここで新しいボックスペアレントをカスタマイズできる場合、例えば位置の設定などを行うことができます。
         }
 
 
-        private void CreatePointListParent()
+        void AddChildrenToGameObjectList()
         {
-            GameObject newPointListParent = new GameObject("PointListParent");
-            pointListParent = newPointListParent;
-        }
-
-        private void AddChildrenToGameObjectList()
-        {
-            if (pointListParent != null)
+            if (pointListParent_ != null)
             {
                 // ポイントリストペアレントの子オブジェクトをポイントリストに追加
-                Transform[] children = pointListParent.GetComponentsInChildren<Transform>(true);
+                Transform[] children = pointListParent_.GetComponentsInChildren<Transform>(true);
 
                 foreach (var child in children)
                 {
-                    if (child.gameObject != pointListParent)
+                    if (child.gameObject != pointListParent_)
                     {
-                        _gameObjectList.Add(new GameObjectInfo { GameObject = child.gameObject });
+                        pointObjectList_.Add(new PointObjectInfo { GameObject = child.gameObject });
                     }
                 }
             }
