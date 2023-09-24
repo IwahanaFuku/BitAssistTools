@@ -6,33 +6,6 @@ using System.Linq;
 
 namespace ColliderPlacemenAssistancer
 {
-    // カスタムクラスを定義
-    [System.Serializable]
-    public class PointObjectInfo
-    {
-        [SerializeField] // シリアライズ属性を追加
-        GameObject _gameObject;
-
-        // ゲッターとセッターを追加
-        public GameObject GameObject
-        {
-            get { return _gameObject; }
-            set { _gameObject = value; }
-        }
-    }
-    public enum AbstractPosition
-    {
-        Inside,
-        Center,
-        Outside
-    }
-
-    public struct PlacementType
-    {
-        public bool Inside;
-        public bool Outside;
-    }
-
     public class WallColliderPlacemenAssistanceEditorWindow : EditorWindow
     {
         int spacePixel = 8;
@@ -45,6 +18,7 @@ namespace ColliderPlacemenAssistancer
         GameObject boxListParent_ = null;
         ReorderableList reorderableList_;
         List<PointObjectInfo> pointObjectList_ = new List<PointObjectInfo>(); // 表示する要素
+        List<GameObject> boxColliderObjects_ = null;
         bool isClosed_ = false;
 
         float boxWidth_ = 1f;
@@ -57,11 +31,11 @@ namespace ColliderPlacemenAssistancer
         {
             GetWindow<WallColliderPlacemenAssistanceEditorWindow>("コライダー配置支援ツール");
         }
+        
 
         void OnGUI()
         {
             isAutoUpdate_ = EditorGUILayout.Toggle("自動アップデート", isAutoUpdate_);
-
             GUILayout.Space(spacePixel);
 
             // シーン上のオブジェクトを選択可能にする
@@ -96,6 +70,10 @@ namespace ColliderPlacemenAssistancer
             isLineSettingExpanded_ = EditorGUILayout.Foldout(isLineSettingExpanded_, "ラインの設定");
             if (isLineSettingExpanded_)
             {
+                isClosed_ = EditorGUILayout.Toggle("始点と終点を閉じる", isClosed_);
+
+                GUILayout.Space(spacePixel);
+                
                 GUILayout.Label("基準");
                 boxColliderAbstractPosition_ = (AbstractPosition)GUILayout.SelectionGrid((int)boxColliderAbstractPosition_, 
                     new string[] { "左揃え", "中心", "右揃え" }, 3);
@@ -105,10 +83,6 @@ namespace ColliderPlacemenAssistancer
                 GUILayout.Label("ボックスのスケール");
                 boxWidth_ = EditorGUILayout.Slider("  幅", boxWidth_, 0f, 2f);
                 boxHeight_ = EditorGUILayout.Slider("  高さ", boxHeight_, 0f, 10f);
-
-                GUILayout.Space(spacePixel);
-
-                isClosed_ = EditorGUILayout.Toggle("始点と終点を閉じる", isClosed_);
             }
 
             isCornerSettingExpanded_ = EditorGUILayout.Foldout(isCornerSettingExpanded_, "角の設定");
@@ -140,6 +114,14 @@ namespace ColliderPlacemenAssistancer
             reorderableList_.drawElementCallback = DrawElementCallback;
             reorderableList_.onAddCallback += Add;
             reorderableList_.onRemoveCallback += Remove;
+
+            EditorApplication.update += CheckObjectPositions;
+        }
+
+        void OnDisable()
+        {
+            // エディタのアップデートイベントから位置確認関数を削除
+            EditorApplication.update -= CheckObjectPositions;
         }
 
         void DrawElementCallback(Rect rect, int index, bool isactive, bool isfocused)
@@ -219,7 +201,7 @@ namespace ColliderPlacemenAssistancer
         void OutputListContents()
         {
             List<GameObject> objects = pointObjectList_.Select(info => info.GameObject).ToList();
-            BoxColliderPlacementer.GenerateBoxesBetweenObjects(objects, isClosed_, boxWidth_, boxHeight_, boxColliderAbstractPosition_, boxListParent_);
+            boxColliderObjects_ = BoxColliderPlacementer.GenerateBoxesBetweenObjects(objects, boxListParent_, isClosed_, boxWidth_, boxHeight_, boxColliderAbstractPosition_);
         }
 
         void CreatepointListParent()
@@ -234,7 +216,106 @@ namespace ColliderPlacemenAssistancer
             boxListParent_ = newBoxListParent;
             // ここで新しいボックスペアレントをカスタマイズできる場合、例えば位置の設定などを行うことができます。
         }
+        
+        private void CheckObjectPositions()
+        {
+            if (!isAutoUpdate_ || pointObjectList_ == null)
+                return;
 
+            for(int i = 0; i < pointObjectList_.Count(); i++)
+            {
+                if (pointObjectList_[i].GameObject == null || boxColliderObjects_ == null)
+                    continue;
+
+                
+                if (pointObjectList_[i].GameObject.transform.hasChanged)
+                {
+
+                    Debug.Log("pointObjectList_ の要素数: " + pointObjectList_.Count);
+                    Debug.Log("boxColliderObjects_ の要素数: " + boxColliderObjects_.Count);
+                    Debug.Log(pointObjectList_[i].GameObject.name + " の位置が変更されました。");
+                    if(i == 0)
+                    {
+                        if(isClosed_)
+                        {
+                            BoxColliderPlacementer.DistanceBoxBetweenObjects
+                            (
+                                boxColliderObjects_[boxColliderObjects_.Count()],
+                                boxListParent_,
+                                pointObjectList_[pointObjectList_.Count()].GameObject.transform.position,
+                                pointObjectList_[i].GameObject.transform.position,
+                                boxWidth_,
+                                boxHeight_,
+                                boxColliderAbstractPosition_
+                            );
+                        }
+
+                        BoxColliderPlacementer.DistanceBoxBetweenObjects
+                        (
+                            boxColliderObjects_[i],
+                            boxListParent_,
+                            pointObjectList_[i].GameObject.transform.position,
+                            pointObjectList_[i + 1].GameObject.transform.position,
+                            boxWidth_,
+                            boxHeight_,
+                            boxColliderAbstractPosition_
+                        );
+                    }
+                    else if(i == pointObjectList_.Count() - 1)
+                    {
+                        BoxColliderPlacementer.DistanceBoxBetweenObjects
+                        (
+                            boxColliderObjects_[i - 1],
+                            boxListParent_,
+                            pointObjectList_[i - 1].GameObject.transform.position,
+                            pointObjectList_[i].GameObject.transform.position,
+                            boxWidth_,
+                            boxHeight_,
+                            boxColliderAbstractPosition_
+                        );
+
+                        if(isClosed_)
+                        {
+                            BoxColliderPlacementer.DistanceBoxBetweenObjects
+                            (
+                                boxColliderObjects_[i],
+                                boxListParent_,
+                                pointObjectList_[i].GameObject.transform.position,
+                                pointObjectList_[0].GameObject.transform.position,
+                                boxWidth_,
+                                boxHeight_,
+                                boxColliderAbstractPosition_
+                            );
+                        }
+                    }
+                    else
+                    {
+                        BoxColliderPlacementer.DistanceBoxBetweenObjects
+                        (
+                            boxColliderObjects_[i - 1],
+                            boxListParent_,
+                            pointObjectList_[i - 1].GameObject.transform.position,
+                            pointObjectList_[i].GameObject.transform.position,
+                            boxWidth_,
+                            boxHeight_,
+                            boxColliderAbstractPosition_
+                        );
+
+                        BoxColliderPlacementer.DistanceBoxBetweenObjects
+                        (
+                            boxColliderObjects_[i],
+                            boxListParent_,
+                            pointObjectList_[i].GameObject.transform.position,
+                            pointObjectList_[i + 1].GameObject.transform.position,
+                            boxWidth_,
+                            boxHeight_,
+                            boxColliderAbstractPosition_
+                        );
+                    }
+                    pointObjectList_[i].GameObject.transform.hasChanged = false;
+                }
+            }
+        }
 
         void AddChildrenToGameObjectList()
         {
