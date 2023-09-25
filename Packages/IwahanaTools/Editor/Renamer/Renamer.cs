@@ -6,10 +6,10 @@ using System.IO;
 
 public class Renamer : EditorWindow
 {
-    private bool renameToMaterialNameAccordion = true;
-    private bool renameToTextureNameAccordion = true;
-    private bool addObjectNumberAccordion = true;
-    private bool removeObjectNumberAccordion = true;
+    bool renameToMaterialNameAccordion = true;
+    bool renameToTextureNameAccordion = true;
+    bool addObjectNumberAccordion = true;
+    bool removeObjectNumberAccordion = true;
 
     [MenuItem("Iwahana Tools/リネーマー", priority =50)]
     public static void ShowWindow()
@@ -57,7 +57,7 @@ public class Renamer : EditorWindow
     }
 
 
-    private void RenameToTextureName()
+    static void RenameToTextureName()
     {
         Undo.RecordObjects(Selection.gameObjects, "Change Texture Name");
         Object[] selectedObjects = Selection.objects;
@@ -81,7 +81,7 @@ public class Renamer : EditorWindow
         }
     }
 
-    private void RenameToMaterialName()
+    static void RenameToMaterialName()
     {
         Undo.RecordObjects(Selection.gameObjects, "Change Material Name");
         GameObject[] selectedObjects = Selection.gameObjects;
@@ -104,7 +104,7 @@ public class Renamer : EditorWindow
         }
     }
 
-    private void AddObjectNumber()
+    static void AddObjectNumber()
     {
         Undo.RecordObjects(Selection.gameObjects, "Add Object Number");
         GameObject[] selectedObjects = Selection.gameObjects;
@@ -138,7 +138,7 @@ public class Renamer : EditorWindow
         }
     }
 
-    private int GetDepth(Transform transform)
+    static int GetDepth(Transform transform)
     {
         int depth = 0;
         while (transform.parent != null)
@@ -149,7 +149,7 @@ public class Renamer : EditorWindow
         return depth;
     }
 
-    private void RemoveObjectNumber()
+    static void RemoveObjectNumber()
     {
         Undo.RecordObjects(Selection.gameObjects, "Remove Object Number");
         GameObject[] gameObjects = Selection.gameObjects;

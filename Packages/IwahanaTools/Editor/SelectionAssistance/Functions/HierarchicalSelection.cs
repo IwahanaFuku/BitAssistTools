@@ -6,7 +6,7 @@ namespace SelectionAsistance
 {
     public class HierarchicalSelectionObjects
     {    
-        public void HierarchicalSelecter(int parentCount, bool onlyOrder, bool selectChildlen)
+        public static void HierarchicalSelecter(int parentCount, bool onlyOrder, bool selectChildlen)
         {
             GameObject gameObject = Selection.activeGameObject;
             int targetCurrentDepth = GetDepth(gameObject);
@@ -16,7 +16,7 @@ namespace SelectionAsistance
             ChildlenSelecter(selectChildlen, childObjects);
         }
 
-        GameObject[] SameOrderSelecter(bool onlyOrder, GameObject parentObject, int objectIndex, int parentCount, int targetCurrentDepth)
+        static GameObject[] SameOrderSelecter(bool onlyOrder, GameObject parentObject, int objectIndex, int parentCount, int targetCurrentDepth)
         {
             GameObject[] childObjects = new GameObject[0];
 
@@ -33,7 +33,7 @@ namespace SelectionAsistance
             return childObjects;
         }
 
-        void ChildlenSelecter(bool selectChildlen, GameObject[] childObjects)
+        static void ChildlenSelecter(bool selectChildlen, GameObject[] childObjects)
         {
             if(selectChildlen)
             {
@@ -50,7 +50,7 @@ namespace SelectionAsistance
             }
         }
 
-        GameObject GetPalentObject(GameObject gameObject, int parentCount)
+        static GameObject GetPalentObject(GameObject gameObject, int parentCount)
         {
             GameObject parentObject = gameObject.transform.parent?.gameObject;
             if (parentCount == 0)
@@ -73,7 +73,7 @@ namespace SelectionAsistance
             return parentObject;
         }
 
-        GameObject[] GetChildObjects(GameObject targetObject, int childDepth, int targetCurrentDepth)
+        static GameObject[] GetChildObjects(GameObject targetObject, int childDepth, int targetCurrentDepth)
         {
             if (childDepth == 0)
             {
@@ -96,7 +96,7 @@ namespace SelectionAsistance
             return selectedObjects.ToArray();
         }
 
-        void GetChildObjectsRecursive(GameObject parentObject, int currentDepth, int maxDepth, ref List<GameObject> childObjects)
+        static void GetChildObjectsRecursive(GameObject parentObject, int currentDepth, int maxDepth, ref List<GameObject> childObjects)
         {
             foreach (Transform childTransform in parentObject.transform)
             {
@@ -109,7 +109,7 @@ namespace SelectionAsistance
             }
         }
 
-        int GetDepth(GameObject obj)
+        static int GetDepth(GameObject obj)
         {
             int depth = 0;
             Transform parent = obj.transform.parent;
@@ -121,7 +121,7 @@ namespace SelectionAsistance
             return depth;
         }
 
-        GameObject[] SameOrder(GameObject[] objects, int Index)
+        static GameObject[] SameOrder(GameObject[] objects, int Index)
         {
             List<GameObject> selectedObjects = new List<GameObject>();
             for(int i = 0; i < objects.Length; i++)

@@ -5,7 +5,7 @@ using UnityEngine;
 public static class ResetPositionOnlyParent
     {
     [MenuItem( "CONTEXT/Transform/Reset Position Only Parent" )]
-    private static void Reset( MenuCommand command )
+    static void Reset( MenuCommand command )
     {
         var parent = command.context as Transform;
         var tempParent = new GameObject();

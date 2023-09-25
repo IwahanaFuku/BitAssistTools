@@ -6,7 +6,7 @@ namespace SelectionAsistance
 {
     public class SelectionHistoryFunction
     {    
-        public List<SelectionObjectsData> AddSelection(int maxHistoryCount, List<SelectionObjectsData> historyList)
+        public static List<SelectionObjectsData> AddSelection(int maxHistoryCount, List<SelectionObjectsData> historyList)
         {
             SelectionObjectsData[] selectionObjectsData = new SelectionObjectsData[1];
             Object[] selectedObjects = Selection.objects;
@@ -28,7 +28,7 @@ namespace SelectionAsistance
             return historyList;
         }
 
-        public void LoadSelection(List<SelectionObjectsData> historyList)
+        public static void LoadSelection(List<SelectionObjectsData> historyList)
         {
             List<Object> selectedObjects = new List<Object>();
             foreach (SelectionObjectsData data in historyList)
@@ -41,7 +41,7 @@ namespace SelectionAsistance
             Selection.objects = selectedObjects.ToArray();
         }
 
-        public List<SelectionObjectsData> DeleatSelection(List<SelectionObjectsData> historyList)
+        public static List<SelectionObjectsData> DeleatSelection(List<SelectionObjectsData> historyList)
         {
             List<int> indicesToRemove = new List<int>();
             for (int i = 0; i < historyList.Count; i++)
@@ -65,7 +65,7 @@ namespace SelectionAsistance
             return historyList;
         }
 
-        public List<SelectionObjectsData> AllSelection(List<SelectionObjectsData> historyList)
+        public static List<SelectionObjectsData> AllSelection(List<SelectionObjectsData> historyList)
         {
             bool allTrue = true;
             foreach (SelectionObjectsData data in historyList)

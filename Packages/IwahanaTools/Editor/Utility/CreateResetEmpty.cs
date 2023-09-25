@@ -7,7 +7,7 @@ using UnityEngine;
 public class CreateTransformResetObject : Editor
 {
     [MenuItem("GameObject/Create Reset Empty", false, -1)]
-    private static void CreateTransformReset(MenuCommand menuCommand)
+    static void CreateTransformReset(MenuCommand menuCommand)
     {
         Transform parentTransform = null;
 

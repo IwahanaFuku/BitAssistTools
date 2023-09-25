@@ -2,6 +2,26 @@
 
 namespace PlacemenAssistance
 {
+    public enum AlignType
+    {
+        Maximum,
+        Center,
+        Minimum
+    }
+
+    public enum Axis
+    {
+        X,
+        Y,
+        Z
+    }
+
+    public enum CoordinateReference
+    {
+        Global,
+        Local
+    }
+    
     public struct TransformData
     {
         public Vector3 position;

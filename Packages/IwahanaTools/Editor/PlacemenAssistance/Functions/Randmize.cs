@@ -8,7 +8,7 @@ namespace PlacemenAssistance
 {
     public class RandomPosition
     {
-        public void RandomPositionObjects(float radius, AxisFlags axisFlags)
+        public static void RandomPositionObjects(float radius, AxisFlags axisFlags)
         {
             Transform[] selectedTransforms = Selection.transforms;
 
@@ -47,7 +47,7 @@ namespace PlacemenAssistance
 
     public class RandomRotate
     {
-        public void RandomRotateObjects(float rotationAmount, AxisFlags axisFlags, AnimationCurve curve)
+        public static void RandomRotateObjects(float rotationAmount, AxisFlags axisFlags, AnimationCurve curve)
         {
             Undo.RecordObjects(Selection.transforms, "Random Rotate Objects");
 
@@ -89,7 +89,7 @@ namespace PlacemenAssistance
 
     public class RandomScale
     {
-        public void RandomScaleObjects(bool isDetail, float scaleRatio, float minimum, float maximum)
+        public static void RandomScaleObjects(bool isDetail, float scaleRatio, float minimum, float maximum)
         {
             Undo.RecordObjects(Selection.objects, "Randomize Scale");
             foreach (Object selectedObject in Selection.objects)
@@ -107,7 +107,7 @@ namespace PlacemenAssistance
             }
         }
 
-        public void RandomDetailScaleObjects(float scaleRatio, Vector3 minScale, Vector3 maxScale)
+        public static void RandomDetailScaleObjects(float scaleRatio, Vector3 minScale, Vector3 maxScale)
         {
             foreach (Transform transform in Selection.transforms)
             {

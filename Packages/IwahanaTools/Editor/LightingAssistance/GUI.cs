@@ -28,14 +28,12 @@ namespace LightingAssistance
 
         void IntensityValueCalculationGUI()
         {
-            IntensityValueCalculationer IntensityValueCalculationerInstance = new IntensityValueCalculationer();
-
             selectedOperation = (FourArithmeticOperations)GUILayout.SelectionGrid((int)selectedOperation, new string[] { "加算", "乗算" }, 2);
             intensityValue = EditorGUILayout.FloatField("Intensity Value", intensityValue);
             
             if (GUILayout.Button("適用"))
             {
-                IntensityValueCalculationerInstance.IntensityValueCalculation(intensityValue, selectedOperation);
+                IntensityValueCalculationer.IntensityValueCalculation(intensityValue, selectedOperation);
             }
         }
     }

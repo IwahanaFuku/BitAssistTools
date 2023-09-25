@@ -125,8 +125,6 @@ namespace PlacemenAssistance
 
         void SpecialDuplicateGUI()
         {
-            SpecialDuplicater SpecialDuplicaterInstance = new SpecialDuplicater();
-
             duplicateTransformCoordinate = (CoordinateReference)GUILayout.SelectionGrid((int)duplicateTransformCoordinate, new string[] {"Global", "Local"}, 2);
             int maxCopyCount = 100;
             duplicateTransform.position = EditorGUILayout.Vector3Field("  Position", duplicateTransform.position);
@@ -145,7 +143,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("複製"))
             {
-                SpecialDuplicaterInstance.SpecialDuplicate(duplicateTransformCoordinate, duplicateTransform, copyCount);
+                SpecialDuplicater.SpecialDuplicate(duplicateTransformCoordinate, duplicateTransform, copyCount);
             }
 
             GUILayout.Space(spacePixel);
@@ -153,8 +151,6 @@ namespace PlacemenAssistance
 
         void RoundingGUI()
         {
-            Roundinger RoundingerInstance = new Roundinger();
-
             multiplier = (int)EditorGUILayout.Slider("小数点の位", multiplier, 0f, 6f);
 
             roundingTransformFlags.position = EditorGUILayout.Toggle("  Position", roundingTransformFlags.position);
@@ -165,7 +161,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("丸める"))
             {
-                RoundingerInstance.Rounding(multiplier, roundingTransformFlags);
+                Roundinger.Rounding(multiplier, roundingTransformFlags);
             }
 
             GUILayout.Space(spacePixel);
@@ -173,14 +169,13 @@ namespace PlacemenAssistance
 
         void ObjectSwapperGUI()
         {
-            ObjectSwapper ObjectSwapperInstance = new ObjectSwapper();
             objectSwapperPrefab = (GameObject)EditorGUILayout.ObjectField("オブジェクト", objectSwapperPrefab, typeof(GameObject), false);
 
             GUILayout.Space(spacePixel);
 
             if (GUILayout.Button("入れ替え"))
             {
-                ObjectSwapperInstance.ObjectSwapping(objectSwapperPrefab);
+                ObjectSwapper.ObjectSwapping(objectSwapperPrefab);
             }
 
             GUILayout.Space(spacePixel);
@@ -188,8 +183,6 @@ namespace PlacemenAssistance
 
         void SpecialTransformChangeGUI()
         {
-            ObjectTransformChanger ObjectTransformChangerInstance = new ObjectTransformChanger();
-
             ChangeTransformCoordinate = (CoordinateReference)GUILayout.SelectionGrid((int)ChangeTransformCoordinate, new string[] {"Global", "Local"}, 2);
             
             ChangeTransform.position = EditorGUILayout.Vector3Field("  Position", ChangeTransform.position);
@@ -206,7 +199,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("変更"))
             {
-                ObjectTransformChangerInstance.ObjectTransformChange(ChangeTransformCoordinate, ChangeTransform);
+                ObjectTransformChanger.ObjectTransformChange(ChangeTransformCoordinate, ChangeTransform);
             }
 
             GUILayout.Space(spacePixel);
@@ -214,8 +207,6 @@ namespace PlacemenAssistance
 
         void SortAndDistributeObjectsGUI()
         {
-            ObjectDistributor ObjectDistributorInstance = new ObjectDistributor();
-
             GUILayout.Label("軸");
             distributeAxis = (Axis)GUILayout.SelectionGrid((int)distributeAxis, new string[] { "X軸", "Y軸", "Z軸" }, 3);
 
@@ -223,7 +214,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("分布"))
             {
-                ObjectDistributorInstance.SortAndDistributeObjects(distributeAxis);
+                ObjectDistributor.SortAndDistributeObjects(distributeAxis);
             }
 
             GUILayout.Space(spacePixel);
@@ -231,8 +222,6 @@ namespace PlacemenAssistance
 
         void ArrangerObjectsGUI()
         {
-            ObjectAligner AlignObjectsInstance = new ObjectAligner();
-
             GUILayout.Label("軸");
             arrangerAxis = (Axis)GUILayout.SelectionGrid((int)arrangerAxis, 
                 new string[] { "X軸", "Y軸", "Z軸" }, 3);
@@ -245,7 +234,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("整列"))
             {
-                AlignObjectsInstance.AlignObjects(arrangerAxis, alignType);
+                ObjectAligner.AlignObjects(arrangerAxis, alignType);
             }
 
             GUILayout.Space(spacePixel);
@@ -253,8 +242,6 @@ namespace PlacemenAssistance
 
         void PaddingerObjectsGUI()
         {
-            ObjectPaddinger PaddingObjectsInstance = new ObjectPaddinger();
-
             paddingSpace = EditorGUILayout.Slider("パディング間隔", paddingSpace, 0f, 2f);
 
             GUILayout.Label("軸");
@@ -272,7 +259,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("パディング"))
             {
-                PaddingObjectsInstance.PaddingObjects(isPaddingReferencePointExpanded, paddingSpace, referencePoint, padingAxisFlags);
+                ObjectPaddinger.PaddingObjects(isPaddingReferencePointExpanded, paddingSpace, referencePoint, padingAxisFlags);
             }
 
             GUILayout.Space(spacePixel);
@@ -280,7 +267,6 @@ namespace PlacemenAssistance
 
         void randomPositionGUI()
         {
-            RandomPosition RandomPositionInstance = new RandomPosition();
             radius = EditorGUILayout.Slider("半径:", radius, 0, 10);
 
             GUILayout.Label("軸");
@@ -292,7 +278,7 @@ namespace PlacemenAssistance
 
             if (GUILayout.Button("移動"))
             {
-                RandomPositionInstance.RandomPositionObjects(radius, positionFlags);
+                RandomPosition.RandomPositionObjects(radius, positionFlags);
             }
 
             GUILayout.Space(spacePixel);
@@ -300,7 +286,6 @@ namespace PlacemenAssistance
 
         void randomRotationGUI()
         {
-            RandomRotate RandomRotationInstance = new RandomRotate();
             rotationAmount = EditorGUILayout.Slider("スナップ度数:", rotationAmount, 1, 360);
             isRandomRotateDetail = EditorGUILayout.Toggle("詳細", isRandomRotateDetail);
             
@@ -323,7 +308,7 @@ namespace PlacemenAssistance
                 {
                     curve_result = AnimationCurve.Linear(0, -180, 1, 180);
                 }
-                RandomRotationInstance.RandomRotateObjects(rotationAmount, rotateFlags, curve_result);
+                RandomRotate.RandomRotateObjects(rotationAmount, rotateFlags, curve_result);
             }
 
             GUILayout.Space(spacePixel);
@@ -331,7 +316,6 @@ namespace PlacemenAssistance
 
         void RandomScalenGUI()
         {
-            RandomScale RandomScaleInstance = new RandomScale();
             scaleRatio = EditorGUILayout.FloatField("オフセット", scaleRatio);
 
             using (new EditorGUI.DisabledGroupScope(isRandomScaleDetail))
@@ -350,7 +334,7 @@ namespace PlacemenAssistance
                 if (GUILayout.Button("スケール"))
                 {
                     Undo.RecordObjects(Selection.transforms, "Random Scale Objects");
-                    RandomScaleInstance.RandomScaleObjects(isRandomScaleDetail, scaleRatio, minimum, maximum);
+                    RandomScale.RandomScaleObjects(isRandomScaleDetail, scaleRatio, minimum, maximum);
                 }
 
                 GUILayout.Space(spacePixel);
@@ -365,7 +349,7 @@ namespace PlacemenAssistance
                 if (GUILayout.Button("スケール"))
                 {
                     Undo.RecordObjects(Selection.transforms, "Random Detail Scale Objects");                   
-                    RandomScaleInstance.RandomDetailScaleObjects(scaleRatio, minScale, maxScale);
+                    RandomScale.RandomDetailScaleObjects(scaleRatio, minScale, maxScale);
                 }
 
                 GUILayout.Space(spacePixel);

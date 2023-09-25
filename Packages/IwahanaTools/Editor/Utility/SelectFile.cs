@@ -3,7 +3,7 @@ using UnityEditor;
 
 public class SelectAssetEditor : EditorWindow
 {
-    private string filePath = "Assets/";
+    string filePath = "Assets/";
 
     [MenuItem("Iwahana Tools/ファイルパス選択", priority = 51)]
     public static void ShowWindow()
@@ -11,7 +11,7 @@ public class SelectAssetEditor : EditorWindow
         EditorWindow.GetWindow<SelectAssetEditor>("ファイルパス選択");
     }
 
-    private void OnGUI()
+    void OnGUI()
     {
         GUILayout.Label("パス:", EditorStyles.boldLabel);
         filePath = EditorGUILayout.TextField(filePath);

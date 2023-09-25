@@ -16,8 +16,8 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     bool isHierarchicalSelectionExpanded = true;
     int parentCount = 1;
-    bool onlyOrder = true;
-    bool selectChildlen = false;
+    bool isOnlyOrder = true;
+    bool isSelectChildlen = false;
     
     [MenuItem("Iwahana Tools/選択支援ツール", priority = 12)]
     public static void ShowWindow()
@@ -43,13 +43,12 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
     {
         GUILayout.Label("選択履歴の保存");
 
-        SelectionHistoryFunction SelectionHistoryFunctionInstance = new SelectionHistoryFunction();
         maxHistoryCount = (int)EditorGUILayout.FloatField("  履歴保存数", maxHistoryCount);
         EditorGUILayout.LabelField("  選択履歴");
 
         if (GUILayout.Button("追加"))
         {
-            historyList = SelectionHistoryFunctionInstance.AddSelection(maxHistoryCount, historyList);
+            historyList = SelectionHistoryFunction.AddSelection(maxHistoryCount, historyList);
         }
 
         if (historyList.Count > 0)
@@ -60,17 +59,17 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
          GUILayout.FlexibleSpace();
         if (GUILayout.Button("ロード"))
         {
-            SelectionHistoryFunctionInstance.LoadSelection(historyList);
+            SelectionHistoryFunction.LoadSelection(historyList);
         }
 
         if (GUILayout.Button("削除"))
         {
-            historyList = SelectionHistoryFunctionInstance.DeleatSelection(historyList);
+            historyList = SelectionHistoryFunction.DeleatSelection(historyList);
         }
 
         if (GUILayout.Button("全選択"))
         {
-            historyList = SelectionHistoryFunctionInstance.AllSelection(historyList);
+            historyList = SelectionHistoryFunction.AllSelection(historyList);
         }
     }
 
@@ -101,25 +100,24 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
 
     void hierarchicalSelectionGUI()
     {
-        HierarchicalSelectionObjects HierarchicalSelecterInstance = new HierarchicalSelectionObjects();
         parentCount = EditorGUILayout.IntSlider("基準とする親の階層", parentCount, 1, 5);
-        onlyOrder = EditorGUILayout.Toggle("選択したオブジェクトと同じ順番", onlyOrder);
-        selectChildlen = EditorGUILayout.Toggle("子オブジェクトをすべて選択する", selectChildlen);
+        isOnlyOrder = EditorGUILayout.Toggle("選択したオブジェクトと同じ順番", isOnlyOrder);
+        isSelectChildlen = EditorGUILayout.Toggle("子オブジェクトをすべて選択する", isSelectChildlen);
 
         if (GUILayout.Button("選択"))
         {
-            HierarchicalSelecterInstance.HierarchicalSelecter(parentCount, onlyOrder, selectChildlen);
+            HierarchicalSelectionObjects.HierarchicalSelecter(parentCount, isOnlyOrder, isSelectChildlen);
         }
         
     }
 
-    private void CalculateRects()
+    void CalculateRects()
     {
         firstRect.Set(0, 0, position.width / 2, position.height);
         secondRect.Set(position.width / 2, 0, position.width / 2, position.height);
     }
 
-    private void SetBackgroundStyles()
+    void SetBackgroundStyles()
     {
         if (firstStyle == null)
         {
@@ -128,7 +126,7 @@ public class SelectionsAssistanceEditorWindow : EditorWindow
         }
     }
 
-    private Texture2D CreateColoredTexture(float brightness)
+    Texture2D CreateColoredTexture(float brightness)
     {
         Color bgColor = GUI.backgroundColor;
         Color adjustedColor = new Color(bgColor.r * brightness, bgColor.g * brightness, bgColor.b * brightness);

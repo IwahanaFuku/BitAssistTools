@@ -5,7 +5,7 @@ using UnityEditor;
 public static class FindMissingScriptsRecursively
 {
     [MenuItem("Iwahana Tools/Utility/Remove Missing Scripts Recursively Visit Prefabs", priority = 70)]
-    private static void FindAndRemoveMissingInSelected()
+    static void FindAndRemoveMissingInSelected()
     {
         var deeperSelection = Selection.gameObjects.SelectMany(go => go.GetComponentsInChildren<Transform>(true))
             .Select(t => t.gameObject);
@@ -35,7 +35,7 @@ public static class FindMissingScriptsRecursively
         Debug.Log($"Found and removed {compCount} missing scripts from {goCount} GameObjects");
     }
 
-    private static void RecursivePrefabSource(GameObject instance, HashSet<Object> prefabs, ref int compCount,
+    static void RecursivePrefabSource(GameObject instance, HashSet<Object> prefabs, ref int compCount,
         ref int goCount)
     {
         var source = PrefabUtility.GetCorrespondingObjectFromSource(instance);

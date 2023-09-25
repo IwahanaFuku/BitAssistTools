@@ -7,7 +7,7 @@ namespace ColliderPlacemenAssistancer
 {
     public class ConvertBoxColliderToTransformer
     {
-        public void ConvertBoxColliderToTransform()
+        public static void ConvertBoxColliderToTransform()
         {
             foreach (var selectedObject in Selection.gameObjects)
             {
@@ -47,7 +47,7 @@ namespace ColliderPlacemenAssistancer
             }
         }
 
-        public void ConvertTransformeToBoxCollider()
+        public static void ConvertTransformeToBoxCollider()
         {
             Transform[] transforms = Selection.transforms;
             foreach (Transform transform in transforms)
@@ -80,7 +80,7 @@ namespace ColliderPlacemenAssistancer
         }
 
 
-        public void ConvertTransformeToBoxColliderReset()
+        public static void ConvertTransformeToBoxColliderReset()
         {
             Transform[] transforms = Selection.transforms;
             foreach (Transform transform in transforms)

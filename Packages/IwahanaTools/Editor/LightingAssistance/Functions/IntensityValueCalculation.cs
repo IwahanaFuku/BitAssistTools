@@ -5,7 +5,7 @@ namespace LightingAssistance
 {
     public class IntensityValueCalculationer : MonoBehaviour
     {
-        public void IntensityValueCalculation(float intensityValue, FourArithmeticOperations selectedOperation)
+        public static void IntensityValueCalculation(float intensityValue, FourArithmeticOperations selectedOperation)
         {
             GameObject[] selectionObjects = Selection.gameObjects;
             foreach (GameObject selectionObject in selectionObjects)

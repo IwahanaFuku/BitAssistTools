@@ -8,7 +8,7 @@ namespace PlacemenAssistance
 {
     public class Roundinger
     {
-        public void Rounding(int multiplier, TransformFlags roundingTransformFlags)
+        public static void Rounding(int multiplier, TransformFlags roundingTransformFlags)
         {
             GameObject[] selectionTransforms = Selection.gameObjects;
             foreach (var selectedObject in selectionTransforms)
@@ -37,7 +37,7 @@ namespace PlacemenAssistance
             }
         }
 
-        Vector3 GetRoundVector3(Vector3 vector3, int roundPoint)
+        static Vector3 GetRoundVector3(Vector3 vector3, int roundPoint)
         {
             float digit = Mathf.Pow(10, roundPoint);
 
@@ -56,7 +56,7 @@ namespace PlacemenAssistance
 
     public class ObjectTransformChanger
     {
-        public void ObjectTransformChange(CoordinateReference coordinateReference, TransformData changeTransform)
+        public static void ObjectTransformChange(CoordinateReference coordinateReference, TransformData changeTransform)
     {
         foreach (GameObject gameObject in Selection.gameObjects)
         {
@@ -83,13 +83,13 @@ namespace PlacemenAssistance
 
     public class ObjectDistributor
     {
-        public void SortAndDistributeObjects(Axis axis)
+        public static void SortAndDistributeObjects(Axis axis)
         {
             var sortedPositions = GetSortedPositions(axis);
             UpdatePositions(axis, sortedPositions);
         }
 
-        List<KeyValuePair<int, Vector3>> GetSortedPositions(Axis axis)
+        static List<KeyValuePair<int, Vector3>> GetSortedPositions(Axis axis)
         {
             var positions = Selection.gameObjects
                 .Select((obj, index) => new KeyValuePair<int, Vector3>(index, obj.transform.position))
@@ -108,7 +108,7 @@ namespace PlacemenAssistance
             }
         }
 
-        void UpdatePositions(Axis axis, List<KeyValuePair<int, Vector3>> sortedPositions)
+        static void UpdatePositions(Axis axis, List<KeyValuePair<int, Vector3>> sortedPositions)
         {
             var axisIndex = (int)axis;
             var firstPosition = sortedPositions.First().Value[axisIndex];
@@ -131,16 +131,16 @@ namespace PlacemenAssistance
 
     public class ObjectAligner
     {
-        Transform[] selectedTransforms;
+        static Transform[] selectedTransforms;
 
-        public void AlignObjects(Axis axis, AlignType alignType)
+        public static void AlignObjects(Axis axis, AlignType alignType)
         {
             selectedTransforms = Selection.transforms;
             var targetValue = CalculateTargetValue(selectedTransforms, axis, alignType);
             UpdatePositions(selectedTransforms, axis, targetValue);
         }
 
-        float CalculateTargetValue(Transform[] transforms, Axis axis, AlignType alignType)
+        static float CalculateTargetValue(Transform[] transforms, Axis axis, AlignType alignType)
         {
             var values = new float[transforms.Length];
 
@@ -173,7 +173,7 @@ namespace PlacemenAssistance
             }
         }
 
-        void UpdatePositions(Transform[] transforms, Axis axis, float targetValue)
+        static void UpdatePositions(Transform[] transforms, Axis axis, float targetValue)
         {
             Undo.RecordObjects(transforms, "Align Objects");
 
@@ -204,7 +204,7 @@ namespace PlacemenAssistance
 
     public class ObjectPaddinger
     {
-        public void PaddingObjects(bool isPaddingReferencePointExpanded, float paddingSpace,
+        public static void PaddingObjects(bool isPaddingReferencePointExpanded, float paddingSpace,
                                    Transform referencePoint, AxisFlags axisFlags)
         {
             Undo.RecordObjects(Selection.transforms, "Apply Padding");

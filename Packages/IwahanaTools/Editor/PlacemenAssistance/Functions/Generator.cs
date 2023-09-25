@@ -7,7 +7,7 @@ namespace PlacemenAssistance
 {
     public class SpecialDuplicater
     {
-        public void SpecialDuplicate(CoordinateReference coordinateReference, TransformData duplicateTransform, int copyCount)
+        public static void SpecialDuplicate(CoordinateReference coordinateReference, TransformData duplicateTransform, int copyCount)
         {
             Transform[] selectedTransforms = Selection.transforms;
             foreach (Transform selectedTransform in selectedTransforms)
@@ -61,7 +61,7 @@ namespace PlacemenAssistance
             }
         }
 
-        GameObject GetPrefabGameObject(GameObject obj)
+        static GameObject GetPrefabGameObject(GameObject obj)
         {
             UnityEngine.Object prefab = PrefabUtility.GetCorrespondingObjectFromSource(obj);
             string path = "";
@@ -72,7 +72,7 @@ namespace PlacemenAssistance
     
     public class ObjectSwapper
     {
-        public void ObjectSwapping(GameObject prefabObject)
+        public static void ObjectSwapping(GameObject prefabObject)
         {
             if (prefabObject == null)
             {
