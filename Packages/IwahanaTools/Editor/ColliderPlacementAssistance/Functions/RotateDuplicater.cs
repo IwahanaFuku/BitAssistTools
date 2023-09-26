@@ -12,8 +12,9 @@ namespace ColliderPlacemenAssistancer
             GameObject selectedObject = Selection.activeObject as GameObject;
 
             GameObject[] boundsObjects = GetBoundsObjects(selectedObject);
+            Vector3 boundsObjectsCenterPosition = CalculateCenterPosition(boundsObjects);
             Bounds updateBoundingBox = GetUpdateBoundingBox(boundsObjects);
-            int numOfCopy = ReturnNumOfCopy(selectedObject, updateBoundingBox, rotationalFrequency);
+            int numOfCopy = ReturnNumOfCopy(selectedObject, updateBoundingBox, boundsObjectsCenterPosition, rotationalFrequency);
             float theta = CalculateRotationalFrequencyPerCopy(numOfCopy, rotationalFrequency);
             CopyTransforms(selectedObject, boundsObjects, numOfCopy, theta);
         }
@@ -37,7 +38,24 @@ namespace ColliderPlacemenAssistancer
             return boundsObjectsList.ToArray();
         }
 
-        public static Bounds GetUpdateBoundingBox(GameObject[] boundsObjects)
+        static Vector3 CalculateCenterPosition(GameObject[] gameObjects)
+        {
+            Vector3 centerPosition = Vector3.zero;
+
+            foreach (GameObject obj in gameObjects)
+            {
+                if (obj != null)
+                {
+                    centerPosition += obj.transform.position;
+                }
+            }
+
+            centerPosition /= gameObjects.Length;
+
+            return centerPosition;
+        }
+
+        static Bounds GetUpdateBoundingBox(GameObject[] boundsObjects)
         {
             Bounds bounds = new Bounds();
             bool hasBounds = false;
@@ -61,42 +79,81 @@ namespace ColliderPlacemenAssistancer
             return bounds;
         }
 
-         public static int ReturnNumOfCopy(GameObject selectedObject, Bounds bounds, float rotationalFrequency)
+        static int ReturnNumOfCopy(GameObject selectedObject, Bounds bounds, Vector3 centerPosition, float rotationalFrequency)
         {
             var selectedPosition = selectedObject.transform.position;
 
-            Vector3 absCenter = new Vector3(Mathf.Abs(bounds.center.x), Mathf.Abs(bounds.center.y), Mathf.Abs(bounds.center.z))
-                            - new Vector3(Mathf.Abs(selectedPosition.x), Mathf.Abs(selectedPosition.y), Mathf.Abs(selectedPosition.z));
-            Vector3 edgeCenterX = new Vector3(absCenter.x + bounds.size.x / 2, absCenter.y, absCenter.z);
-            Vector3 edgeCenterZ = new Vector3(absCenter.x, absCenter.y, absCenter.z + bounds.size.z / 2);
+            Vector3 edgeCenterX = new Vector3(ExtendValues(centerPosition.x - selectedPosition.x, bounds.size.x / 2), centerPosition.y, centerPosition.z - selectedPosition.z);
+            Vector3 edgeCenterZ = new Vector3(centerPosition.x - selectedPosition.x, centerPosition.y, ExtendValues(centerPosition.z - selectedPosition.z, bounds.size.z / 2));
 
             float theta;
             int numOfCopy;
 
-            if(edgeCenterZ.sqrMagnitude < edgeCenterX.sqrMagnitude)
-            {
-                theta = Mathf.Atan2(bounds.size.z / 2, edgeCenterX.x) * Mathf.Rad2Deg * 2;
-                numOfCopy = Convert.ToInt32(rotationalFrequency / theta);
-                Debug.Log("x");
-            }
-            else
-            {
-                theta = Mathf.Atan2(bounds.size.x / 2, edgeCenterZ.z) * Mathf.Rad2Deg * 2;
-                numOfCopy = Convert.ToInt32(rotationalFrequency / theta);
-                Debug.Log("Z");
-            }
+            theta = Mathf.Atan2(edgeCenterX.x, edgeCenterZ.z) * Mathf.Rad2Deg * 2;
+            float modifyAngle = ModifyAngle(FlipAngle(NormalizeAngle(theta)));
+            numOfCopy = Convert.ToInt32(rotationalFrequency / modifyAngle);
 
             return numOfCopy;
         }
+        static float NormalizeAngle(float angle)
+        {
+            if(angle < 0)
+            {
+                return angle + 360;
+            }
+            else
+            {
+                return angle;
+            }
+        }
+        static float FlipAngle(float angle)
+        {
+            if ((angle > 45 && angle <= 90) || (angle > 225 && angle <= 270))
+            {
+                return 180 - angle;
+            }
+            else if (angle > 135 && angle <= 225 || (angle > 315 && angle <= 360))
+            {
+                return 360 - angle;
+            }
+            else
+            {
+                return angle;
+            }
+        }
 
+        static float ModifyAngle(float angle)
+        {
+            if (angle > 90 && angle <= 180)
+            {
+                return angle - 90;
+            }
+            else if (angle > 180 && angle <= 270)
+            {
+                return angle - 180;
+            }
+            else if (angle > 270 && angle <= 360)
+            {
+                return angle - 270;
+            }
+            else
+            {
+                return angle;
+            }
+        }
 
-        public static float CalculateRotationalFrequencyPerCopy(int numOfCopy, float rotationalFrequency)
+        static float ExtendValues(float firstValue, float secondValue)
+        {
+            return (firstValue < 0) ? firstValue - secondValue : firstValue + secondValue;
+        }
+
+        static float CalculateRotationalFrequencyPerCopy(int numOfCopy, float rotationalFrequency)
         {
             float theta = rotationalFrequency / numOfCopy;
             return theta;
         }
 
-        public static void CopyTransforms(GameObject selectedObject, GameObject[] boundsObjects, int numOfCopy, float theta)
+        static void CopyTransforms(GameObject selectedObject, GameObject[] boundsObjects, int numOfCopy, float theta)
         {
 
             Vector3 rotationAxis = Vector3.up;
