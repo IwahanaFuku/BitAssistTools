@@ -26,6 +26,18 @@ namespace ColliderPlacemenAssistancer
                 result.Add(DistanceBoxBetweenObjects(GenerateBox(), parent, lastObjectPosition, firstObjectPosition, boxWidth, boxHeight, position));
             }
 
+            if (!isClose && objects.Count >= 3)
+            {
+                for (int i = 1; i < objects.Count - 1; i++)
+                {
+                    Vector3 object1Position = objects[i - 1].transform.position;
+                    Vector3 object2Position = objects[i].transform.position;
+                    Vector3 object3Position = objects[i + 1].transform.position;
+
+                    result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
+                }
+            }
+
             return result;
         }
 
@@ -65,13 +77,39 @@ namespace ColliderPlacemenAssistancer
 
             Undo.RegisterCreatedObjectUndo(box, "Generate Box Collider");
 
-            // 生成されたボックスを親オブジェクトの子として設定
             if (parent != null)
             {
                 box.transform.parent = parent.transform;
             }
 
             return box;
+        }
+
+        static GameObject GenerateCornerBox(GameObject box, GameObject parent, Vector3 vec1, Vector3 vec2, Vector3 vec3, float boxWidth, float boxHeight, AbstractPosition position)
+        {
+            Vector3 vecA = (vec2 - vec1).normalized;
+            Vector3 vecB = (vec3 - vec1).normalized;
+            float angle = Vector3.Angle(vecA, vecB) * Mathf.Deg2Rad / 2;
+            float length = CalculateAdjacentSideLength(boxWidth / 2, angle);
+            Vector3 middleVector = (vecA + vecB) / 2.0f;
+
+            box.transform.position = vec1;
+            box.transform.localScale = new Vector3(boxWidth, boxWidth, length * 2);
+            box.transform.LookAt(box.transform.position + middleVector);
+
+            if (parent != null)
+            {
+                box.transform.parent = parent.transform;
+            }
+
+            return box;
+        }
+
+        static float CalculateAdjacentSideLength(float oppositeSideLength, float thetaInRadians)
+        {
+            float adjacentSideLength = oppositeSideLength / Mathf.Tan(thetaInRadians);
+
+            return adjacentSideLength;
         }
     }
 }

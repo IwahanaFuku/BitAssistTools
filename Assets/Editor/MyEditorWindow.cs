@@ -122,15 +122,14 @@ namespace ColliderPlacemenAssistancer
 
         void OnEnable()
         {
-            reorderableList_ = new ReorderableList
-                (
+            reorderableList_ = new ReorderableList(
                 elements: pointObjectList_,
                 elementType: typeof(PointObjectInfo),
                 draggable: true,
                 displayHeader: false,
                 displayAddButton: true,
                 displayRemoveButton: true
-                );
+            );
 
             reorderableList_.drawElementCallback = DrawElementCallback;
             reorderableList_.onAddCallback += Add;
@@ -140,16 +139,11 @@ namespace ColliderPlacemenAssistancer
             EditorApplication.update += CheckObjectPositions;
         }
 
-        void OnDisable()
-        {
-            // エディタのアップデートイベントから位置確認関数を削除
-            EditorApplication.update -= CheckObjectPositions;
-        }
 
         void DrawElementCallback(Rect rect, int index, bool isactive, bool isfocused)
         {
             float originalWidth = rect.width;
-            int ratio = 6;
+            int ratio = 8;
             
             // オブジェクトを選択するフィールドの幅を1/2に設定
             rect.width = originalWidth * (ratio - 1) / ratio;
@@ -160,6 +154,9 @@ namespace ColliderPlacemenAssistancer
 
             // rectを元の幅に戻す
             rect.width = originalWidth;
+
+            // 要素の番号を表示
+            GUI.Label(new Rect(rect.x - 30, rect.y, 20, EditorGUIUtility.singleLineHeight), index.ToString());
         }
 
         void Add(ReorderableList list)
