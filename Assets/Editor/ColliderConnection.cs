@@ -8,7 +8,7 @@ namespace ColliderPlacemenAssistancer
     {
         public static List<GameObject> GenerateBoxesBetweenObjects(List<GameObject> objects, GameObject parent, bool isClose, float boxWidth, float boxHeight, AbstractPosition position)
         {
-            List<GameObject> result = new List<GameObject>(); // 結果のボックスを格納するリスト
+            List<GameObject> result = new List<GameObject>();
 
             for (int i = 0; i < objects.Count - 1; i++)
             {
@@ -56,19 +56,16 @@ namespace ColliderPlacemenAssistancer
             box.transform.LookAt(position2);
             box.transform.localScale = new Vector3(boxWidth, boxHeight, size);
 
-            // ボックスの位置を調整
+            box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f));
+
             switch (position)
             {
-                case AbstractPosition.Inside:
-                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f)) - (box.transform.right * (boxWidth / 2.0f));
+                case AbstractPosition.Leftside:
+                    box.transform.position -= box.transform.right * (boxWidth / 2.0f);
                     break;
 
-                case AbstractPosition.Center:
-                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f));
-                    break;
-
-                case AbstractPosition.Outside:
-                    box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f)) + (box.transform.right * (boxWidth / 2.0f));
+                case AbstractPosition.Rightside:
+                    box.transform.position += box.transform.right * (boxWidth / 2.0f);
                     break;
 
                 default:
@@ -91,22 +88,45 @@ namespace ColliderPlacemenAssistancer
             Vector3 vecB = (vec3 - vec1).normalized;
             float angle = Vector3.Angle(vecA, vecB) * Mathf.Deg2Rad / 2;
             float length = CalculateAdjacentSideLength(boxWidth / 2, angle);
+            Debug.Log("angle: " + angle * Mathf.Rad2Deg);
+            Debug.Log("length: " + length);
             Vector3 middleVector = (vecA + vecB) / 2.0f;
 
+            // キューブの位置を設定
             box.transform.position = vec1;
-            box.transform.localScale = new Vector3(boxWidth, boxWidth, length * 2);
+
+            // キューブのサイズを設定
+            box.transform.localScale = new Vector3(boxWidth, boxHeight, length);
+
+            // キューブを指定された角度で回転させる
             box.transform.LookAt(box.transform.position + middleVector);
 
-            if (parent != null)
+            box.transform.position += box.transform.up * (boxHeight / 2.0f);
+
+            switch (position)
             {
-                box.transform.parent = parent.transform;
+                case AbstractPosition.Leftside:
+                    /* box.transform.position += box.transform.forward; */
+                    Debug.Log(Mathf.Sin(angle) * boxWidth); 
+                    break;
+
+                case AbstractPosition.Center:
+                    /* box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f)); */
+                    break;
+
+                case AbstractPosition.Rightside:
+                    break;
+
+                default:
+                    break;
             }
 
-            return box;
+            return box; 
         }
 
-        static float CalculateAdjacentSideLength(float oppositeSideLength, float thetaInRadians)
+        public static float CalculateAdjacentSideLength(float oppositeSideLength, float thetaInRadians)
         {
+            // 隣接辺の長さを計算
             float adjacentSideLength = oppositeSideLength / Mathf.Tan(thetaInRadians);
 
             return adjacentSideLength;

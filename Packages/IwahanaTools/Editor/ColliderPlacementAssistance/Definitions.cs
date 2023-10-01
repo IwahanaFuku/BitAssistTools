@@ -18,9 +18,9 @@ namespace ColliderPlacemenAssistancer
     }
     public enum AbstractPosition
     {
-        Inside,
+        Leftside,
         Center,
-        Outside
+        Rightside
     }
 
     public struct PlacementType
