@@ -88,30 +88,28 @@ namespace ColliderPlacemenAssistancer
             Vector3 vecB = (vec3 - vec1).normalized;
             float angle = Vector3.Angle(vecA, vecB) * Mathf.Deg2Rad / 2;
             float length = CalculateAdjacentSideLength(boxWidth / 2, angle);
-            Debug.Log("angle: " + angle * Mathf.Rad2Deg);
-            Debug.Log("length: " + length);
             Vector3 middleVector = (vecA + vecB) / 2.0f;
 
             // キューブの位置を設定
             box.transform.position = vec1;
 
             // キューブのサイズを設定
-            box.transform.localScale = new Vector3(boxWidth, boxHeight, length);
+            box.transform.localScale = new Vector3(boxWidth, boxHeight, length * 2);
 
             // キューブを指定された角度で回転させる
             box.transform.LookAt(box.transform.position + middleVector);
 
             box.transform.position += box.transform.up * (boxHeight / 2.0f);
 
+            float hypotenuse = boxWidth / Mathf.Sin(angle);
             switch (position)
             {
                 case AbstractPosition.Leftside:
-                    /* box.transform.position += box.transform.forward; */
-                    Debug.Log(Mathf.Sin(angle) * boxWidth); 
+                    box.transform.position += box.transform.forward * hypotenuse;
                     break;
 
                 case AbstractPosition.Center:
-                    /* box.transform.position = position1 + (box.transform.forward * (size / 2.0f)) + (box.transform.up * (boxHeight / 2.0f)); */
+                    box.transform.position += box.transform.forward * hypotenuse / 2; 
                     break;
 
                 case AbstractPosition.Rightside:
