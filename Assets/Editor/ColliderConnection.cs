@@ -6,7 +6,7 @@ namespace ColliderPlacemenAssistancer
 {
     public static class BoxColliderPlacementer
     {
-        public static List<GameObject> GenerateBoxesBetweenObjects(List<GameObject> objects, GameObject parent, bool isClose, float boxWidth, float boxHeight, AbstractPosition position, bool isGenerateCorner)
+        public static List<GameObject> GenerateEdgeCollider(List<GameObject> objects, GameObject parent, bool isClose, float boxWidth, float boxHeight, AbstractPosition position)
         {
             List<GameObject> result = new List<GameObject>();
 
@@ -16,7 +16,7 @@ namespace ColliderPlacemenAssistancer
                 Vector3 object1Position = objects[i].transform.position;
                 Vector3 object2Position = objects[i + 1].transform.position;
                 
-                result.Add(DistanceBoxBetweenObjects(GenerateBox(), parent, object1Position, object2Position, boxWidth, boxHeight, position));
+                result.Add(GenerateEdgeBox(GenerateBox(), parent, object1Position, object2Position, boxWidth, boxHeight, position));
             }
 
             if (isClose && objects.Count >= 2)
@@ -24,43 +24,45 @@ namespace ColliderPlacemenAssistancer
                 Vector3 firstObjectPosition = objects[0].transform.position;
                 Vector3 lastObjectPosition = objects[objects.Count - 1].transform.position;
                 
-                result.Add(DistanceBoxBetweenObjects(GenerateBox(), parent, lastObjectPosition, firstObjectPosition, boxWidth, boxHeight, position));
+                result.Add(GenerateEdgeBox(GenerateBox(), parent, lastObjectPosition, firstObjectPosition, boxWidth, boxHeight, position));
             }
+
+            return result;
+        }
+        
+        public static List<GameObject> GenerateCornerollider(List<GameObject> objects, GameObject parent, bool isClose, float boxWidth, float boxHeight, AbstractPosition position)
+        {
+            List<GameObject> result = new List<GameObject>();
 
             //角の生成
-            if(isGenerateCorner)
+            if (objects.Count >= 3)
             {
-                if (objects.Count >= 3)
+                for (int i = 1; i < objects.Count - 1; i++)
                 {
-                    for (int i = 1; i < objects.Count - 1; i++)
-                    {
-                        Vector3 object1Position = objects[i - 1].transform.position;
-                        Vector3 object2Position = objects[i].transform.position;
-                        Vector3 object3Position = objects[i + 1].transform.position;
+                    Vector3 object1Position = objects[i - 1].transform.position;
+                    Vector3 object2Position = objects[i].transform.position;
+                    Vector3 object3Position = objects[i + 1].transform.position;
 
-                        result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
-                    }
-                }
-
-                if (isClose && objects.Count >= 3)
-                {
-                    //始点
-                    Vector3 object1Position = objects[objects.Count - 1].transform.position;
-                    Vector3 object2Position = objects[0].transform.position;
-                    Vector3 object3Position = objects[1].transform.position;
-
-                    result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
-
-                    //終点s
-                    object1Position = objects[objects.Count - 2].transform.position;
-                    object2Position = objects[objects.Count - 1].transform.position;
-                    object3Position = objects[0].transform.position;
-
-                    result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
+                    result.Add(GenerateCornerBox(GenerateBox(), parent, object1Position, object2Position, object3Position, boxWidth, boxHeight, position));
                 }
             }
-            
 
+            if (isClose && objects.Count >= 3)
+            {
+                //始点
+                Vector3 object1Position = objects[objects.Count - 1].transform.position;
+                Vector3 object2Position = objects[0].transform.position;
+                Vector3 object3Position = objects[1].transform.position;
+
+                result.Insert(0, GenerateCornerBox(GenerateBox(), parent, object1Position, object2Position, object3Position, boxWidth, boxHeight, position));
+
+                //終点
+                object1Position = objects[objects.Count - 2].transform.position;
+                object2Position = objects[objects.Count - 1].transform.position;
+                object3Position = objects[0].transform.position;
+
+                result.Add(GenerateCornerBox(GenerateBox(), parent, object1Position, object2Position, object3Position, boxWidth, boxHeight, position));
+            }
             return result;
         }
 
@@ -70,7 +72,7 @@ namespace ColliderPlacemenAssistancer
             return box;
         }
 
-        public static GameObject DistanceBoxBetweenObjects(GameObject box, GameObject parent, Vector3 position1, Vector3 position2, float boxWidth, float boxHeight, AbstractPosition position)
+        public static GameObject GenerateEdgeBox(GameObject box, GameObject parent, Vector3 position1, Vector3 position2, float boxWidth, float boxHeight, AbstractPosition position)
         {
             float size = Vector3.Distance(position1, position2);
             
@@ -105,15 +107,15 @@ namespace ColliderPlacemenAssistancer
             return box;
         }
 
-        public static GameObject GenerateCornerBox(GameObject box, GameObject parent, Vector3 vec1, Vector3 vec2, Vector3 vec3, float boxWidth, float boxHeight, AbstractPosition position)
+        public static GameObject GenerateCornerBox(GameObject box, GameObject parent, Vector3 beforVec, Vector3 mainVec, Vector3 afterVec, float boxWidth, float boxHeight, AbstractPosition position)
         {
-            Vector3 vecA = (vec2 - vec1).normalized;
-            Vector3 vecB = (vec3 - vec1).normalized;
+            Vector3 vecA = (beforVec - mainVec).normalized;
+            Vector3 vecB = (afterVec - mainVec).normalized;
             float angle = Vector3.Angle(vecA, vecB) * Mathf.Deg2Rad / 2;
             float length = CalculateAdjacentSideLength(boxWidth / 2, angle);
             Vector3 middleVector = (vecA + vecB) / 2.0f;
 
-            box.transform.position = vec1;
+            box.transform.position = mainVec;
             box.transform.localScale = new Vector3(boxWidth, boxHeight, length);
             box.transform.LookAt(box.transform.position + middleVector);
 
@@ -121,7 +123,7 @@ namespace ColliderPlacemenAssistancer
 
             float hypotenuse = boxWidth / Mathf.Sin(angle);
             
-            if(! IsVector3COnRight(vec2, vec1, vec3))
+            if(! IsVector3COnRight(beforVec, mainVec, afterVec))
             {
                 
                 switch (position)
@@ -162,6 +164,14 @@ namespace ColliderPlacemenAssistancer
                         break;
                 }
             }
+
+            Undo.RegisterCreatedObjectUndo(box, "Generate Box Collider");
+
+            if (parent != null)
+            {
+                box.transform.parent = parent.transform;
+            }
+            
             return box; 
         }
 
