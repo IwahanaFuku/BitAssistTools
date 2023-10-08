@@ -40,15 +40,14 @@ namespace ColliderPlacemenAssistancer
             isAutoUpdate_ = EditorGUILayout.Toggle("自動アップデート", isAutoUpdate_);
             GUILayout.Space(spacePixel);
 
-            // シーン上のオブジェクトを選択可能にする
             GameObject pointListParent = (GameObject)EditorGUILayout.ObjectField("ポイントリストペアレント", pointListParent_, typeof(GameObject), true);
 
             if (pointListParent != pointListParent_)
             {
-                // ポイントリストペアレントが変更された場合、既存のリストを破棄して新しいリストを構築
+
                 pointListParent_ = pointListParent;
-                points_.Clear(); // 既存のリストをクリア
-                AddChildrenToGameObjectList(); // 新しいリストを構築
+                points_.Clear();
+                AddChildrenToGameObjectList();
             }
 
             boxListParent_ = (GameObject)EditorGUILayout.ObjectField("ボックスリストペアレント", boxListParent_, typeof(GameObject), true);
@@ -68,7 +67,7 @@ namespace ColliderPlacemenAssistancer
             isLineSettingExpanded_ = EditorGUILayout.Foldout(isLineSettingExpanded_, "ラインの設定");
             if (isLineSettingExpanded_)
             {
-                bool isClosed = isClosed_; // 変更前の値を保持
+                bool isClosed = isClosed_;
                 isClosed_ = EditorGUILayout.Toggle("始点と終点を閉じる", isClosed_);
                 if (isClosed_ != isClosed)
                 {
@@ -151,18 +150,14 @@ namespace ColliderPlacemenAssistancer
         {
             float originalWidth = rect.width;
             int ratio = 8;
-            
-            // オブジェクトを選択するフィールドの幅を1/2に設定
+
             rect.width = originalWidth * (ratio - 1) / ratio;
             rect.x += originalWidth / ratio;
 
-            // オブジェクトを選択するフィールドを描画
             points_[index].GameObject = (GameObject)EditorGUI.ObjectField(rect, points_[index].GameObject, typeof(GameObject), true);
 
-            // rectを元の幅に戻す
             rect.width = originalWidth;
 
-            // 要素の番号を表示
             GUI.Label(new Rect(rect.x - 30, rect.y, 20, EditorGUIUtility.singleLineHeight), index.ToString());
         }
 
@@ -217,13 +212,11 @@ namespace ColliderPlacemenAssistancer
             int selectedIndex = reorderableList_.index;
             PointObjectInfo removedItem = points_[selectedIndex];
 
-            // ゲームオブジェクトをシーンから削除
             if (removedItem.GameObject != null)
             {
                 Undo.DestroyObjectImmediate(removedItem.GameObject);
             }
 
-            // リストから要素を削除
             points_.RemoveAt(selectedIndex);
 
             if (selectedIndex > 0)
@@ -246,7 +239,7 @@ namespace ColliderPlacemenAssistancer
             edges_ = BoxColliderPlacementer.GenerateEdgeCollider(objects, boxListParent_, isClosed_, edgeWidth_, boxHeight_, boxrAbsPos_);
             if(isGenerateCorner_)
             {
-                corners_ = BoxColliderPlacementer.GenerateCornerollider(objects, boxListParent_, isClosed_, cornerWidth_, boxHeight_, boxrAbsPos_);
+                corners_ = BoxColliderPlacementer.GenerateCornerCollider(objects, boxListParent_, isClosed_, cornerWidth_, edgeWidth_, boxHeight_, boxrAbsPos_);
             }
         }
 
@@ -280,12 +273,14 @@ namespace ColliderPlacemenAssistancer
         void CreatepointListParent()
         {
             GameObject pointListParent = new GameObject("PointListParent");
+            Undo.RegisterCreatedObjectUndo(pointListParent, "Create Parent");
             pointListParent_ = pointListParent;
         }
         
         void CreateBoxListParent()
         {
             GameObject newBoxListParent = new GameObject("BoxListParent");
+            Undo.RegisterCreatedObjectUndo(newBoxListParent, "Create Parent");
             boxListParent_ = newBoxListParent;
         }
         
@@ -326,8 +321,8 @@ namespace ColliderPlacemenAssistancer
             beforEdge = GetElementLoop(edges_.ToArray(), i - 1);
             afterEdge = GetElementLoop(edges_.ToArray(), i);
 
-            BoxColliderPlacementer.GenerateEdgeBox(beforEdge, boxListParent_, beforVec, mainVec, edgeWidth_, boxHeight_, boxrAbsPos_);
-            BoxColliderPlacementer.GenerateEdgeBox(afterEdge, boxListParent_, mainVec, afterVec, edgeWidth_, boxHeight_, boxrAbsPos_);
+            BoxColliderPlacementer.ChangeEdgeCollider(beforEdge, boxListParent_, beforVec, mainVec, edgeWidth_, boxHeight_, boxrAbsPos_);
+            BoxColliderPlacementer.ChangeEdgeCollider(afterEdge, boxListParent_, mainVec, afterVec, edgeWidth_, boxHeight_, boxrAbsPos_);
         }
 
         private void ChangeCornerTransform(int i)
@@ -341,7 +336,7 @@ namespace ColliderPlacemenAssistancer
 
                 GameObject mainCorner = GetElementLoop(corners_.ToArray(), i + j);
 
-                BoxColliderPlacementer.GenerateCornerBox(mainCorner, boxListParent_, beforVec, mainVec, afterVec, cornerWidth_, boxHeight_, boxrAbsPos_);
+                BoxColliderPlacementer.ChangeCornerCollider(mainCorner, boxListParent_, beforVec, mainVec, afterVec, cornerWidth_, edgeWidth_, boxHeight_, boxrAbsPos_);
             }
         }
 
@@ -349,7 +344,6 @@ namespace ColliderPlacemenAssistancer
         {
             if (pointListParent_ != null)
             {
-                // ポイントリストペアレントの子オブジェクトをポイントリストに追加
                 Transform[] children = pointListParent_.GetComponentsInChildren<Transform>(true);
 
                 foreach (var child in children)
@@ -382,7 +376,6 @@ namespace ColliderPlacemenAssistancer
             }
             else
             {
-                // 範囲内のインデックスに対しては通常の要素を返す
                 return array[index];
             }
         }
