@@ -6,7 +6,7 @@ namespace ColliderPlacemenAssistancer
 {
     public static class BoxColliderPlacementer
     {
-        public static List<GameObject> GenerateBoxesBetweenObjects(List<GameObject> objects, GameObject parent, bool isClose, float boxWidth, float boxHeight, AbstractPosition position)
+        public static List<GameObject> GenerateBoxesBetweenObjects(List<GameObject> objects, GameObject parent, bool isClose, float boxWidth, float boxHeight, AbstractPosition position, bool isGenerateCorner)
         {
             List<GameObject> result = new List<GameObject>();
 
@@ -28,34 +28,38 @@ namespace ColliderPlacemenAssistancer
             }
 
             //角の生成
-            if (objects.Count >= 3)
+            if(isGenerateCorner)
             {
-                for (int i = 1; i < objects.Count - 1; i++)
+                if (objects.Count >= 3)
                 {
-                    Vector3 object1Position = objects[i - 1].transform.position;
-                    Vector3 object2Position = objects[i].transform.position;
-                    Vector3 object3Position = objects[i + 1].transform.position;
+                    for (int i = 1; i < objects.Count - 1; i++)
+                    {
+                        Vector3 object1Position = objects[i - 1].transform.position;
+                        Vector3 object2Position = objects[i].transform.position;
+                        Vector3 object3Position = objects[i + 1].transform.position;
+
+                        result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
+                    }
+                }
+
+                if (isClose && objects.Count >= 3)
+                {
+                    //始点
+                    Vector3 object1Position = objects[objects.Count - 1].transform.position;
+                    Vector3 object2Position = objects[0].transform.position;
+                    Vector3 object3Position = objects[1].transform.position;
+
+                    result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
+
+                    //終点s
+                    object1Position = objects[objects.Count - 2].transform.position;
+                    object2Position = objects[objects.Count - 1].transform.position;
+                    object3Position = objects[0].transform.position;
 
                     result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
                 }
             }
-
-            if (isClose && objects.Count >= 3)
-            {
-                //始点
-                Vector3 object1Position = objects[objects.Count - 1].transform.position;
-                Vector3 object2Position = objects[0].transform.position;
-                Vector3 object3Position = objects[1].transform.position;
-
-                result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
-
-                //終点
-                object1Position = objects[objects.Count - 2].transform.position;
-                object2Position = objects[objects.Count - 1].transform.position;
-                object3Position = objects[0].transform.position;
-
-                result.Add(GenerateCornerBox(GenerateBox(), parent, object2Position, object1Position, object3Position, boxWidth, boxHeight, position));
-            }
+            
 
             return result;
         }
@@ -101,7 +105,7 @@ namespace ColliderPlacemenAssistancer
             return box;
         }
 
-        static GameObject GenerateCornerBox(GameObject box, GameObject parent, Vector3 vec1, Vector3 vec2, Vector3 vec3, float boxWidth, float boxHeight, AbstractPosition position)
+        public static GameObject GenerateCornerBox(GameObject box, GameObject parent, Vector3 vec1, Vector3 vec2, Vector3 vec3, float boxWidth, float boxHeight, AbstractPosition position)
         {
             Vector3 vecA = (vec2 - vec1).normalized;
             Vector3 vecB = (vec3 - vec1).normalized;
