@@ -22,10 +22,4 @@ namespace ColliderPlacemenAssistancer
         Center,
         Rightside
     }
-
-    public struct PlacementType
-    {
-        public bool Inside;
-        public bool Outside;
-    }
 }

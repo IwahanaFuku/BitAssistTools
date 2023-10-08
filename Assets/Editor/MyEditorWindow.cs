@@ -12,14 +12,13 @@ namespace ColliderPlacemenAssistancer
         bool isAutoUpdate_ = false;
         bool isPointListExpanded_ = true;
         bool isLineSettingExpanded_ = false;
-        bool isCornerSettingExpanded_ = false;
-        PlacementType placementType = new PlacementType {Inside = false, Outside = false};
         GameObject pointListParent_ = null;
         GameObject boxListParent_ = null;
         ReorderableList reorderableList_;
         List<PointObjectInfo> pointObjectList_ = new List<PointObjectInfo>(); // 表示する要素
         List<GameObject> boxColliderObjects_ = null;
         bool isClosed_ = false;
+        bool isGenerateCorner_ = false;
 
         float boxWidth_ = 1f;
         float boxHeight_ = 1f;
@@ -104,14 +103,15 @@ namespace ColliderPlacemenAssistancer
                 {
                     OutputListContents();
                 }
-            }
 
-            isCornerSettingExpanded_ = EditorGUILayout.Foldout(isCornerSettingExpanded_, "角の設定");
-            if (isCornerSettingExpanded_)
-            {
-                GUILayout.Label("配置オプション");
-                placementType.Inside = EditorGUILayout.Toggle("  内側", placementType.Inside);
-                placementType.Outside = EditorGUILayout.Toggle("  外側", placementType.Outside);
+                GUILayout.Space(spacePixel);
+
+                bool isGenerateCorner = isGenerateCorner_; // 変更前の値を保持
+                isGenerateCorner_ = EditorGUILayout.Toggle("角を生成", isGenerateCorner_);
+                if (isGenerateCorner_ != isGenerateCorner)
+                {
+                    OutputListContents();
+                }
             }
 
             if (GUILayout.Button("生成"))
@@ -288,7 +288,6 @@ namespace ColliderPlacemenAssistancer
                             Debug.Log(pointObjectList_[i].GameObject.name + " の位置が変更されました。"); */
                             BoxColliderPlacementer.DistanceBoxBetweenObjects
                             (
-
                                 boxColliderObjects_[pointObjectList_.Count() - 1],
                                 boxListParent_,
                                 pointObjectList_[boxColliderObjects_.Count() - 1].GameObject.transform.position,
