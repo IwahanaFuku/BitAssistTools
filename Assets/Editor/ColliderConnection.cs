@@ -116,6 +116,12 @@ namespace ColliderPlacemenAssistancer
             Vector3 middleVector = (vecA + vecB) / 2.0f;
 
             box.transform.position = mainVec;
+
+            if(length == Mathf.Infinity)
+            {
+                length = 0;
+            }
+
             box.transform.localScale = new Vector3(boxWidth, boxHeight, length);
             box.transform.LookAt(box.transform.position + middleVector);
 
