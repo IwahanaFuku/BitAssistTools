@@ -10,7 +10,7 @@ namespace LightingAssistance
         float intensityValue = 1f;
         FourArithmeticOperations selectedOperation = FourArithmeticOperations.Addition;
 
-        [MenuItem("Iwahana Tools/ライティング支援ツール", priority = 12)]
+        [MenuItem("Bit Assist Tools/ライティング支援ツール", priority = 12)]
         public static void ShowWindow()
         {
             GetWindow<LightIntensityEditor>("ライティング支援ツール");

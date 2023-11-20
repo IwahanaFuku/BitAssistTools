@@ -50,7 +50,7 @@ namespace PlacemenAssistance
         Vector3 maxScale = new Vector3(maximum, maximum, maximum);
         bool isRandomScaleDetail = false;
 
-        [MenuItem("Iwahana Tools/配置支援ツール", priority = 10)]
+        [MenuItem("Bit Assist Tools/配置支援ツール", priority = 10)]
         public static void ShowWindow()
         {
             GetWindow<PlacemenAssistanceEditorWindow>("配置支援ツール");

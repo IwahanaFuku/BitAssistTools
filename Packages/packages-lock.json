@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "com.iwahana.iwahana_tools": {
-      "version": "file:IwahanaTools",
+    "com.iwahana.bitassisttools": {
+      "version": "file:BitAssistTools",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

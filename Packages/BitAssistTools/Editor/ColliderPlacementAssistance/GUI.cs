@@ -15,7 +15,7 @@ namespace ColliderPlacemenAssistancer
 
         float rotationalFrequency = 360f;
 
-        [MenuItem("Iwahana Tools/コライダー配置支援ツール", priority = 11)]
+        [MenuItem("Bit Assist Tools/コライダー配置支援ツール", priority = 11)]
         public static void ShowWindow()
         {
             GetWindow<ColliderPlacemenAssistanceEditorWindow>("コライダー配置支援ツール");

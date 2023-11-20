@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 public static class FindMissingScriptsRecursively
 {
-    [MenuItem("Iwahana Tools/Utility/Remove Missing Scripts Recursively Visit Prefabs", priority = 70)]
+    [MenuItem("Bit Assist Tools/Utility/Remove Missing Scripts Recursively Visit Prefabs", priority = 70)]
     static void FindAndRemoveMissingInSelected()
     {
         var deeperSelection = Selection.gameObjects.SelectMany(go => go.GetComponentsInChildren<Transform>(true))
