@@ -13,6 +13,6 @@ jobs:
         with:
           registry-url: 'https://registry.npmjs.org'
       - run: npm publish --access=public
-        working-directory: Packages/com.iwahana.bitassisttools
+        working-directory: Packages/BitAssistTools
         env: 
           NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
