@@ -11,7 +11,7 @@ public class Renamer : EditorWindow
     bool addObjectNumberAccordion = true;
     bool removeObjectNumberAccordion = true;
 
-    [MenuItem("Iwahana Tools/リネーマー", priority =50)]
+    [MenuItem("Bit Assist Tools/リネーマー", priority =50)]
     public static void ShowWindow()
     {
         GetWindow<Renamer>("リネーマー");
