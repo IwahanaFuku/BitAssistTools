@@ -58,7 +58,7 @@ namespace VersionUploader
             if (pmu.CompareVersions())
             {
                 GUILayout.Label($"{pmu.editorpackageinfo.showName} の最新バージョン【{pmu.editorpackageinfo.latestVersion}】がリリースされています。 \nアップデートしますか？");
-                GUILayout.Label($"現在のバージョン：【{pmu.editorpackageinfo.currentVersion}】 ");
+                GUILayout.Label($"現在のバージョン：{pmu.editorpackageinfo.currentVersion} ");
                 GUILayout.Label("リリースノートを確認", hyperlinkStyle);
                 if (Event.current.type == EventType.MouseDown && GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
                 {
