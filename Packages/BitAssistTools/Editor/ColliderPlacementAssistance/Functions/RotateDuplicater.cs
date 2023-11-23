@@ -99,7 +99,7 @@ namespace ColliderPlacemenAssistancer
         {
             if(angle < 0)
             {
-                return angle + 360;
+                return Mathf.Abs(angle);
             }
             else
             {
