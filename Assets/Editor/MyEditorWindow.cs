@@ -8,25 +8,25 @@ namespace ColliderPlacemenAssistancer
 {
     public class WallColliderPlacemenAssistanceEditorWindow : EditorWindow
     {
-        int spacePixel = 8;
-        bool isAutoUpdate_ = false;
-        bool isPointListExpanded_ = true;
-        bool isLineSettingExpanded_ = false;
-        GameObject pointListParent_ = null;
-        GameObject boxListParent_ = null;
-        ReorderableList reorderableList_;
-        List<PointObjectInfo> points_ = new List<PointObjectInfo>();
-        List<GameObject> edges_ = null;
-        List<GameObject> corners_ = null;
-        bool isClosed_ = false;
-        bool isGenerateCorner_ = false;
+        int m_spacePixel = 8;
+        bool m_isAutoUpdate = false;
+        bool m_isPointListExpanded = true;
+        bool m_isLineSettingExpanded = false;
+        GameObject m_pointListParent = null;
+        GameObject m_boxListParent = null;
+        ReorderableList m_reorderableList;
+        List<PointObjectInfo> m_points = new List<PointObjectInfo>();
+        List<GameObject> m_edges = null;
+        List<GameObject> m_corners = null;
+        bool m_isClosed = false;
+        bool m_isGenerateCorner = false;
 
-        float edgeWidth_ = 1f;
-        float boxHeight_ = 1f;
+        float m_edgeWidth = 1f;
+        float m_boxHeight = 1f;
 
-        float cornerWidth_ = 1f;
+        float m_cornerWidth = 1f;
         
-        AbstractPosition boxrAbsPos_ = AbstractPosition.Center;
+        AbstractPosition m_boxrAbsPos = AbstractPosition.Center;
 
         [MenuItem("MyTools/ウォールコライダー配置支援ツール", priority = 11)]
         public static void ShowWindow()
@@ -37,20 +37,20 @@ namespace ColliderPlacemenAssistancer
 
         void OnGUI()
         {
-            isAutoUpdate_ = EditorGUILayout.Toggle("自動アップデート", isAutoUpdate_);
-            GUILayout.Space(spacePixel);
+            m_isAutoUpdate = EditorGUILayout.Toggle("自動アップデート", m_isAutoUpdate);
+            GUILayout.Space(m_spacePixel);
 
-            GameObject pointListParent = (GameObject)EditorGUILayout.ObjectField("ポイントリストペアレント", pointListParent_, typeof(GameObject), true);
+            GameObject pointListParent = (GameObject)EditorGUILayout.ObjectField("ポイントリストペアレント", m_pointListParent, typeof(GameObject), true);
 
-            if (pointListParent != pointListParent_)
+            if (pointListParent != m_pointListParent)
             {
 
-                pointListParent_ = pointListParent;
-                points_.Clear();
+                m_pointListParent = pointListParent;
+                m_points.Clear();
                 AddChildrenToGameObjectList();
             }
 
-            boxListParent_ = (GameObject)EditorGUILayout.ObjectField("ボックスリストペアレント", boxListParent_, typeof(GameObject), true);
+            m_boxListParent = (GameObject)EditorGUILayout.ObjectField("ボックスリストペアレント", m_boxListParent, typeof(GameObject), true);
 
             if (GUILayout.Button("ポイントとボックスの親を追加"))
             {
@@ -58,63 +58,63 @@ namespace ColliderPlacemenAssistancer
                 CreateBoxListParent();
             }
 
-            isPointListExpanded_ = EditorGUILayout.Foldout(isPointListExpanded_, "ポイントリスト");
-            if (isPointListExpanded_)
+            m_isPointListExpanded = EditorGUILayout.Foldout(m_isPointListExpanded, "ポイントリスト");
+            if (m_isPointListExpanded)
             {
-                reorderableList_.DoLayoutList();
+                m_reorderableList.DoLayoutList();
             }
 
-            isLineSettingExpanded_ = EditorGUILayout.Foldout(isLineSettingExpanded_, "ラインの設定");
-            if (isLineSettingExpanded_)
+            m_isLineSettingExpanded = EditorGUILayout.Foldout(m_isLineSettingExpanded, "ラインの設定");
+            if (m_isLineSettingExpanded)
             {
-                bool isClosed = isClosed_;
-                isClosed_ = EditorGUILayout.Toggle("始点と終点を閉じる", isClosed_);
-                if (isClosed_ != isClosed)
+                bool isClosed = m_isClosed;
+                m_isClosed = EditorGUILayout.Toggle("始点と終点を閉じる", m_isClosed);
+                if (m_isClosed != isClosed)
                 {
                     OutputListContents();
                 }
 
-                GUILayout.Space(spacePixel);
+                GUILayout.Space(m_spacePixel);
                 
                 GUILayout.Label("基準");
-                AbstractPosition boxColliderAbstractPosition = boxrAbsPos_;
-                boxrAbsPos_ = (AbstractPosition)GUILayout.SelectionGrid((int)boxrAbsPos_, 
+                AbstractPosition boxColliderAbstractPosition = m_boxrAbsPos;
+                m_boxrAbsPos = (AbstractPosition)GUILayout.SelectionGrid((int)m_boxrAbsPos, 
                     new string[] { "左揃え", "中心", "右揃え" }, 3);
 
-                if (boxrAbsPos_ != boxColliderAbstractPosition)
+                if (m_boxrAbsPos != boxColliderAbstractPosition)
                 {
                     OutputListContents();
                 }
-                GUILayout.Space(spacePixel);
+                GUILayout.Space(m_spacePixel);
 
                 GUILayout.Label("ボックスのスケール");
 
-                float boxWidth = edgeWidth_;
-                edgeWidth_ = EditorGUILayout.Slider("  幅", edgeWidth_, 0f, 2f);
-                if (edgeWidth_ != boxWidth)
+                float boxWidth = m_edgeWidth;
+                m_edgeWidth = EditorGUILayout.Slider("  幅", m_edgeWidth, 0f, 2f);
+                if (m_edgeWidth != boxWidth)
                 {
                     ChangeListContentsTransform();
                 }
 
-                float boxHeight = boxHeight_;
-                boxHeight_ = EditorGUILayout.Slider("  高さ", boxHeight_, 0f, 10f);
-                if (boxHeight_ != boxHeight)
+                float boxHeight = m_boxHeight;
+                m_boxHeight = EditorGUILayout.Slider("  高さ", m_boxHeight, 0f, 10f);
+                if (m_boxHeight != boxHeight)
                 {
                     ChangeListContentsTransform();
                 }
 
-                GUILayout.Space(spacePixel);
+                GUILayout.Space(m_spacePixel);
 
-                bool isGenerateCorner = isGenerateCorner_;
-                isGenerateCorner_ = EditorGUILayout.Toggle("角を生成", isGenerateCorner_);
-                if (isGenerateCorner_ != isGenerateCorner)
+                bool isGenerateCorner = m_isGenerateCorner;
+                m_isGenerateCorner = EditorGUILayout.Toggle("角を生成", m_isGenerateCorner);
+                if (m_isGenerateCorner != isGenerateCorner)
                 {
                     OutputListContents();
                 }
 
-                float cornerWidth = cornerWidth_;
-                cornerWidth_ = EditorGUILayout.Slider("  幅", cornerWidth_, 0f, 10f);
-                if (cornerWidth_ != cornerWidth)
+                float cornerWidth = m_cornerWidth;
+                m_cornerWidth = EditorGUILayout.Slider("  幅", m_cornerWidth, 0f, 10f);
+                if (m_cornerWidth != cornerWidth)
                 {
                     ChangeListContentsTransform();
                 }
@@ -128,8 +128,8 @@ namespace ColliderPlacemenAssistancer
 
         void OnEnable()
         {
-            reorderableList_ = new ReorderableList(
-                elements: points_,
+            m_reorderableList = new ReorderableList(
+                elements: m_points,
                 elementType: typeof(PointObjectInfo),
                 draggable: true,
                 displayHeader: false,
@@ -137,10 +137,10 @@ namespace ColliderPlacemenAssistancer
                 displayRemoveButton: true
             );
 
-            reorderableList_.drawElementCallback = DrawElementCallback;
-            reorderableList_.onAddCallback += Add;
-            reorderableList_.onRemoveCallback += Remove;
-            reorderableList_.onChangedCallback += OnChanged;
+            m_reorderableList.drawElementCallback = DrawElementCallback;
+            m_reorderableList.onAddCallback += Add;
+            m_reorderableList.onRemoveCallback += Remove;
+            m_reorderableList.onChangedCallback += OnChanged;
 
             EditorApplication.update += CheckObjectPositions;
         }
@@ -154,7 +154,7 @@ namespace ColliderPlacemenAssistancer
             rect.width = originalWidth * (ratio - 1) / ratio;
             rect.x += originalWidth / ratio;
 
-            points_[index].GameObject = (GameObject)EditorGUI.ObjectField(rect, points_[index].GameObject, typeof(GameObject), true);
+            m_points[index].GameObject = (GameObject)EditorGUI.ObjectField(rect, m_points[index].GameObject, typeof(GameObject), true);
 
             rect.width = originalWidth;
 
@@ -166,13 +166,13 @@ namespace ColliderPlacemenAssistancer
             string baseName = "Point_";
             int index = 0;
 
-            if (pointListParent_ != null)
+            if (m_pointListParent != null)
             {
                 // 既存の子オブジェクトから穴を埋める番号を見つける
                 while (true)
                 {
                     string candidateName = baseName + index;
-                    Transform existingChild = pointListParent_.transform.Find(candidateName);
+                    Transform existingChild = m_pointListParent.transform.Find(candidateName);
 
                     if (existingChild == null)
                     {
@@ -187,21 +187,21 @@ namespace ColliderPlacemenAssistancer
                 GameObject newGameObject = new GameObject(newName);
 
                 // 新しいゲームオブジェクトをポイントリストペアレントの子に設定
-                newGameObject.transform.parent = pointListParent_.transform;
-                if(points_.Count() > 0)
+                newGameObject.transform.parent = m_pointListParent.transform;
+                if(m_points.Count() > 0)
                 {
-                    newGameObject.transform.position = points_.Last().GameObject.transform.position;
+                    newGameObject.transform.position = m_points.Last().GameObject.transform.position;
                 }
 
                 // レコーダブルオブジェクトのリストにも新しい要素を追加
-                points_.Add(new PointObjectInfo { GameObject = newGameObject });
+                m_points.Add(new PointObjectInfo { GameObject = newGameObject });
 
             }
         }
 
         void OnChanged(ReorderableList list)
         {
-            if(isAutoUpdate_)
+            if(m_isAutoUpdate)
             {
                 OutputListContents();
             }
@@ -209,46 +209,46 @@ namespace ColliderPlacemenAssistancer
 
         void Remove(ReorderableList list)
         {
-            int selectedIndex = reorderableList_.index;
-            PointObjectInfo removedItem = points_[selectedIndex];
+            int selectedIndex = m_reorderableList.index;
+            PointObjectInfo removedItem = m_points[selectedIndex];
 
             if (removedItem.GameObject != null)
             {
                 Undo.DestroyObjectImmediate(removedItem.GameObject);
             }
 
-            points_.RemoveAt(selectedIndex);
+            m_points.RemoveAt(selectedIndex);
 
             if (selectedIndex > 0)
             {
-                reorderableList_.index = selectedIndex - 1;
+                m_reorderableList.index = selectedIndex - 1;
             }
-            else if (points_.Count > 0)
+            else if (m_points.Count > 0)
             {
-                reorderableList_.index = 0;
+                m_reorderableList.index = 0;
             }
         }
 
         void OutputListContents()
         {
-            removeObjects(edges_);
-            removeObjects(corners_);
+            removeObjects(m_edges);
+            removeObjects(m_corners);
 
-            List<GameObject> objects = points_.Select(info => info.GameObject).ToList();
+            List<GameObject> objects = m_points.Select(info => info.GameObject).ToList();
 
-            edges_ = BoxColliderPlacementer.GenerateEdgeCollider(objects, boxListParent_, isClosed_, edgeWidth_, boxHeight_, boxrAbsPos_);
-            if(isGenerateCorner_)
+            m_edges = BoxColliderPlacementer.GenerateEdgeCollider(objects, m_boxListParent, m_isClosed, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+            if(m_isGenerateCorner)
             {
-                corners_ = BoxColliderPlacementer.GenerateCornerCollider(objects, boxListParent_, isClosed_, cornerWidth_, edgeWidth_, boxHeight_, boxrAbsPos_);
+                m_corners = BoxColliderPlacementer.GenerateCornerCollider(objects, m_boxListParent, m_isClosed, m_cornerWidth, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
             }
         }
 
         void ChangeListContentsTransform()
         {
-            for(int i = 0; i < points_.Count(); i++)
+            for(int i = 0; i < m_points.Count(); i++)
             {
                 ChangeEdgeTransform(i);
-                if(isGenerateCorner_)
+                if(m_isGenerateCorner)
                 {
                     ChangeCornerTransform(i);
                 }
@@ -274,38 +274,38 @@ namespace ColliderPlacemenAssistancer
         {
             GameObject pointListParent = new GameObject("PointListParent");
             Undo.RegisterCreatedObjectUndo(pointListParent, "Create Parent");
-            pointListParent_ = pointListParent;
+            m_pointListParent = pointListParent;
         }
         
         void CreateBoxListParent()
         {
             GameObject newBoxListParent = new GameObject("BoxListParent");
             Undo.RegisterCreatedObjectUndo(newBoxListParent, "Create Parent");
-            boxListParent_ = newBoxListParent;
+            m_boxListParent = newBoxListParent;
         }
         
         private void CheckObjectPositions()
         {
-            if (! isAutoUpdate_)
+            if (! m_isAutoUpdate)
                 return;
 
-            if(points_ == null)
+            if(m_points == null)
                 return;
 
-            if(points_.Count() < 2)
+            if(m_points.Count() < 2)
                 return;
 
-            for(int i = 0; i < points_.Count(); i++)
+            for(int i = 0; i < m_points.Count(); i++)
             {
-                if (points_[i].GameObject == null || edges_ == null)
+                if (m_points[i].GameObject == null || m_edges == null)
                     continue;
                 
-                if (points_[i].GameObject.transform.hasChanged)
+                if (m_points[i].GameObject.transform.hasChanged)
                 {
                     ChangeEdgeTransform(i);
                     ChangeCornerTransform(i);
 
-                    points_[i].GameObject.transform.hasChanged = false;
+                    m_points[i].GameObject.transform.hasChanged = false;
                 }
             }
         }
@@ -313,52 +313,67 @@ namespace ColliderPlacemenAssistancer
         private void ChangeEdgeTransform(int i)
         {
             Vector3 beforVec, mainVec, afterVec;
-            beforVec = GetElementLoop(points_.ToArray(), i - 1).GameObject.transform.position;
-            mainVec = GetElementLoop(points_.ToArray(), i).GameObject.transform.position;
-            afterVec = GetElementLoop(points_.ToArray(), i + 1).GameObject.transform.position;
+            beforVec = GetElementLoop(m_points.ToArray(), i - 1).GameObject.transform.position;
+            mainVec = GetElementLoop(m_points.ToArray(), i).GameObject.transform.position;
+            afterVec = GetElementLoop(m_points.ToArray(), i + 1).GameObject.transform.position;
             
             GameObject beforEdge, afterEdge;
-            beforEdge = GetElementLoop(edges_.ToArray(), i - 1);
-            afterEdge = GetElementLoop(edges_.ToArray(), i);
+            beforEdge = GetElementLoop(m_edges.ToArray(), i - 1);
+            afterEdge = GetElementLoop(m_edges.ToArray(), i);
 
-            BoxColliderPlacementer.ChangeEdgeCollider(beforEdge, boxListParent_, beforVec, mainVec, edgeWidth_, boxHeight_, boxrAbsPos_);
-            BoxColliderPlacementer.ChangeEdgeCollider(afterEdge, boxListParent_, mainVec, afterVec, edgeWidth_, boxHeight_, boxrAbsPos_);
+            if(m_isClosed)
+            {
+                BoxColliderPlacementer.ChangeEdgeCollider(beforEdge, m_boxListParent, beforVec, mainVec, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+                BoxColliderPlacementer.ChangeEdgeCollider(afterEdge, m_boxListParent, mainVec, afterVec, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+            }
+            else
+            {
+                //始点と終点がくっつかないようにする
+                if(0 < i)
+                {
+                    BoxColliderPlacementer.ChangeEdgeCollider(beforEdge, m_boxListParent, beforVec, mainVec, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+                }
+                if(i < m_points.Count() - 1)
+                {
+                    BoxColliderPlacementer.ChangeEdgeCollider(afterEdge, m_boxListParent, mainVec, afterVec, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+                }
+            }
         }
 
-        private void ChangeCornerTransform(int i)
+        void ChangeCornerTransform(int i)
         {
-            if (corners_ == null)
+            if (m_corners == null)
             {
-                corners_ = new List<GameObject>();
+                m_corners = new List<GameObject>();
                 return;
             }
 
             for (int j = -1; j <= 1; j++)
             {
-                GameObject mainCorner = GetElementLoop(corners_.ToArray(), i + j);
+                GameObject mainCorner = GetElementLoop(m_corners.ToArray(), i + j);
                 if (mainCorner != null)
                 {
                     Vector3 beforVec, mainVec, afterVec;
-                    beforVec = GetElementLoop(points_.ToArray(), i - 1 + j).GameObject.transform.position;
-                    mainVec = GetElementLoop(points_.ToArray(), i + j).GameObject.transform.position;
-                    afterVec = GetElementLoop(points_.ToArray(), i + 1 + j).GameObject.transform.position;
+                    beforVec = GetElementLoop(m_points.ToArray(), i - 1 + j).GameObject.transform.position;
+                    mainVec = GetElementLoop(m_points.ToArray(), i + j).GameObject.transform.position;
+                    afterVec = GetElementLoop(m_points.ToArray(), i + 1 + j).GameObject.transform.position;
 
-                    BoxColliderPlacementer.ChangeCornerCollider(mainCorner, boxListParent_, beforVec, mainVec, afterVec, cornerWidth_, edgeWidth_, boxHeight_, boxrAbsPos_);
+                    BoxColliderPlacementer.ChangeCornerCollider(mainCorner, m_boxListParent, beforVec, mainVec, afterVec, m_cornerWidth, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
                 }
             }
         }
 
         void AddChildrenToGameObjectList()
         {
-            if (pointListParent_ != null)
+            if (m_pointListParent != null)
             {
-                Transform[] children = pointListParent_.GetComponentsInChildren<Transform>(true);
+                Transform[] children = m_pointListParent.GetComponentsInChildren<Transform>(true);
 
                 foreach (var child in children)
                 {
-                    if (child.gameObject != pointListParent_)
+                    if (child.gameObject != m_pointListParent)
                     {
-                        points_.Add(new PointObjectInfo { GameObject = child.gameObject });
+                        m_points.Add(new PointObjectInfo { GameObject = child.gameObject });
                     }
                 }
             }
