@@ -327,16 +327,24 @@ namespace ColliderPlacemenAssistancer
 
         private void ChangeCornerTransform(int i)
         {
-            for(int j = -1; j <= 1; j++)
+            if (corners_ == null)
             {
-                Vector3 beforVec, mainVec, afterVec;
-                beforVec = GetElementLoop(points_.ToArray(), i - 1 + j).GameObject.transform.position;
-                mainVec = GetElementLoop(points_.ToArray(), i + j).GameObject.transform.position;
-                afterVec = GetElementLoop(points_.ToArray(), i + 1 + j).GameObject.transform.position;
+                corners_ = new List<GameObject>();
+                return;
+            }
 
+            for (int j = -1; j <= 1; j++)
+            {
                 GameObject mainCorner = GetElementLoop(corners_.ToArray(), i + j);
+                if (mainCorner != null)
+                {
+                    Vector3 beforVec, mainVec, afterVec;
+                    beforVec = GetElementLoop(points_.ToArray(), i - 1 + j).GameObject.transform.position;
+                    mainVec = GetElementLoop(points_.ToArray(), i + j).GameObject.transform.position;
+                    afterVec = GetElementLoop(points_.ToArray(), i + 1 + j).GameObject.transform.position;
 
-                BoxColliderPlacementer.ChangeCornerCollider(mainCorner, boxListParent_, beforVec, mainVec, afterVec, cornerWidth_, edgeWidth_, boxHeight_, boxrAbsPos_);
+                    BoxColliderPlacementer.ChangeCornerCollider(mainCorner, boxListParent_, beforVec, mainVec, afterVec, cornerWidth_, edgeWidth_, boxHeight_, boxrAbsPos_);
+                }
             }
         }
 
