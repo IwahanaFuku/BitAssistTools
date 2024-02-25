@@ -6,10 +6,21 @@ using System.IO;
 
 public class Renamer : EditorWindow
 {
-    bool renameToMaterialNameAccordion = true;
-    bool renameToTextureNameAccordion = true;
-    bool addObjectNumberAccordion = true;
-    bool removeObjectNumberAccordion = true;
+    Vector2 scrollPos;
+    int spacePixel = 8;
+    
+    bool addPrefixAndSuffixAccordion = true;
+    bool replaceAccordion = true;
+    bool renameByTexture = true;
+    bool objectNumberAccordion = true;
+
+    
+    string prefix = "Prefix";
+    
+    string suffix = "Suffix";
+    string delimiter = "_";
+    string searchString = "";
+    string replaceString = "";
 
     [MenuItem("Bit Assist Tools/リネーマー", priority =50)]
     public static void ShowWindow()
@@ -19,43 +30,99 @@ public class Renamer : EditorWindow
 
     void OnGUI()
     {
-        renameToTextureNameAccordion = EditorGUILayout.Foldout(renameToTextureNameAccordion, "マテリアルをテクスチャの名前でリネーム");
-        if (renameToTextureNameAccordion)
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+
+        addPrefixAndSuffixAccordion = EditorGUILayout.Foldout(addPrefixAndSuffixAccordion, "接頭辞と接尾辞を追加");
+        if (addPrefixAndSuffixAccordion)
         {
+            GUILayout.Space(spacePixel);
+
+            prefix = EditorGUILayout.TextField("接頭辞", prefix);
+            suffix = EditorGUILayout.TextField("接尾辞", suffix);
+            delimiter = EditorGUILayout.TextField("接尾辞", delimiter);
+
             if (GUILayout.Button("実行"))
+            {
+                AddPrefixAndSuffix(prefix, suffix, delimiter);
+            }
+
+            GUILayout.Space(spacePixel);
+        }
+
+        replaceAccordion = EditorGUILayout.Foldout(replaceAccordion, "置換");
+        if (replaceAccordion)
+        {
+            GUILayout.Space(spacePixel);
+
+            searchString = EditorGUILayout.TextField("検索", searchString);
+            replaceString = EditorGUILayout.TextField("置換", replaceString);
+
+            if (GUILayout.Button("実行"))
+            {
+                ReplaceString(searchString, replaceString);
+            }
+
+            GUILayout.Space(spacePixel);
+        }
+
+        renameByTexture = EditorGUILayout.Foldout(renameByTexture, "テクスチャを基準にリネーム");
+        if (renameByTexture)
+        {
+            GUILayout.Space(spacePixel);
+
+            if (GUILayout.Button("マテリアルをテクスチャの名前でリネーム"))
             {
                 RenameToTextureName();
             }
-        }
 
-        renameToMaterialNameAccordion = EditorGUILayout.Foldout(renameToMaterialNameAccordion, "オブジェクトをマテリアルの名前でリネーム");
-        if (renameToMaterialNameAccordion)
-        {
-            if (GUILayout.Button("実行"))
+            if (GUILayout.Button("オブジェクトをマテリアルの名前でリネーム"))
             {
                 RenameToMaterialName();
             }
+
+            GUILayout.Space(spacePixel);
         }
 
-        addObjectNumberAccordion = EditorGUILayout.Foldout(addObjectNumberAccordion, "オブジェクトに番号を付与");
-        if (addObjectNumberAccordion)
+        objectNumberAccordion = EditorGUILayout.Foldout(objectNumberAccordion, "オブジェクトに番号を付与/除去");
+        if (objectNumberAccordion)
         {
-            if (GUILayout.Button("実行"))
+            GUILayout.Space(spacePixel);
+
+            if (GUILayout.Button("オブジェクトに番号を付与"))
             {
                 AddObjectNumber();
             }
-        }
 
-        removeObjectNumberAccordion = EditorGUILayout.Foldout(removeObjectNumberAccordion, "オブジェクトから番号を除去");
-        if (removeObjectNumberAccordion)
-        {
-            if (GUILayout.Button("実行"))
+            if (GUILayout.Button("オブジェクトから番号を除去"))
             {
                 RemoveObjectNumber();
             }
+
+            GUILayout.Space(spacePixel);
+        }
+    
+        EditorGUILayout.EndScrollView();
+    }
+
+
+    static void AddPrefixAndSuffix(string prefix, string suffix, string delimiter)
+    {
+        foreach (GameObject selectedObject in Selection.gameObjects)
+        {
+            Undo.RecordObject(selectedObject, "Add Prefix And Suffix");
+            selectedObject.name = prefix + delimiter + selectedObject.name;
+            selectedObject.name = selectedObject.name + delimiter + suffix;
         }
     }
 
+    static void ReplaceString(string searchString, string replaceString)
+    {
+        foreach (GameObject selectedObject in Selection.gameObjects)
+        {
+            Undo.RecordObject(selectedObject, "Replace String");
+            selectedObject.name = selectedObject.name.Replace(searchString, replaceString);
+        }
+    }
 
     static void RenameToTextureName()
     {
