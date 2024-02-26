@@ -7,13 +7,13 @@ namespace ColliderPlacemenAssistancer
     public class PointObjectInfo
     {
         [SerializeField] // シリアライズ属性を追加
-        GameObject _gameObject;
+        GameObject gameObject;
 
         // ゲッターとセッターを追加
         public GameObject GameObject
         {
-            get { return _gameObject; }
-            set { _gameObject = value; }
+            get { return gameObject; }
+            set { gameObject = value; }
         }
     }
     public enum AbstractPosition
