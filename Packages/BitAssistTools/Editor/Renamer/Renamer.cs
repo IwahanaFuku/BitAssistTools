@@ -39,7 +39,7 @@ public class Renamer : EditorWindow
 
             prefix = EditorGUILayout.TextField("接頭辞", prefix);
             suffix = EditorGUILayout.TextField("接尾辞", suffix);
-            delimiter = EditorGUILayout.TextField("接尾辞", delimiter);
+            delimiter = EditorGUILayout.TextField("区切り文字", delimiter);
 
             if (GUILayout.Button("実行"))
             {
