@@ -101,6 +101,7 @@ namespace ColliderPlacemenAssistancer
 
         public static GameObject ChangeCornerCollider(GameObject box, GameObject parent, Vector3 beforVec, Vector3 mainVec, Vector3 afterVec, float cornerWidth, float edgeWidth, float boxHeight, AbstractPosition position)
         {
+
             Vector3 vecA = (beforVec - mainVec).normalized;
             Vector3 vecB = (afterVec - mainVec).normalized;
             float angle = Vector3.Angle(vecA, vecB) * Mathf.Deg2Rad / 2;
@@ -120,6 +121,11 @@ namespace ColliderPlacemenAssistancer
             box.transform.position += box.transform.up * (boxHeight / 2.0f) + box.transform.forward * length / 2;
 
             float hypotenuse = edgeWidth / Mathf.Sin(angle);
+
+            if(beforVec == mainVec || mainVec == afterVec || beforVec == afterVec)
+            {
+                return box;
+            };
             
             if(! IsVector3COnRight(beforVec, mainVec, afterVec))
             {

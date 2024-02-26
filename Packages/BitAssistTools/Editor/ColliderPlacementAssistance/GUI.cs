@@ -16,7 +16,7 @@ namespace ColliderPlacemenAssistancer
         int spacePixel = 8;
 
         int m_spacePixel = 8;
-        bool m_isAutoUpdate = false;
+        bool m_isAutoUpdate = true;
         bool m_isPointListExpanded = true;
         bool m_isLineSettingExpanded = false;
         GameObject m_pointListParent = null;
@@ -64,12 +64,13 @@ namespace ColliderPlacemenAssistancer
 
         void ConectionColliderGUI()
         {
+            GUILayout.Label("ボックスコネクションツール", EditorStyles.boldLabel);
             conectionScrollPos = EditorGUILayout.BeginScrollView(conectionScrollPos);
 
-            m_isAutoUpdate = EditorGUILayout.Toggle("自動アップデート", m_isAutoUpdate);
+            m_isAutoUpdate = EditorGUILayout.Toggle("  自動アップデート", m_isAutoUpdate);
             GUILayout.Space(m_spacePixel);
 
-            GameObject pointListParent = (GameObject)EditorGUILayout.ObjectField("ポイントリストペアレント", m_pointListParent, typeof(GameObject), true);
+            GameObject pointListParent = (GameObject)EditorGUILayout.ObjectField("  ポイントリストペアレント", m_pointListParent, typeof(GameObject), true);
 
             if (pointListParent != m_pointListParent)
             {
@@ -78,7 +79,7 @@ namespace ColliderPlacemenAssistancer
                 AddChildrenToGameObjectList();
             }
 
-            m_boxListParent = (GameObject)EditorGUILayout.ObjectField("ボックスリストペアレント", m_boxListParent, typeof(GameObject), true);
+            m_boxListParent = (GameObject)EditorGUILayout.ObjectField("  ボックスリストペアレント", m_boxListParent, typeof(GameObject), true);
 
             if (GUILayout.Button("ポイントとボックスの親を追加"))
             {
@@ -92,7 +93,7 @@ namespace ColliderPlacemenAssistancer
                 m_reorderableList.DoLayoutList();
             }
 
-            m_isLineSettingExpanded = EditorGUILayout.Foldout(m_isLineSettingExpanded, "ラインの設定");
+            m_isLineSettingExpanded = EditorGUILayout.Foldout(m_isLineSettingExpanded, "ボックスの詳細設定");
             if (m_isLineSettingExpanded)
             {
                 bool isClosed = m_isClosed;
@@ -141,10 +142,13 @@ namespace ColliderPlacemenAssistancer
                 }
 
                 float cornerWidth = m_cornerWidth;
-                m_cornerWidth = EditorGUILayout.Slider("  幅", m_cornerWidth, 0f, 10f);
-                if (m_cornerWidth != cornerWidth)
+                if (m_isGenerateCorner)
                 {
-                    ChangeListContentsTransform();
+                    m_cornerWidth = EditorGUILayout.Slider("  幅", m_cornerWidth, 0f, 10f);
+                    if (m_cornerWidth != cornerWidth)
+                    {
+                        ChangeListContentsTransform();
+                    }
                 }
             }
 
