@@ -73,9 +73,8 @@ namespace ColliderPlacemenAssistancer
 
             if (pointListParent != m_pointListParent)
             {
-
                 m_pointListParent = pointListParent;
-                PointClear();
+                m_points.Clear();
                 AddChildrenToGameObjectList();
             }
 
@@ -241,11 +240,36 @@ namespace ColliderPlacemenAssistancer
 
         void PointClear()
         {
-            m_points.Clear();
+            // Undo操作の開始
+            Undo.RecordObjects(m_points.Select(p => p.GameObject).Where(obj => obj != null).ToArray(), "Clear Points");
+
             foreach (var point in m_points)
             {
-                DestroyImmediate(point.GameObject);
+                // ゲームオブジェクトがnullでない場合のみ処理を行う
+                if (point.GameObject != null)
+                {
+                    // ゲームオブジェクトを削除し、Undo操作を記録
+                    Undo.DestroyObjectImmediate(point.GameObject);
+                }
             }
+
+            // Undo操作の適用
+            Undo.FlushUndoRecordObjects();
+
+            // ポイントリストをクリア
+            m_points.Clear();
+
+            // Undo操作が実行された後に呼び出す関数を登録
+            Undo.undoRedoPerformed += OnUndoRedoPerformed;
+        }
+
+        void OnUndoRedoPerformed()
+        {
+            // Undo操作が実行された後に呼び出す関数を実行
+            AddChildrenToGameObjectList();
+
+            // コールバックを解除
+            Undo.undoRedoPerformed -= OnUndoRedoPerformed;
         }
 
         void OnChanged(ReorderableList list)
