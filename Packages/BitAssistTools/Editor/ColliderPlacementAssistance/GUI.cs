@@ -38,7 +38,7 @@ namespace ColliderPlacemenAssistancer
 
         bool isConvertBoxColliderToTransformExpanded = true;
         bool isConvertTransformToBoxColliderExpanded = false;
-        bool isRotationalFrequencyExpanded = false;
+        bool isRotationalFrequencyExpanded = true;
 
         float rotationalFrequency = 360f;
 
