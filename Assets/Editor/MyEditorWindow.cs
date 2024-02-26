@@ -331,6 +331,8 @@ namespace ColliderPlacemenAssistancer
             beforEdge = GetElementLoop(m_edges.ToArray(), i - 1);
             afterEdge = GetElementLoop(m_edges.ToArray(), i);
 
+            if (beforEdge == null || afterEdge == null ) return; 
+
             if(m_isClosed)
             {
                 BoxColliderPlacementer.ChangeEdgeCollider(beforEdge, m_boxListParent, beforVec, mainVec, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
@@ -368,11 +370,15 @@ namespace ColliderPlacemenAssistancer
                 if(m_isClosed)
                 {
                     GameObject mainCorner = GetElementLoop(m_corners.ToArray(), i + j);
+                    if (mainCorner == null) return; 
+
                     BoxColliderPlacementer.ChangeCornerCollider(mainCorner, m_boxListParent, beforVec, mainVec, afterVec, m_cornerWidth, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
                 }
                 else
                 {
                     GameObject mainCorner = GetElementLoop(m_corners.ToArray(), i + j - 1);
+                    if (mainCorner == null) return;
+
                     int numOfConer = m_points.Count() - 1;
 
                     //始点と終点のフィルター
