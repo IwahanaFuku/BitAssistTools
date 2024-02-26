@@ -237,9 +237,19 @@ namespace ColliderPlacemenAssistancer
             List<GameObject> objects = m_points.Select(info => info.GameObject).ToList();
 
             m_edges = BoxColliderPlacementer.GenerateEdgeCollider(objects, m_boxListParent, m_isClosed, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+            for(int i = 0; i < m_edges.Count(); i++)
+            {
+                m_edges[i].name = "Edge_" + i;
+            }
+
             if(m_isGenerateCorner)
             {
                 m_corners = BoxColliderPlacementer.GenerateCornerCollider(objects, m_boxListParent, m_isClosed, m_cornerWidth, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+
+                for(int i = 0; i < m_corners.Count(); i++)
+                {
+                    m_corners[i].name = "Corner_" + i;
+                }
             }
         }
 
@@ -350,14 +360,27 @@ namespace ColliderPlacemenAssistancer
 
             for (int j = -1; j <= 1; j++)
             {
-                GameObject mainCorner = GetElementLoop(m_corners.ToArray(), i + j);
-                if (mainCorner != null)
-                {
-                    Vector3 beforVec, mainVec, afterVec;
-                    beforVec = GetElementLoop(m_points.ToArray(), i - 1 + j).GameObject.transform.position;
-                    mainVec = GetElementLoop(m_points.ToArray(), i + j).GameObject.transform.position;
-                    afterVec = GetElementLoop(m_points.ToArray(), i + 1 + j).GameObject.transform.position;
+                Vector3 beforVec, mainVec, afterVec;
+                beforVec = GetElementLoop(m_points.ToArray(), i - 1 + j).GameObject.transform.position;
+                mainVec = GetElementLoop(m_points.ToArray(), i + j).GameObject.transform.position;
+                afterVec = GetElementLoop(m_points.ToArray(), i + 1 + j).GameObject.transform.position;
 
+                if(m_isClosed)
+                {
+                    GameObject mainCorner = GetElementLoop(m_corners.ToArray(), i + j);
+                    BoxColliderPlacementer.ChangeCornerCollider(mainCorner, m_boxListParent, beforVec, mainVec, afterVec, m_cornerWidth, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
+                }
+                else
+                {
+                    GameObject mainCorner = GetElementLoop(m_corners.ToArray(), i + j - 1);
+                    int numOfConer = m_points.Count() - 1;
+
+                    //始点と終点のフィルター
+                    if(i == 0 && j < 1) continue;
+                    if(i == 1 && j < 0) continue;
+                    if(i == numOfConer - 1 && 0 < j) continue;
+                    if(i == numOfConer&& -1 < j) continue;
+                    
                     BoxColliderPlacementer.ChangeCornerCollider(mainCorner, m_boxListParent, beforVec, mainVec, afterVec, m_cornerWidth, m_edgeWidth, m_boxHeight, m_boxrAbsPos);
                 }
             }
