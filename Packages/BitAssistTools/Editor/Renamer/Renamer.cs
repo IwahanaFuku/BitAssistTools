@@ -13,6 +13,7 @@ public class Renamer : EditorWindow
     bool replaceAccordion = true;
     bool renameByTexture = true;
     bool objectNumberAccordion = true;
+    bool renameSelectedPrefabAssetAccordion = true;
 
     
     string prefix = "Prefix";
@@ -96,6 +97,19 @@ public class Renamer : EditorWindow
             if (GUILayout.Button("オブジェクトから番号を除去"))
             {
                 RemoveObjectNumber();
+            }
+
+            GUILayout.Space(spacePixel);
+        }
+
+        renameSelectedPrefabAssetAccordion = EditorGUILayout.Foldout(renameSelectedPrefabAssetAccordion, "Prefab Assetのリネーム");
+        if (renameSelectedPrefabAssetAccordion)
+        {
+            GUILayout.Space(spacePixel);
+
+            if (GUILayout.Button("選択したPrefabの名前でPrefab Assetをリネーム"))
+            {
+                RenameSelectedPrefabAsset();
             }
 
             GUILayout.Space(spacePixel);
@@ -225,6 +239,34 @@ public class Renamer : EditorWindow
             string name = gameObject.name;
             string newName = Regex.Replace(name, @"\s*\(\d+\)$", "");
             gameObject.name = newName;
+        }
+    }
+
+    static void RenameSelectedPrefabAsset()
+    {
+        foreach(GameObject gameObject in Selection.gameObjects)
+        {
+            string newName = gameObject.name;
+
+            if (gameObject == null)
+            {
+                Debug.LogError("No prefab selected in the scene.");
+                return;
+            }
+
+            string assetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(gameObject);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                Debug.LogError("Selected object is not a prefab.");
+                return;
+            }
+
+            string assetDir = System.IO.Path.GetDirectoryName(assetPath);
+            string newAssetPath = System.IO.Path.Combine(assetDir, newName + ".prefab");
+
+            AssetDatabase.RenameAsset(assetPath, newName);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
     }
 }
