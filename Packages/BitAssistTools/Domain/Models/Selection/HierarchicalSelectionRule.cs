@@ -41,11 +41,11 @@ namespace BitAssistTools.Domain.Models.Selection
             var parent = gameObject.transform;
             for (int i = 0; i < ParentDepth; i++)
             {
-                parent = parent.parent;
-                if (parent == null && i < ParentDepth - 1)
+                if (parent.parent == null)
                 {
-                    return false; // 指定した階層数分の親が存在しない
+                    return false; // 親が足りない
                 }
+                parent = parent.parent;
             }
             
             return true;
