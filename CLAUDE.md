@@ -139,6 +139,7 @@ public class PlacementView : EditorWindow
 
 ### 今後の改善項目
 - [ ] 単体テストの追加（Domain層優先）
+- [ ] EtoEテストの追加 
 - [ ] パフォーマンス最適化
 - [ ] ドキュメント整備
 - [ ] CI/CD導入

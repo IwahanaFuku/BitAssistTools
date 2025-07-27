@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace BitAssistTools.Editor.Utilities
+namespace BitAssistTools.Editor.EditorCommands
 {
     /// <summary>
     /// ナビゲーション関連の汎用ユーティリティ

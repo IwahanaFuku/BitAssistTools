@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
 
-namespace BitAssistTools.Editor.Utilities
+namespace BitAssistTools.Editor.EditorCommands
 {
     /// <summary>
     /// Transform操作に関する汎用ユーティリティ
