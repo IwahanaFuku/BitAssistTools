@@ -2,7 +2,8 @@
     "name": "BitAssistTools.Application",
     "rootNamespace": "BitAssistTools.Application",
     "references": [
-        "BitAssistTools.Domain"
+        "BitAssistTools.Domain",
+        "BitAssistTools.Infrastructure"
     ],
     "includePlatforms": [
         "Editor"

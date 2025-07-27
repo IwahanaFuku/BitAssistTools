@@ -307,9 +307,9 @@ BitAssistTools/
 - [ ] パフォーマンステスト実行
 - [ ] リグレッションテスト完了
 
-## 🎉 Phase 1 完了報告
+## 🎉 Phase 1-2 完了報告
 
-### ✅ 実装完了項目（2025-07-26）
+### ✅ Phase 1: Domain層基盤整備完了（2025-07-26）
 
 **1. Domain層のディレクトリ構造作成**
 - ✅ `Domain/Models/Transform/`
@@ -338,12 +338,29 @@ BitAssistTools/
 **5. テスト基盤構築**
 - ✅ Unity Test Runner セットアップ完了
 - ✅ Assembly Definition Files 作成
-  - `BitAssistTools.Domain.asmdef`
-  - `BitAssistTools.Tests.asmdef`
 - ✅ 主要ドメインモデルの単体テスト実装
-  - `TransformDataTests.cs`
-  - `SelectionHistoryTests.cs`
-  - `PlacementRuleTests.cs`
+
+### ✅ Phase 2: ColliderPlacementAssistance + PlacementAssistance DDD化完了（2025-07-27）
+
+**1. ColliderPlacementAssistance DDD化**
+- ✅ **ColliderPlacementViewModel**: 40個のUI状態を論理グループ化
+- ✅ **ColliderPlacementView**: 600行のUI描画ロジック分離
+- ✅ **ColliderPlacementService**: ビジネスロジック抽象化
+- ✅ **MVVM完全分離**: UI状態とビジネスロジックの完全分離
+- ✅ **Undo対応**: 全操作でUndo機能実装
+
+**2. PlacementAssistance DDD化**
+- ✅ **PlacementViewModel**: 25個のUI状態を論理グループ化
+- ✅ **PlacementView**: 358行のUI描画ロジック分離
+- ✅ **ObjectPlacementService**: 配置・複製・入れ替え機能
+- ✅ **TransformCalculationService**: Transform計算・変換機能
+- ✅ **RandomizationService**: ランダム化機能
+- ✅ **10機能すべてUndo対応**: 完全なUndo機能実装
+
+**3. Application層構築**
+- ✅ **3つのApplicationサービス**: 責任分離と単一責任原則
+- ✅ **完全なUndo対応**: Unity Undoシステム統合
+- ✅ **エラーハンドリング**: 例外処理とログ出力
 
 ### 🔧 技術的成果
 
@@ -353,113 +370,101 @@ BitAssistTools/
 3. **型安全性**: 強い型付けとenum活用
 4. **エンティティと値オブジェクトの明確な分離**
 
-**コード品質向上**
-1. **テスト可能性**: Mockしやすいインターフェース設計
-2. **Unity 2019.4対応**: C# 7.x構文への統一
-3. **命名規則統一**: C#規約に準拠
-4. **依存関係の逆転**: ドメイン層は他層に依存しない
+**アーキテクチャ品質**
+1. **MVVM完全実装**: UI状態とビジネスロジックの完全分離
+2. **レイヤー間依存関係**: Domain ← Application ← Editor
+3. **単一責任原則**: 各サービスクラスが明確な責任を持つ
+4. **Unity 2019.4対応**: C# 7.x構文への統一
 
 ### 🐛 修正対応済み項目
 
 **コンパイルエラー修正**
 - ✅ C# 8.0 switch式 → C# 7.x switch文に変更
-- ✅ Switch when構文 → if-else文に変更
-- ✅ タイポ修正: `PreservateHierarchy` → `PreserveHierarchy`
-- ✅ `HashCode.Combine()` → 手動ハッシュ計算に変更（Unity 2019.4対応）
+- ✅ enum重複定義解決（Application層から削除）
+- ✅ Random曖昧性解決（using UERandom = UnityEngine.Random）
+- ✅ TransformDataメソッド追加（FromTransform/ApplyToTransform）
 
-**Unity 2019.4対応**
-- ✅ 古いC#バージョンとの互換性確保
-- ✅ 全コンパイルエラー解決完了
+**アーキテクチャエラー修正**
+- ✅ レイヤー間参照の整理
+- ✅ 名前空間統一
+- ✅ Assembly Definition Files適切な参照設定
 
-### 📊 最終成果指標
+### 📊 現在の成果指標
 
-- **実装ファイル数**: 12個（ドメインモデル6個 + インターフェース4個 + テスト3個）
-- **テストカバレッジ**: 主要クラス100%達成 ✅
-- **テスト実行結果**: 全テスト成功 ✅
-- **循環複雑度**: 低く保持
-- **コード行数**: 約1,500行（コメント込み）
+- **実装ファイル数**: 25個（Domain: 12個、Application: 6個、Editor: 7個）
+- **DDDアーキテクチャ**: 完全適用 ✅
 - **Unity 2019.4互換性**: 完全対応 ✅
+- **Undo機能**: 全操作対応 ✅
+- **コンパイルエラー**: 0個 ✅
 
-### 🚀 次のステップ - 段階的リファクタリング戦略採用
+## 🚨 **緊急課題: PlacementAssistance挙動修正**
 
-**Phase 2: 既存コードの段階的リファクタリング（最短工数ルート）** 
-- **推定工数**: 2-3週間（全リファクタリング完了まで）
-- **戦略**: 既存ロジック再利用によるドメインモデル適用
+### **現在の問題**
+**ユーザー報告**: 「全体的に過去の挙動と変わってしまっている。選択したオブジェクトを入れ替える、分布、整列以外、全体的に挙動が変わっている」
 
-## 📋 Phase 2 実行計画：段階的リファクタリング
+### **根本原因分析完了**
+- ✅ **元実装調査**: `git show 878c5eb`で元PlacemenAssistance実装を分析
+- ✅ **挙動差異特定**: 7つの主要機能で実装ロジックが元と異なる
+- ✅ **詳細分析**: `placementtodo.md`に修正計画を記録
 
-### **工数比較結果**
-- **Option A**: Application層先行 → 4-5週間
-- **Option B**: 段階的リファクタリング → **2-3週間** ⭐️ **採用**
-- **Option C**: Infrastructure層先行 → 3-4週間
+### **次の緊急対応: 元挙動復元**
 
-### **Week 1: ColliderPlacementAssistance リファクタリング**
-**目標**: 最重要・最複雑クラスの分離（602行 → MVVM適用）
+**最高優先度**:
+1. **Special Duplicate**: 複製後の自動グループ化が欠落
+2. **Transform Change**: 加算方式→置換方式に変化
+3. **Rounding**: TransformFlags→AxisFlagsに変更
+4. **Random Position**: 加算→置換に変化
+5. **Random Rotation**: 軸別個別回転→一括回転に変化
+6. **Padding/Random Scale**: ロジック自体変更
 
-**実装項目**:
-- [ ] ColliderPlacementViewModel作成
-- [ ] 30個のプライベートフィールドを整理
-- [ ] ReorderableList処理の分離
-- [ ] ドメインモデル（PlacementRule, TransformData）適用
-- [ ] UI状態管理の分離
+**修正方針**:
+- DDDアーキテクチャは維持
+- 元実装のロジックを正確に復元
+- Undo機能は維持
+- ViewModelとViewの分離は維持
 
-### **Week 2: PlacementAssistance + SelectionAssistance**
-**目標**: 中程度結合クラスの改善
+## 📋 次期Phase: 挙動修正 + SelectionAssistance
 
-**PlacementAssistance（359行）**:
-- [ ] 25個のUIフラグを整理
-- [ ] SpecialDuplicaterをDuplicationStrategy適用
-- [ ] ViewModel導入
+### **緊急Phase: PlacementAssistance挙動修正（1-2日）**
+**目標**: 元実装と同じ挙動に完全復元
 
-**SelectionAssistance（145行）**:
+**修正項目**:
+- [ ] Special Duplicate: 複製後CommonFunctions.ParentCenterAligner()実行
+- [ ] Transform Change: 加算方式に変更
+- [ ] Rounding: TransformFlags方式に戻す
+- [ ] Padding: 元の方向ベクトル×係数ロジック
+- [ ] Random Position: 現在位置+ランダム位置
+- [ ] Random Rotation: 軸別個別回転+カーブ評価
+- [ ] Random Scale: 通常=uniform、詳細=軸別
+
+### **Phase 3: SelectionAssistance + 統合テスト（1週間）**
+**目標**: 最後のツールDDD化と全体品質保証
+
+**SelectionAssistance DDD化**:
 - [ ] SelectionHistoryドメインモデル適用
+- [ ] MVVM分離実装
 - [ ] UI状態管理改善
 
-### **Week 3: 統合・品質保証・完了**
-**目標**: 全機能統合とテスト
-
-**統合作業**:
-- [ ] LightingAssistance参考パターンの他クラス適用
-- [ ] 名前空間統一（SelectionAsistance → SelectionAssistance）
+**統合・品質保証**:
 - [ ] 全機能の動作検証
-
-**品質保証**:
-- [ ] 統合テスト実装
 - [ ] リグレッションテスト実行
 - [ ] パフォーマンステスト
 - [ ] コードカバレッジ80%確認
 
-### **🎯 段階的リファクタリングの利点**
+### **🎯 現在のDDDアーキテクチャ利点**
 
-**1. 最短工数実現**
-- 既存ビジネスロジックの再利用
-- ゼロから書き直しではなく接続・改善
-- 必要最小限のApplication/Infrastructure層実装
+**1. 保守性向上**
+- ビジネスロジックとUIの完全分離実現
+- 変更影響範囲の明確化
 
-**2. リスク分散**
-- 各クラス単位での動作確認
-- 問題の早期発見・修正
-- 段階的な品質向上
+**2. テスタビリティ向上**
+- ドメインロジックの単体テスト可能
+- Mockを使った分離テスト
 
-**3. 即座の実用性**
-- Week 1でColliderPlacementAssistanceが劇的改善
-- ユーザーに目に見える成果
-- 継続的な開発モチベーション維持
+**3. 拡張性向上**
+- 新機能追加時の影響範囲最小化
+- ドメインロジックの再利用可能
 
-### **実装戦略詳細**
-
-**ドメインモデル活用**:
-- ✅ TransformData: 座標変換処理に適用
-- ✅ SelectionHistory: 選択履歴管理に適用
-- ✅ PlacementRule: オブジェクト配置に適用
-- ✅ DuplicationStrategy: 複製処理に適用
-
-**アーキテクチャ簡素化**:
-- Application層: 必要最小限のServiceクラスのみ
-- Infrastructure層: EditorPrefs程度の軽量実装
-- 完全なCQRSは後期フェーズで検討
-
-**参考実装パターン**:
-- LightingAssistance（41行、理想的分離）パターンを横展開
-- UI ↔ ドメインロジック完全分離
-- 状態管理の統一化
+**4. Undo機能の統一**
+- 全操作でUndo対応
+- Unity Undoシステム完全統合

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using PlacemenAssistance;
 
 public class CustomShortcutWindow : EditorWindow
 {

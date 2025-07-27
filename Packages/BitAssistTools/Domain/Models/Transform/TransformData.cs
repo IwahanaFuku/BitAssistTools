@@ -42,6 +42,14 @@ namespace BitAssistTools.Domain.Models.Transform
         }
 
         /// <summary>
+        /// UnityのTransformコンポーネントからTransformDataを作成（短縮版）
+        /// </summary>
+        public static TransformData FromTransform(UnityEngine.Transform transform)
+        {
+            return FromUnityTransform(transform);
+        }
+
+        /// <summary>
         /// 位置のみを変更した新しいTransformDataを返す
         /// </summary>
         public TransformData WithPosition(Vector3 newPosition)
@@ -90,6 +98,19 @@ namespace BitAssistTools.Domain.Models.Transform
                 transformSpace.rotation * Rotation,
                 Vector3.Scale(transformSpace.lossyScale, LocalScale)
             );
+        }
+
+        /// <summary>
+        /// このTransformDataの値をUnityのTransformコンポーネントに適用
+        /// </summary>
+        public void ApplyToTransform(UnityEngine.Transform transform)
+        {
+            if (transform == null)
+                throw new ArgumentNullException(nameof(transform));
+
+            transform.position = Position;
+            transform.rotation = Rotation;
+            transform.localScale = LocalScale;
         }
 
         #region IEquatable<TransformData> Implementation

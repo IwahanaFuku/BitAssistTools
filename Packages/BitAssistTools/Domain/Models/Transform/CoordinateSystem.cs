@@ -25,21 +25,15 @@ namespace BitAssistTools.Domain.Models.Transform
     }
 
     /// <summary>
-    /// 軸フラグを表現する値オブジェクト
-    /// ビットフラグとして使用可能
+    /// 整列タイプを表現する値オブジェクト
     /// </summary>
-    [Flags]
-    public enum AxisFlags
+    public enum AlignmentType
     {
-        None = 0,
-        X = 1 << 0,
-        Y = 1 << 1,
-        Z = 1 << 2,
-        XY = X | Y,
-        XZ = X | Z,
-        YZ = Y | Z,
-        All = X | Y | Z
+        Minimum,
+        Center,
+        Maximum
     }
+
 
     /// <summary>
     /// Transform操作の種類を表現する値オブジェクト
@@ -52,6 +46,55 @@ namespace BitAssistTools.Domain.Models.Transform
         Rotation = 1 << 1,
         Scale = 1 << 2,
         All = Position | Rotation | Scale
+    }
+
+    /// <summary>
+    /// 座標系を表現する値オブジェクト
+    /// </summary>
+    public readonly struct CoordinateSystem : IEquatable<CoordinateSystem>
+    {
+        public readonly CoordinateReference Reference;
+
+        public CoordinateSystem(CoordinateReference reference)
+        {
+            Reference = reference;
+        }
+
+        public bool IsGlobal => Reference == CoordinateReference.Global;
+        public bool IsLocal => Reference == CoordinateReference.Local;
+
+        public static CoordinateSystem Global => new CoordinateSystem(CoordinateReference.Global);
+        public static CoordinateSystem Local => new CoordinateSystem(CoordinateReference.Local);
+
+        public static implicit operator CoordinateSystem(CoordinateReference reference)
+        {
+            return new CoordinateSystem(reference);
+        }
+
+        public static implicit operator CoordinateReference(CoordinateSystem system)
+        {
+            return system.Reference;
+        }
+
+        public bool Equals(CoordinateSystem other)
+        {
+            return Reference == other.Reference;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is CoordinateSystem other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)Reference;
+        }
+
+        public override string ToString()
+        {
+            return Reference.ToString();
+        }
     }
 
     /// <summary>
@@ -139,50 +182,71 @@ namespace BitAssistTools.Domain.Models.Transform
     }
 
     /// <summary>
-    /// 軸フラグのヘルパーメソッド
+    /// 軸フラグの構造体版
     /// </summary>
-    public static class AxisFlagsExtensions
+    public readonly struct AxisFlags : IEquatable<AxisFlags>
     {
-        /// <summary>
-        /// 指定した軸が含まれているかチェック
-        /// </summary>
-        public static bool HasAxis(this AxisFlags flags, Axis axis)
+        public readonly bool X;
+        public readonly bool Y;
+        public readonly bool Z;
+
+        public AxisFlags(bool x, bool y, bool z)
         {
-            switch (axis)
-            {
-                case Axis.X:
-                    return flags.HasFlag(AxisFlags.X);
-                case Axis.Y:
-                    return flags.HasFlag(AxisFlags.Y);
-                case Axis.Z:
-                    return flags.HasFlag(AxisFlags.Z);
-                default:
-                    return false;
-            }
+            X = x;
+            Y = y;
+            Z = z;
         }
 
-        /// <summary>
-        /// Vector3に軸フラグを適用
-        /// </summary>
-        public static Vector3 ApplyToVector(this AxisFlags flags, Vector3 original, Vector3 modified)
+        public static AxisFlags All => new AxisFlags(true, true, true);
+        public static AxisFlags None => new AxisFlags(false, false, false);
+        public static AxisFlags XOnly => new AxisFlags(true, false, false);
+        public static AxisFlags YOnly => new AxisFlags(false, true, false);
+        public static AxisFlags ZOnly => new AxisFlags(false, false, true);
+
+        public bool HasAnyAxis => X || Y || Z;
+        public bool HasAllAxes => X && Y && Z;
+
+        public Vector3 ApplyToVector(Vector3 original, Vector3 modified)
         {
             return new Vector3(
-                flags.HasFlag(AxisFlags.X) ? modified.x : original.x,
-                flags.HasFlag(AxisFlags.Y) ? modified.y : original.y,
-                flags.HasFlag(AxisFlags.Z) ? modified.z : original.z
+                X ? modified.x : original.x,
+                Y ? modified.y : original.y,
+                Z ? modified.z : original.z
             );
         }
 
-        /// <summary>
-        /// 軸フラグに基づいてベクトル成分をマスク
-        /// </summary>
-        public static Vector3 MaskVector(this AxisFlags flags, Vector3 vector)
+        public Vector3 MaskVector(Vector3 vector)
         {
             return new Vector3(
-                flags.HasFlag(AxisFlags.X) ? vector.x : 0f,
-                flags.HasFlag(AxisFlags.Y) ? vector.y : 0f,
-                flags.HasFlag(AxisFlags.Z) ? vector.z : 0f
+                X ? vector.x : 0f,
+                Y ? vector.y : 0f,
+                Z ? vector.z : 0f
             );
+        }
+
+        public bool Equals(AxisFlags other)
+        {
+            return X == other.X && Y == other.Y && Z == other.Z;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is AxisFlags other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (X ? 1 : 0) | (Y ? 2 : 0) | (Z ? 4 : 0);
+        }
+
+        public override string ToString()
+        {
+            var axes = new System.Collections.Generic.List<string>();
+            if (X) axes.Add("X");
+            if (Y) axes.Add("Y");
+            if (Z) axes.Add("Z");
+            return axes.Count > 0 ? string.Join(", ", axes) : "None";
         }
     }
+
 }
