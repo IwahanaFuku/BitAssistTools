@@ -1,7 +1,12 @@
 {
     "name": "BitAssistTools",
-    "references": [],
-    "includePlatforms": [],
+    "references": [
+        "BitAssistTools.Domain",
+        "BitAssistTools.Application"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

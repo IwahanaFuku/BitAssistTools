@@ -380,10 +380,86 @@ BitAssistTools/
 - **コード行数**: 約1,500行（コメント込み）
 - **Unity 2019.4互換性**: 完全対応 ✅
 
-### 🚀 次のステップ
+### 🚀 次のステップ - 段階的リファクタリング戦略採用
 
-**Phase 2: Application層構築** に進む準備完了
-- CQRS パターンの導入
-- Command/Query分離
-- Application Services実装
-- 依存関係注入の準備
+**Phase 2: 既存コードの段階的リファクタリング（最短工数ルート）** 
+- **推定工数**: 2-3週間（全リファクタリング完了まで）
+- **戦略**: 既存ロジック再利用によるドメインモデル適用
+
+## 📋 Phase 2 実行計画：段階的リファクタリング
+
+### **工数比較結果**
+- **Option A**: Application層先行 → 4-5週間
+- **Option B**: 段階的リファクタリング → **2-3週間** ⭐️ **採用**
+- **Option C**: Infrastructure層先行 → 3-4週間
+
+### **Week 1: ColliderPlacementAssistance リファクタリング**
+**目標**: 最重要・最複雑クラスの分離（602行 → MVVM適用）
+
+**実装項目**:
+- [ ] ColliderPlacementViewModel作成
+- [ ] 30個のプライベートフィールドを整理
+- [ ] ReorderableList処理の分離
+- [ ] ドメインモデル（PlacementRule, TransformData）適用
+- [ ] UI状態管理の分離
+
+### **Week 2: PlacementAssistance + SelectionAssistance**
+**目標**: 中程度結合クラスの改善
+
+**PlacementAssistance（359行）**:
+- [ ] 25個のUIフラグを整理
+- [ ] SpecialDuplicaterをDuplicationStrategy適用
+- [ ] ViewModel導入
+
+**SelectionAssistance（145行）**:
+- [ ] SelectionHistoryドメインモデル適用
+- [ ] UI状態管理改善
+
+### **Week 3: 統合・品質保証・完了**
+**目標**: 全機能統合とテスト
+
+**統合作業**:
+- [ ] LightingAssistance参考パターンの他クラス適用
+- [ ] 名前空間統一（SelectionAsistance → SelectionAssistance）
+- [ ] 全機能の動作検証
+
+**品質保証**:
+- [ ] 統合テスト実装
+- [ ] リグレッションテスト実行
+- [ ] パフォーマンステスト
+- [ ] コードカバレッジ80%確認
+
+### **🎯 段階的リファクタリングの利点**
+
+**1. 最短工数実現**
+- 既存ビジネスロジックの再利用
+- ゼロから書き直しではなく接続・改善
+- 必要最小限のApplication/Infrastructure層実装
+
+**2. リスク分散**
+- 各クラス単位での動作確認
+- 問題の早期発見・修正
+- 段階的な品質向上
+
+**3. 即座の実用性**
+- Week 1でColliderPlacementAssistanceが劇的改善
+- ユーザーに目に見える成果
+- 継続的な開発モチベーション維持
+
+### **実装戦略詳細**
+
+**ドメインモデル活用**:
+- ✅ TransformData: 座標変換処理に適用
+- ✅ SelectionHistory: 選択履歴管理に適用
+- ✅ PlacementRule: オブジェクト配置に適用
+- ✅ DuplicationStrategy: 複製処理に適用
+
+**アーキテクチャ簡素化**:
+- Application層: 必要最小限のServiceクラスのみ
+- Infrastructure層: EditorPrefs程度の軽量実装
+- 完全なCQRSは後期フェーズで検討
+
+**参考実装パターン**:
+- LightingAssistance（41行、理想的分離）パターンを横展開
+- UI ↔ ドメインロジック完全分離
+- 状態管理の統一化

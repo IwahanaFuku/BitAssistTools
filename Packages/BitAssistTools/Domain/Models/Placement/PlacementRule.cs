@@ -17,6 +17,7 @@ namespace BitAssistTools.Domain.Models.Placement
         Minimum
     }
 
+
     /// <summary>
     /// オブジェクト配置のルールを定義する値オブジェクト
     /// </summary>
