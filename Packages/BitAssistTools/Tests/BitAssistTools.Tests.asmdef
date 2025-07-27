@@ -3,6 +3,8 @@
     "rootNamespace": "BitAssistTools.Tests",
     "references": [
         "BitAssistTools.Domain",
+        "BitAssistTools.Application",
+        "BitAssistTools.Infrastructure",
         "BitAssistTools"
     ],
     "includePlatforms": [

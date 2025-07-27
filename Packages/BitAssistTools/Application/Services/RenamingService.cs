@@ -351,7 +351,10 @@ namespace BitAssistTools.Application.Services
                     return selectedObjects.OfType<Material>().Any();
                 
                 case RenameOperationType.MaterialName:
-                    return UnityEditor.Selection.gameObjects.Any(obj => obj.GetComponent<Renderer>()?.sharedMaterial != null);
+                    return UnityEditor.Selection.gameObjects.Any(obj => {
+                        var renderer = obj.GetComponent<Renderer>();
+                        return renderer != null && renderer.sharedMaterial != null;
+                    });
                 
                 case RenameOperationType.PrefabAsset:
                     return UnityEditor.Selection.gameObjects.Any(obj => !string.IsNullOrEmpty(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(obj)));
@@ -369,7 +372,10 @@ namespace BitAssistTools.Application.Services
             var gameObjects = UnityEditor.Selection.gameObjects;
             var materials = UnityEditor.Selection.objects.OfType<Material>().ToArray();
             var prefabs = gameObjects.Where(obj => !string.IsNullOrEmpty(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(obj))).ToArray();
-            var objectsWithRenderer = gameObjects.Where(obj => obj.GetComponent<Renderer>()?.sharedMaterial != null).ToArray();
+            var objectsWithRenderer = gameObjects.Where(obj => {
+                var renderer = obj.GetComponent<Renderer>();
+                return renderer != null && renderer.sharedMaterial != null;
+            }).ToArray();
 
             return new RenamingStats(
                 gameObjects.Length,

@@ -134,15 +134,12 @@ public class PlacementView : EditorWindow
 ## 🔄 残タスク
 
 ### 現在進行中
-- [ ] Utilitiesフォルダの EditorCommands への名称変更
-- [ ] 名前空間の統一確認
+- [ ] 単体テストの追加
 
 ### 今後の改善項目
-- [ ] 単体テストの追加（Domain層優先）
 - [ ] EtoEテストの追加 
 - [ ] パフォーマンス最適化
 - [ ] ドキュメント整備
-- [ ] CI/CD導入
 
 ## 📖 開発ガイド
 

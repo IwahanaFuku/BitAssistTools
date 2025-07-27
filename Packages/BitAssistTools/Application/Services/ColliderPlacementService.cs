@@ -243,10 +243,16 @@ namespace BitAssistTools.Application.Services
         /// </summary>
         public static bool IsVector3COnRight(Vector3 vec1, Vector3 vec2, Vector3 vec3)
         {
+            // vec1 から vec2 へのベクトル
             Vector3 ab = vec2 - vec1;
-            Vector3 acRight = Vector3.Cross(vec3 - vec1, new Vector3(0, 1, 0));
-            float cross = Vector3.Dot(new Vector3(ab.x, 0, ab.z).normalized, new Vector3(acRight.x, 0, acRight.z).normalized);
-
+            // vec1 から vec3 へのベクトル
+            Vector3 ac = vec3 - vec1;
+            
+            // 2D外積を計算（Y軸を無視してXZ平面で判定）
+            // 正の値: 左側, 負の値: 右側
+            float cross = ab.x * ac.z - ab.z * ac.x;
+            
+            // 右側の場合は true を返す
             return cross < 0;
         }
 
@@ -596,6 +602,7 @@ namespace BitAssistTools.Application.Services
 
             int firstIndex = selectedTransforms.Min(t => t.GetSiblingIndex());
 
+            // ワールド座標での中心を計算
             Vector3 center = Vector3.zero;
             foreach (Transform transform in selectedTransforms)
             {
@@ -604,17 +611,16 @@ namespace BitAssistTools.Application.Services
             center /= selectedTransforms.Length;
 
             var parent = selectedTransforms[0].parent; // 最初のオブジェクトの親を基準とする
-            if (parent != null)
-            {
-                center = parent.InverseTransformPoint(center);
-            }
 
             var group = new GameObject("Group");
-            group.transform.position = center;
-            Undo.RegisterCreatedObjectUndo(group, "Group Selected");
-            group.transform.SetSiblingIndex(firstIndex);
-
+            
+            // 先に親を設定してから位置を設定
             group.transform.SetParent(parent, false);
+            group.transform.position = center; // ワールド座標で設定
+            group.transform.SetSiblingIndex(firstIndex);
+            
+            Undo.RegisterCreatedObjectUndo(group, "Group Selected");
+            
             foreach (var transform in selectedTransforms.OrderBy(t => t.GetSiblingIndex()))
             {
                 Undo.SetTransformParent(transform, group.transform, "Group Selected");

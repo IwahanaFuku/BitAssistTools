@@ -226,5 +226,163 @@ namespace BitAssistTools.Tests.Domain.Models.Placement
             Assert.IsTrue(result.Contains("Global"));
             Assert.IsTrue(result.Contains("True"));
         }
+
+        [Test]
+        public void CalculateBounds_WithNullTransformInArray_SkipsNullTransform()
+        {
+            // Arrange
+            var transformsWithNull = new UnityEngine.Transform[]
+            {
+                _testTransforms[0],
+                null,
+                _testTransforms[2]
+            };
+
+            // Act
+            var bounds = PlacementRule.CalculateBounds(transformsWithNull, CoordinateReference.Global);
+
+            // Assert
+            // Object1(0,0,0) と Object3(-2,8,-1) のみが考慮される
+            Assert.AreEqual(new Vector3(-2, 0, -1), bounds.min);
+            Assert.AreEqual(new Vector3(0, 8, 0), bounds.max);
+        }
+
+        [Test]
+        public void CalculateBounds_WithLocalCoordinates_UsesLocalPosition()
+        {
+            // Arrange
+            var parent = new GameObject("Parent");
+            parent.transform.position = new Vector3(10, 10, 10);
+            
+            var child = new GameObject("Child");
+            child.transform.SetParent(parent.transform);
+            child.transform.localPosition = new Vector3(1, 2, 3);
+
+            var transforms = new UnityEngine.Transform[] { child.transform };
+
+            try
+            {
+                // Act
+                var bounds = PlacementRule.CalculateBounds(transforms, CoordinateReference.Local);
+
+                // Assert
+                Assert.AreEqual(new Vector3(1, 2, 3), bounds.center);
+            }
+            finally
+            {
+                // Cleanup
+                Object.DestroyImmediate(child);
+                Object.DestroyImmediate(parent);
+            }
+        }
+
+        [Test]
+        public void CalculateTargetPosition_WithInvalidAlignType_ReturnsCenter()
+        {
+            // Arrange
+            var rule = new PlacementRule((AlignType)999, Axis.Y, CoordinateReference.Global);
+            var bounds = new Bounds(Vector3.zero, Vector3.one);
+
+            // Act
+            var result = rule.CalculateTargetPosition(bounds);
+
+            // Assert
+            Assert.AreEqual(new Vector3(0, 0, 0), result); // bounds.center の Y 軸値
+        }
+
+        [Test]
+        public void GetAxisValue_WithInvalidAxis_ReturnsZero()
+        {
+            // Arrange
+            var rule = PlacementRule.Default;
+            var vector = new Vector3(1, 2, 3);
+
+            // Act
+            var result = rule.GetAxisValue(vector, (Axis)999);
+
+            // Assert
+            Assert.AreEqual(0f, result);
+        }
+
+        [Test]
+        public void SetAxisValue_WithInvalidAxis_ReturnsOriginalVector()
+        {
+            // Arrange
+            var rule = PlacementRule.Default;
+            var original = new Vector3(1, 2, 3);
+
+            // Act
+            var result = rule.SetAxisValue(original, (Axis)999, 10f);
+
+            // Assert
+            Assert.AreEqual(original, result);
+        }
+
+        [Test]
+        public void CalculateBounds_WithSingleTransform_ReturnsBoundsWithZeroSize()
+        {
+            // Arrange
+            var singleTransform = new UnityEngine.Transform[] { _testTransforms[0] };
+
+            // Act
+            var bounds = PlacementRule.CalculateBounds(singleTransform, CoordinateReference.Global);
+
+            // Assert
+            Assert.AreEqual(Vector3.zero, bounds.center); // _testTransforms[0].position
+            Assert.AreEqual(Vector3.zero, bounds.size);
+        }
+
+        [Test]
+        public void Equals_WithObjectType_HandlesCorrectly()
+        {
+            // Arrange
+            var rule = new PlacementRule(AlignType.Center, Axis.Y, CoordinateReference.Global, true);
+            object otherRule = new PlacementRule(AlignType.Center, Axis.Y, CoordinateReference.Global, true);
+            object differentObject = "not a placement rule";
+
+            // Act & Assert
+            Assert.IsTrue(rule.Equals(otherRule));
+            Assert.IsFalse(rule.Equals(differentObject));
+            Assert.IsFalse(rule.Equals(null));
+        }
+
+        [Test]
+        public void GetHashCode_WithDifferentValues_ProducesDifferentHashes()
+        {
+            // Arrange
+            var rule1 = new PlacementRule(AlignType.Center, Axis.Y, CoordinateReference.Global, true);
+            var rule2 = new PlacementRule(AlignType.Maximum, Axis.Y, CoordinateReference.Global, true);
+            var rule3 = new PlacementRule(AlignType.Center, Axis.X, CoordinateReference.Global, true);
+            var rule4 = new PlacementRule(AlignType.Center, Axis.Y, CoordinateReference.Local, true);
+            var rule5 = new PlacementRule(AlignType.Center, Axis.Y, CoordinateReference.Global, false);
+
+            // Act & Assert
+            Assert.AreNotEqual(rule1.GetHashCode(), rule2.GetHashCode());
+            Assert.AreNotEqual(rule1.GetHashCode(), rule3.GetHashCode());
+            Assert.AreNotEqual(rule1.GetHashCode(), rule4.GetHashCode());
+            Assert.AreNotEqual(rule1.GetHashCode(), rule5.GetHashCode());
+        }
+
+        [Test]
+        public void CalculateTargetPosition_AllAlignTypes_ProduceExpectedResults()
+        {
+            // Arrange
+            var bounds = new Bounds(new Vector3(5, 10, 15), new Vector3(10, 20, 30));
+            // min: (0, 0, 0), max: (10, 20, 30), center: (5, 10, 15)
+
+            var centerRule = new PlacementRule(AlignType.Center, Axis.X, CoordinateReference.Global);
+            var maxRule = new PlacementRule(AlignType.Maximum, Axis.Y, CoordinateReference.Global);
+            var minRule = new PlacementRule(AlignType.Minimum, Axis.Z, CoordinateReference.Global);
+
+            // Act
+            var centerResult = centerRule.CalculateTargetPosition(bounds);
+            var maxResult = maxRule.CalculateTargetPosition(bounds);
+            var minResult = minRule.CalculateTargetPosition(bounds);
+
+            // Assert
+            Assert.AreEqual(new Vector3(5, 0, 0), centerResult); // center.x
+            Assert.AreEqual(new Vector3(0, 20, 0), maxResult);   // max.y
+            Assert.AreEqual(new Vector3(0, 0, 0), minResult);    // min.z
+        }
     }
 }
