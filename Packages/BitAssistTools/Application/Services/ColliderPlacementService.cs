@@ -134,7 +134,7 @@ namespace BitAssistTools.Application.Services
 
             if (parent != null)
             {
-                box.transform.SetParent(parent.transform);
+                Undo.SetTransformParent(box.transform, parent.transform, "Set Edge Parent");
             }
 
             box.name = $"Edge_{index}";
@@ -213,7 +213,7 @@ namespace BitAssistTools.Application.Services
 
             if (parent != null)
             {
-                box.transform.SetParent(parent.transform);
+                Undo.SetTransformParent(box.transform, parent.transform, "Set Corner Parent");
             }
 
             box.name = $"Corner_{index}";
@@ -221,11 +221,13 @@ namespace BitAssistTools.Application.Services
         }
 
         /// <summary>
-        /// ボックスGameObjectを作成
+        /// ボックスGameObjectを作成（Undo対応）
         /// </summary>
         private static GameObject CreateBoxGameObject()
         {
-            return GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Undo.RegisterCreatedObjectUndo(box, "Create Box Collider");
+            return box;
         }
 
         /// <summary>

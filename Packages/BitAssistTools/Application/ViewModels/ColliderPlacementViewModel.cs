@@ -161,18 +161,14 @@ namespace BitAssistTools.Application.ViewModels
         }
 
         /// <summary>
-        /// ポイントを移動
+        /// ポイントを移動（削除済み - ReorderableListの自動並び替えを使用）
+        /// 旧版互換のため、ReorderableListに完全に委ねる実装に変更
         /// </summary>
+        [System.Obsolete("ReorderableListの自動並び替えを使用するため削除")]
         public void MovePoint(int fromIndex, int toIndex)
         {
-            if (fromIndex >= 0 && fromIndex < Data.Points.Count && 
-                toIndex >= 0 && toIndex < Data.Points.Count)
-            {
-                var item = Data.Points[fromIndex];
-                Data.Points.RemoveAt(fromIndex);
-                Data.Points.Insert(toIndex, item);
-                NotifyDataChanged();
-            }
+            // 二重処理回避のため実装を削除
+            // ReorderableListが自動的にリストを並び替えるため不要
         }
 
         /// <summary>
@@ -493,17 +489,22 @@ namespace BitAssistTools.Application.ViewModels
         }
 
         /// <summary>
-        /// ボックス接続を生成
+        /// ボックス接続を生成（Undo対応・グループ化）
         /// </summary>
         public void GenerateBoxConnections()
         {
             try
             {
+                // Undoグループ化開始
+                UnityEditor.Undo.SetCurrentGroupName("Generate Box Connections");
+                int undoGroup = UnityEditor.Undo.GetCurrentGroup();
+                
                 ClearExistingConnections();
                 
                 // ポイントが2個未満の場合は静かに終了（エラーメッセージなし）
                 if (Data.Points.Count < 2)
                 {
+                    UnityEditor.Undo.CollapseUndoOperations(undoGroup);
                     return;
                 }
 
@@ -513,6 +514,9 @@ namespace BitAssistTools.Application.ViewModels
                 {
                     CreateCornerConnections();
                 }
+                
+                // Undoグループ化終了
+                UnityEditor.Undo.CollapseUndoOperations(undoGroup);
                 
                 NotifyDataChanged();
             }
@@ -532,16 +536,20 @@ namespace BitAssistTools.Application.ViewModels
         }
 
         /// <summary>
-        /// GameObjectリストをクリア
+        /// GameObjectリストをクリア（Undo対応）
         /// </summary>
         private void ClearGameObjectList(List<GameObject> list)
         {
-            if (list != null)
+            if (list != null && list.Count > 0)
             {
-                foreach (var obj in list)
+                var objectsToDestroy = list.Where(obj => obj != null).ToArray();
+                if (objectsToDestroy.Length > 0)
                 {
-                    if (obj != null)
-                        UnityEngine.Object.DestroyImmediate(obj);
+                    UnityEditor.Undo.RecordObjects(objectsToDestroy, "Clear Box Connections");
+                    foreach (var obj in objectsToDestroy)
+                    {
+                        UnityEditor.Undo.DestroyObjectImmediate(obj);
+                    }
                 }
                 list.Clear();
             }

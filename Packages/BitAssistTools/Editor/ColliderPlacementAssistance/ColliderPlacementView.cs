@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
@@ -102,15 +103,8 @@ namespace BitAssistTools.Editor.ColliderPlacement
                 }
             };
             
-            _reorderableList.onReorderCallbackWithDetails = (ReorderableList list, int oldIndex, int newIndex) =>
-            {
-                Debug.Log($"onReorderCallbackWithDetails called: oldIndex={oldIndex}, newIndex={newIndex}");
-                // リオーダー処理をViewModelに通知
-                if (oldIndex != newIndex)
-                {
-                    _viewModel.MovePoint(oldIndex, newIndex);
-                }
-            };
+            // ReorderableListの自動並び替えのみを使用（旧版互換）
+            // onReorderCallbackWithDetailsは削除し、ReorderableListに完全に委ねる
             
             // 旧実装互換：リスト変更時の自動アップデート
             _reorderableList.onChangedCallback = (ReorderableList list) =>
@@ -125,10 +119,28 @@ namespace BitAssistTools.Editor.ColliderPlacement
         }
 
         /// <summary>
-        /// 全ポイントをクリア
+        /// 全ポイントをクリア（旧版互換：GameObjectを物理削除）
         /// </summary>
         private void ClearAllPoints()
         {
+            // 旧版互換：GameObjectを物理削除
+            var gameObjectsToDelete = _viewModel.Data.Points
+                .Where(p => p.GameObject != null)
+                .Select(p => p.GameObject)
+                .ToArray();
+            
+            if (gameObjectsToDelete.Length > 0)
+            {
+                Undo.RecordObjects(gameObjectsToDelete, "Clear Points");
+                
+                foreach (var obj in gameObjectsToDelete)
+                {
+                    Undo.DestroyObjectImmediate(obj);
+                }
+                
+                Undo.FlushUndoRecordObjects();
+            }
+            
             _viewModel.Data.Points.Clear();
             _viewModel.NotifyDataChanged();
         }
