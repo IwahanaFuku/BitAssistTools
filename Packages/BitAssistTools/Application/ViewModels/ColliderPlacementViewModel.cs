@@ -86,12 +86,10 @@ namespace BitAssistTools.Application.ViewModels
         /// </summary>
         public void AddPoint()
         {
-            UnityEngine.Debug.Log("AddPoint method called");
             GameObject newGameObject = null;
             
             if (BoxSettings.PointListParent != null)
             {
-                UnityEngine.Debug.Log("PointListParent exists, creating GameObject");
                 // 既存の子オブジェクトから穴を埋める番号を見つける
                 string baseName = "Point_";
                 int index = 0;
@@ -128,12 +126,10 @@ namespace BitAssistTools.Application.ViewModels
             
             // レコーダブルオブジェクトのリストにも新しい要素を追加
             Data.Points.Add(new PointObjectInfo { GameObject = newGameObject });
-            UnityEngine.Debug.Log($"Point added to list. GameObject: {(newGameObject != null ? newGameObject.name : "null")}, Total points: {Data.Points.Count}");
             
             // 自動アップデートが有効な場合はボックス接続を生成
             if (UI.IsAutoUpdate)
             {
-                UnityEngine.Debug.Log("Auto-update enabled, generating box connections from AddPoint");
                 GenerateBoxConnections();
             }
             
@@ -152,7 +148,6 @@ namespace BitAssistTools.Application.ViewModels
                 // 自動アップデートが有効な場合はボックス接続を再生成
                 if (UI.IsAutoUpdate)
                 {
-                    UnityEngine.Debug.Log("Auto-update enabled, regenerating box connections from RemovePointAt");
                     GenerateBoxConnections();
                 }
                 
@@ -183,7 +178,6 @@ namespace BitAssistTools.Application.ViewModels
                 // 自動アップデートが有効な場合はボックス接続を再生成
                 if (UI.IsAutoUpdate)
                 {
-                    UnityEngine.Debug.Log("Auto-update enabled, regenerating box connections from UpdatePointGameObject");
                     GenerateBoxConnections();
                 }
                 
@@ -565,8 +559,6 @@ namespace BitAssistTools.Application.ViewModels
             if (validPoints.Count < 2)
                 return;
 
-            UnityEngine.Debug.Log($"Creating edge connections: Points={validPoints.Count}, IsClosed={BoxSettings.IsClosed}");
-
             Data.Edges = ColliderPlacementService.GenerateEdgeColliders(
                 validPoints,
                 BoxSettings.BoxListParent,
@@ -575,8 +567,6 @@ namespace BitAssistTools.Application.ViewModels
                 BoxSettings.BoxHeight,
                 BoxSettings.BoxAbstractPosition
             );
-            
-            UnityEngine.Debug.Log($"Generated {Data.Edges?.Count ?? 0} edge colliders");
         }
 
         /// <summary>

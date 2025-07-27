@@ -45,7 +45,6 @@ namespace BitAssistTools.Application.Services
                 }
 
                 Undo.CollapseUndoOperations(undoGroup);
-                Debug.Log($"接頭辞・接尾辞を追加しました: {selectedObjects.Length}個のオブジェクト ({rule})");
             }
             catch (Exception ex)
             {
@@ -92,7 +91,6 @@ namespace BitAssistTools.Application.Services
                 }
 
                 Undo.CollapseUndoOperations(undoGroup);
-                Debug.Log($"文字列を置換しました: {changedCount}個のオブジェクト ({rule})");
             }
             catch (Exception ex)
             {
@@ -141,7 +139,6 @@ namespace BitAssistTools.Application.Services
                 {
                     AssetDatabase.SaveAssets();
                     Undo.CollapseUndoOperations(undoGroup);
-                    Debug.Log($"マテリアルをテクスチャ名でリネームしました: {renamedCount}個");
                 }
                 else
                 {
@@ -185,7 +182,6 @@ namespace BitAssistTools.Application.Services
                 }
 
                 Undo.CollapseUndoOperations(undoGroup);
-                Debug.Log($"オブジェクトをマテリアル名でリネームしました: {renamedCount}個");
             }
             catch (Exception ex)
             {
@@ -240,7 +236,6 @@ namespace BitAssistTools.Application.Services
 
                 UnityEditor.Selection.objects = selectedObjects;
                 Undo.CollapseUndoOperations(undoGroup);
-                Debug.Log($"オブジェクトに番号を付与しました: {selectedObjects.Length}個");
             }
             catch (Exception ex)
             {
@@ -281,7 +276,6 @@ namespace BitAssistTools.Application.Services
                 }
 
                 Undo.CollapseUndoOperations(undoGroup);
-                Debug.Log($"オブジェクトから番号を除去しました: {removedCount}個");
             }
             catch (Exception ex)
             {
@@ -323,7 +317,6 @@ namespace BitAssistTools.Application.Services
                     AssetDatabase.SaveAssets();
                     AssetDatabase.Refresh();
                     Undo.CollapseUndoOperations(undoGroup);
-                    Debug.Log($"Prefabアセットをリネームしました: {renamedCount}個");
                 }
                 else
                 {

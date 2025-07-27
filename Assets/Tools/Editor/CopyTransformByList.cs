@@ -283,7 +283,6 @@ public class CopyTransformByList : EditorWindow
             }
         }
 
-        Debug.Log("Successfully CopyTransformByList.");
         if (isClose == true)
         {
             this.Close();

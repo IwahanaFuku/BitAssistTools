@@ -34,7 +34,6 @@ namespace BitAssistTools.Application.Services
                 }
 
                 ProjectWindowUtil.ShowCreatedAsset(asset);
-                Debug.Log($"アセットを選択しました: {normalizedPath}");
             }
             catch (Exception ex)
             {

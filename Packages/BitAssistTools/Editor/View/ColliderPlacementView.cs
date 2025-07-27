@@ -88,9 +88,7 @@ namespace BitAssistTools.Editor.ColliderPlacement
             
             _reorderableList.onAddCallback = (ReorderableList list) =>
             {
-                Debug.Log("onAddCallback called");
                 _viewModel.AddPoint();
-                Debug.Log($"Point added. Total count: {_viewModel.Data.Points.Count}");
                 list.index = _viewModel.Data.Points.Count - 1; // 新しいアイテムを選択
             };
             
@@ -108,10 +106,8 @@ namespace BitAssistTools.Editor.ColliderPlacement
             // 旧実装互換：リスト変更時の自動アップデート
             _reorderableList.onChangedCallback = (ReorderableList list) =>
             {
-                Debug.Log("onChangedCallback called, auto-update check");
                 if (_viewModel.UI.IsAutoUpdate)
                 {
-                    Debug.Log("Auto-update enabled, generating box connections");
                     _viewModel.GenerateBoxConnections();
                 }
             };

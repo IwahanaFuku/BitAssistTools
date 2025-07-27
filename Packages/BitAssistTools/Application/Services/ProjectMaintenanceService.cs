@@ -76,7 +76,6 @@ namespace BitAssistTools.Application.Services
                     processedPrefabs.Count
                 );
 
-                Debug.Log($"クリーンアップ完了: {result}");
             }
             catch (Exception ex)
             {

@@ -62,7 +62,6 @@ namespace BitAssistTools.Application.Services
 
                 Undo.CollapseUndoOperations(undoGroup);
                 
-                Debug.Log($"ライト強度を変更しました: {lightsToModify.Length}個のライト ({rule})");
             }
             catch (Exception ex)
             {

@@ -140,8 +140,6 @@ namespace BitAssistTools.Editor.AssetNavigation
         /// </summary>
         private void ShowSuccess(string message)
         {
-            Debug.Log(message);
-            // 必要に応じてステータスバーや通知で表示可能
         }
     }
 }

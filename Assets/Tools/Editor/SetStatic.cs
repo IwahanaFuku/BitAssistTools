@@ -348,7 +348,6 @@ public class SetStatic : EditorWindow
             AddStatic(fromTableList[i]);
         }
         
-        Debug.Log("Successfully SetStatic.");
         if (isClose == true)
         {
             this.Close();
