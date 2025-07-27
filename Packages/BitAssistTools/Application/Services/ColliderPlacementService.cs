@@ -600,8 +600,6 @@ namespace BitAssistTools.Application.Services
         {
             if (selectedTransforms == null || selectedTransforms.Length == 0) return;
 
-            int firstIndex = selectedTransforms.Min(t => t.GetSiblingIndex());
-
             // ワールド座標での中心を計算
             Vector3 center = Vector3.zero;
             foreach (Transform transform in selectedTransforms)
@@ -611,21 +609,26 @@ namespace BitAssistTools.Application.Services
             center /= selectedTransforms.Length;
 
             var parent = selectedTransforms[0].parent; // 最初のオブジェクトの親を基準とする
+            int firstIndex = selectedTransforms.Min(t => t.GetSiblingIndex());
 
             var group = new GameObject("Group");
             
-            // 先に親を設定してから位置を設定
+            // 親を設定（worldPositionStays = false で相対位置を保持しない）
             group.transform.SetParent(parent, false);
-            group.transform.position = center; // ワールド座標で設定
+            // ワールド座標で位置を明示的に設定
+            group.transform.position = center;
             group.transform.SetSiblingIndex(firstIndex);
             
             Undo.RegisterCreatedObjectUndo(group, "Group Selected");
             
+            // 子オブジェクトを移動（worldPositionStays = true でワールド位置を保持）
             foreach (var transform in selectedTransforms.OrderBy(t => t.GetSiblingIndex()))
             {
                 Undo.SetTransformParent(transform, group.transform, "Group Selected");
             }
-            Selection.activeGameObject = group;
+            
+            // Selectionの設定は最後に行う（位置に影響しないように）
+            UnityEditor.Selection.activeGameObject = group;
         }
     }
 }

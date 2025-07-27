@@ -89,18 +89,32 @@ namespace BitAssistTools.Tests.Application.Services
         }
 
         [Test]
-        public void ApplyLightIntensityOperation_WithInvalidRule_LogsError()
+        public void LightOperationRule_Constructor_WithNaN_ThrowsArgumentException()
         {
-            // Arrange
-            var rule = new LightOperationRule(float.NaN, ArithmeticOperation.Addition);
+            // Arrange & Act & Assert
+            Assert.Throws<System.ArgumentException>(() => new LightOperationRule(float.NaN, ArithmeticOperation.Addition));
+        }
+
+        [Test]
+        public void LightOperationRule_Constructor_WithInfinity_ThrowsArgumentException()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<System.ArgumentException>(() => new LightOperationRule(float.PositiveInfinity, ArithmeticOperation.Addition));
+            Assert.Throws<System.ArgumentException>(() => new LightOperationRule(float.NegativeInfinity, ArithmeticOperation.Addition));
+        }
+
+        [Test]
+        public void ApplyLightIntensityOperation_WithValidRule_WorksCorrectly()
+        {
+            // Arrange - 現在の設計では、コンストラクタを通過した全てのルールは有効
+            var rule = new LightOperationRule(1.0f, ArithmeticOperation.Addition);
             UnityEditor.Selection.objects = new UnityEngine.Object[] { _lightObject1 };
 
-            // Act & Assert
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("無効なライト操作ルールです"));
+            // Act
             LightingService.ApplyLightIntensityOperation(rule);
 
-            // 無効なルールでは強度が変更されないことを確認
-            Assert.AreEqual(1.0f, _light1.intensity, 0.001f);
+            // Assert
+            Assert.AreEqual(2.0f, _light1.intensity, 0.001f); // 1.0 + 1.0
         }
 
         [Test]

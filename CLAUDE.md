@@ -140,6 +140,7 @@ public class PlacementView : EditorWindow
 - [ ] EtoEテストの追加 
 - [ ] パフォーマンス最適化
 - [ ] ドキュメント整備
+- [ ] CICD
 
 ## 📖 開発ガイド
 

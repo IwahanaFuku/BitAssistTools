@@ -19,16 +19,20 @@ namespace BitAssistTools.Infrastructure.Unity
         {
             if (transforms == null || transforms.Length == 0) return;
 
+            // null要素を除外
+            var validTransforms = transforms.Where(t => t != null).ToArray();
+            if (validTransforms.Length == 0) return;
+
             // 元実装のCommonFunctions.ParentCenterAligner()ロジック
-            int firstIndex = transforms.Min(t => t.GetSiblingIndex());
+            int firstIndex = validTransforms.Min(t => t.GetSiblingIndex());
 
             // 中心点計算
             Vector3 center = Vector3.zero;
-            foreach (Transform transform in transforms)
+            foreach (Transform transform in validTransforms)
             {
                 center += transform.position;
             }
-            center /= transforms.Length;
+            center /= validTransforms.Length;
 
             // 親の座標系に変換
             var parent = Selection.activeTransform?.parent;
@@ -45,7 +49,7 @@ namespace BitAssistTools.Infrastructure.Unity
 
             // 親設定とグループ化
             group.transform.SetParent(parent, false);
-            foreach (var transform in transforms.OrderBy(t => t.GetSiblingIndex()))
+            foreach (var transform in validTransforms.OrderBy(t => t.GetSiblingIndex()))
             {
                 Undo.SetTransformParent(transform, group.transform, "Group Selected");
             }
