@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using BitAssistTools.Editor.Selection;
+using BitAssistTools.Application.ViewModels;
 
 namespace BitAssistTools.Editor.Selection
 {

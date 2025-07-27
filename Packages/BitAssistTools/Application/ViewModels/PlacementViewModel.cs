@@ -4,7 +4,7 @@ using BitAssistTools.Domain.Models.Transform;
 using BitAssistTools.Domain.Models.Placement;
 using BitAssistTools.Application.Services;
 
-namespace BitAssistTools.Editor.Placement
+namespace BitAssistTools.Application.ViewModels
 {
     /// <summary>
     /// Placement機能のViewModel

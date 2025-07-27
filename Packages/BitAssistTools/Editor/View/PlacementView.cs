@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using BitAssistTools.Domain.Models.Transform;
+using BitAssistTools.Application.ViewModels;
 
 namespace BitAssistTools.Editor.Placement
 {

@@ -4,7 +4,7 @@ using UnityEngine;
 using BitAssistTools.Domain.Models.Selection;
 using BitAssistTools.Application.Services;
 
-namespace BitAssistTools.Editor.Selection
+namespace BitAssistTools.Application.ViewModels
 {
     /// <summary>
     /// Selection機能のViewModel
