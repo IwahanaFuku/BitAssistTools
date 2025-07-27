@@ -45,10 +45,10 @@ namespace TextureTools.Domain.Services
 
         public void MergeMasks(
             Color32[] outPx, int w, int h,
-            Color32[] rSrc, Channel rCh,
-            Color32[] gSrc, Channel gCh,
-            Color32[] bSrc, Channel bCh,
-            Color32[] aSrc, Channel aCh)
+            Color32[] rSrc, Channel rCh, bool rInv,
+            Color32[] gSrc, Channel gCh, bool gInv,
+            Color32[] bSrc, Channel bCh, bool bInv,
+            Color32[] aSrc, Channel aCh, bool aInv)
         {
             int len = w * h;
             for (int i = 0; i < len; i++)
@@ -57,8 +57,29 @@ namespace TextureTools.Domain.Services
                 byte g = gSrc != null ? GetCh(gSrc[i], gCh) : (byte)0;
                 byte b = bSrc != null ? GetCh(bSrc[i], bCh) : (byte)0;
                 byte a = aSrc != null ? GetCh(aSrc[i], aCh) : (byte)255;
+
+                if (rInv) r = (byte)(255 - r);
+                if (gInv) g = (byte)(255 - g);
+                if (bInv) b = (byte)(255 - b);
+                if (aInv) a = (byte)(255 - a);
+
                 outPx[i] = new Color32(r, g, b, a);
             }
+        }
+
+        public void MergeMasks(
+            Color32[] outPx, int w, int h,
+            Color32[] rSrc, Channel rCh,
+            Color32[] gSrc, Channel gCh,
+            Color32[] bSrc, Channel bCh,
+            Color32[] aSrc, Channel aCh)
+        {
+            // 反転フラグはすべて false で新メソッドに委譲
+            MergeMasks(outPx, w, h,
+                rSrc, rCh, false,
+                gSrc, gCh, false,
+                bSrc, bCh, false,
+                aSrc, aCh, false);
         }
 
         public void AdjustNormalStrength(Color32[] px, float strength)

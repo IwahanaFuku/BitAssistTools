@@ -48,10 +48,10 @@ namespace TextureTools.Infrastructure.Gpu
         }
 
         public RenderTexture MergeMasks(
-            Texture rSrc, int rCh,
-            Texture gSrc, int gCh,
-            Texture bSrc, int bCh,
-            Texture aSrc, int aCh,
+            Texture rSrc, int rCh, bool rInv,
+            Texture gSrc, int gCh, bool gInv,
+            Texture bSrc, int bCh, bool bInv,
+            Texture aSrc, int aCh, bool aInv,
             Vector2Int outSize,
             float rFill, float gFill, float bFill, float aFill)
         {
@@ -65,6 +65,11 @@ namespace TextureTools.Infrastructure.Gpu
             SetSize(_cs, _kMerge, outSize);
             _cs.SetInt("_Rch", rCh); _cs.SetInt("_Gch", gCh);
             _cs.SetInt("_Bch", bCh); _cs.SetInt("_Ach", aCh);
+
+            _cs.SetInt("_InvRsrc", rInv ? 1 : 0);
+            _cs.SetInt("_InvGsrc", gInv ? 1 : 0);
+            _cs.SetInt("_InvBsrc", bInv ? 1 : 0);
+            _cs.SetInt("_InvAsrc", aInv ? 1 : 0);
 
             _cs.SetFloat("_Rfill", rFill); _cs.SetFloat("_Gfill", gFill);
             _cs.SetFloat("_Bfill", bFill); _cs.SetFloat("_Afill", aFill);

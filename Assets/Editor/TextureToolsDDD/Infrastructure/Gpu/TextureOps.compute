@@ -1,4 +1,3 @@
-// Unity 2019.4 Compute Shader
 #pragma kernel Invert
 #pragma kernel MergeMasks
 #pragma kernel NormalOps
@@ -23,6 +22,7 @@ int _InvR, _InvG, _InvB, _InvA;
 // Merge
 int _Rch, _Gch, _Bch, _Ach;
 int _HasR, _HasG, _HasB, _HasA;
+int _InvRsrc, _InvGsrc, _InvBsrc, _InvAsrc; // ← 追加：各入力の反転
 float _Rfill, _Gfill, _Bfill, _Afill;
 
 // Normal
@@ -61,12 +61,17 @@ void MergeMasks(uint3 id : SV_DispatchThreadID)
     float4 bC = (_HasB != 0) ? _Bsrc.SampleLevel(sampler_linear_clamp, uv, 0) : float4(_Bfill, _Bfill, _Bfill, _Bfill);
     float4 aC = (_HasA != 0) ? _Asrc.SampleLevel(sampler_linear_clamp, uv, 0) : float4(_Afill, _Afill, _Afill, _Afill);
 
-    float4 outC;
-    outC.r = pickChannel(rC, _Rch);
-    outC.g = pickChannel(gC, _Gch);
-    outC.b = pickChannel(bC, _Bch);
-    outC.a = pickChannel(aC, _Ach);
-    _Dst[id.xy] = outC;
+    float r = pickChannel(rC, _Rch);
+    float g = pickChannel(gC, _Gch);
+    float b = pickChannel(bC, _Bch);
+    float a = pickChannel(aC, _Ach);
+
+    if (_InvRsrc != 0) r = 1.0 - r;
+    if (_InvGsrc != 0) g = 1.0 - g;
+    if (_InvBsrc != 0) b = 1.0 - b;
+    if (_InvAsrc != 0) a = 1.0 - a;
+
+    _Dst[id.xy] = float4(r, g, b, a);
 }
 
 [numthreads(8,8,1)]

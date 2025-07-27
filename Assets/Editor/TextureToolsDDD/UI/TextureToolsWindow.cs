@@ -38,6 +38,7 @@ namespace TextureTools.UI
         private Texture2D rSrc, gSrc, bSrc, aSrc;
         private Channel rCh = Channel.R, gCh = Channel.G, bCh = Channel.B, aCh = Channel.A;
         private int outW = 1024, outH = 1024;
+        private bool rInv = false, gInv = false, bInv = false, aInv = false;
 
         // DI（簡易）
         private UnityTextureRepository repo;
@@ -148,36 +149,60 @@ namespace TextureTools.UI
             }
         }
 
-        private void DrawMergeSection()
+private void DrawMergeSection()
+{
+    EditorGUILayout.LabelField("マスク統合（RGBAパッキング）", EditorStyles.boldLabel);
+
+    // R
+    rSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Rの入力"), rSrc, typeof(Texture2D), false);
+    using (new EditorGUILayout.HorizontalScope())
+    {
+        rCh = (Channel)EditorGUILayout.EnumPopup("Rに割り当てる元チャンネル", rCh);
+        rInv = EditorGUILayout.ToggleLeft("R入力を反転", rInv, GUILayout.Width(110));
+    }
+
+    // G
+    gSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Gの入力"), gSrc, typeof(Texture2D), false);
+    using (new EditorGUILayout.HorizontalScope())
+    {
+        gCh = (Channel)EditorGUILayout.EnumPopup("Gに割り当てる元チャンネル", gCh);
+        gInv = EditorGUILayout.ToggleLeft("G入力を反転", gInv, GUILayout.Width(110));
+    }
+
+    // B
+    bSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Bの入力"), bSrc, typeof(Texture2D), false);
+    using (new EditorGUILayout.HorizontalScope())
+    {
+        bCh = (Channel)EditorGUILayout.EnumPopup("Bに割り当てる元チャンネル", bCh);
+        bInv = EditorGUILayout.ToggleLeft("B入力を反転", bInv, GUILayout.Width(110));
+    }
+
+    // A
+    aSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Aの入力"), aSrc, typeof(Texture2D), false);
+    using (new EditorGUILayout.HorizontalScope())
+    {
+        aCh = (Channel)EditorGUILayout.EnumPopup("Aに割り当てる元チャンネル", aCh);
+        aInv = EditorGUILayout.ToggleLeft("A入力を反転", aInv, GUILayout.Width(110));
+    }
+
+    outW = EditorGUILayout.IntField("出力幅", outW);
+    outH = EditorGUILayout.IntField("出力高さ", outH);
+
+    if (GUILayout.Button("統合してPNG保存"))
+    {
+        var mapping = new MaskMapping
         {
-            EditorGUILayout.LabelField("マスク統合（RGBAパッキング）", EditorStyles.boldLabel);
-            rSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Rの入力"), rSrc, typeof(Texture2D), false);
-            rCh = (Channel)EditorGUILayout.EnumPopup("Rに割り当てる元チャンネル", rCh);
-            gSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Gの入力"), gSrc, typeof(Texture2D), false);
-            gCh = (Channel)EditorGUILayout.EnumPopup("Gに割り当てる元チャンネル", gCh);
-            bSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Bの入力"), bSrc, typeof(Texture2D), false);
-            bCh = (Channel)EditorGUILayout.EnumPopup("Bに割り当てる元チャンネル", bCh);
-            aSrc = (Texture2D)EditorGUILayout.ObjectField(new GUIContent("Aの入力"), aSrc, typeof(Texture2D), false);
-            aCh = (Channel)EditorGUILayout.EnumPopup("Aに割り当てる元チャンネル", aCh);
-
-            outW = EditorGUILayout.IntField("出力幅", outW);
-            outH = EditorGUILayout.IntField("出力高さ", outH);
-
-            if (GUILayout.Button("統合してPNG保存"))
-            {
-                var mapping = new MaskMapping
-                {
-                    OutR = rSrc ? new MaskSource { Source = rSrc, SourceChannel = rCh } : null,
-                    OutG = gSrc ? new MaskSource { Source = gSrc, SourceChannel = gCh } : null,
-                    OutB = bSrc ? new MaskSource { Source = bSrc, SourceChannel = bCh } : null,
-                    OutA = aSrc ? new MaskSource { Source = aSrc, SourceChannel = aCh } : null,
-                };
-                var uc = new MergeMasksUseCase(repo, proc);
-                var r = uc.Execute(mapping, outW, outH, saveBasePathNoExt,
-                    (useGpu && gpuOps != null && gpuOps.IsSupported) ? gpuOps : null);
-                if (!r.IsOk) EditorUtility.DisplayDialog("エラー", r.Error, "OK");
-            }
-        }
+            OutR = rSrc ? new MaskSource { Source = rSrc, SourceChannel = rCh, Invert = rInv } : null,
+            OutG = gSrc ? new MaskSource { Source = gSrc, SourceChannel = gCh, Invert = gInv } : null,
+            OutB = bSrc ? new MaskSource { Source = bSrc, SourceChannel = bCh, Invert = bInv } : null,
+            OutA = aSrc ? new MaskSource { Source = aSrc, SourceChannel = aCh, Invert = aInv } : null,
+        };
+        var uc = new MergeMasksUseCase(repo, proc);
+        var r = uc.Execute(mapping, outW, outH, saveBasePathNoExt,
+            (useGpu && gpuOps != null && gpuOps.IsSupported) ? gpuOps : null);
+        if (!r.IsOk) EditorUtility.DisplayDialog("エラー", r.Error, "OK");
+    }
+}
     }
 }
 #endif

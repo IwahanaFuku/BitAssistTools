@@ -8,6 +8,7 @@ namespace TextureTools.Domain.Model
     {
         public Texture2D Source;
         public Channel SourceChannel = Channel.R;
+        public bool Invert = false;   // ← 追加：この入力チャンネルを反転するか
     }
 
     [Serializable]

@@ -24,16 +24,15 @@ namespace TextureTools.Application.Services
         {
             Texture2D saved = null;
 
-            // 入力のあるものだけ Default 化して実行
             Action run = () =>
             {
                 if (gpu != null && gpu.IsSupported)
                 {
                     var rt = gpu.MergeMasks(
-                        m.OutR?.Source, (int)(m.OutR?.SourceChannel ?? Channel.R),
-                        m.OutG?.Source, (int)(m.OutG?.SourceChannel ?? Channel.G),
-                        m.OutB?.Source, (int)(m.OutB?.SourceChannel ?? Channel.B),
-                        m.OutA?.Source, (int)(m.OutA?.SourceChannel ?? Channel.A),
+                        m.OutR?.Source, (int)(m.OutR?.SourceChannel ?? Channel.R), (m.OutR?.Invert ?? false),
+                        m.OutG?.Source, (int)(m.OutG?.SourceChannel ?? Channel.G), (m.OutG?.Invert ?? false),
+                        m.OutB?.Source, (int)(m.OutB?.SourceChannel ?? Channel.B), (m.OutB?.Invert ?? false),
+                        m.OutA?.Source, (int)(m.OutA?.SourceChannel ?? Channel.A), (m.OutA?.Invert ?? false),
                         new Vector2Int(w, h),
                         0f, 0f, 0f, 1f
                     );
@@ -49,17 +48,17 @@ namespace TextureTools.Application.Services
 
                     var outPx = new Color32[w * h];
                     _cpu.MergeMasks(outPx, w, h,
-                        rPix, m.OutR?.SourceChannel ?? Channel.R,
-                        gPix, m.OutG?.SourceChannel ?? Channel.G,
-                        bPix, m.OutB?.SourceChannel ?? Channel.B,
-                        aPix, m.OutA?.SourceChannel ?? Channel.A);
+                        rPix, m.OutR?.SourceChannel ?? Channel.R, (m.OutR?.Invert ?? false),
+                        gPix, m.OutG?.SourceChannel ?? Channel.G, (m.OutG?.Invert ?? false),
+                        bPix, m.OutB?.SourceChannel ?? Channel.B, (m.OutB?.Invert ?? false),
+                        aPix, m.OutA?.SourceChannel ?? Channel.A, (m.OutA?.Invert ?? false));
 
                     saved = _repo.SavePixelsAsPng(outPx, w, h, saveBase);
                 }
             };
 
-            // 4つをネストで Default 化（null はスキップ）。GPU では isReadable 不要。
             var needReadable = (gpu == null);
+            // （以下の WithTextureTypeDefault ネストは前回のまま。省略せずそのまま使用）
             if (m.OutR?.Source != null)
                 _repo.WithTextureTypeDefault(m.OutR.Source, needReadable, () =>
                 {
@@ -103,7 +102,6 @@ namespace TextureTools.Application.Services
                 });
             else
             {
-                // R が無い場合の入口
                 if (m.OutG?.Source != null)
                     _repo.WithTextureTypeDefault(m.OutG.Source, needReadable, () =>
                     {
