@@ -34,11 +34,13 @@ namespace BitAssistTools.Infrastructure.Unity
 
             try
             {
-                // 一時的なテクスチャを作成してピクセルをコピー
-                var tempTexture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
-                Graphics.CopyTexture(texture, tempTexture);
-                var pixels = tempTexture.GetPixels32();
-                UnityEngine.Object.DestroyImmediate(tempTexture);
+                // 元のテクスチャのピクセルを読み取り（sRGB考慮）
+                var colors = texture.GetPixels();
+                var pixels = new Color32[colors.Length];
+                for (int i = 0; i < colors.Length; i++)
+                {
+                    pixels[i] = colors[i];
+                }
                 return pixels;
             }
             finally
@@ -63,6 +65,14 @@ namespace BitAssistTools.Infrastructure.Unity
         /// </summary>
         public Texture2D SavePixelsAsPng(Color32[] pixels, int width, int height, string basePathNoExt)
         {
+            return SavePixelsAsPngWithSettings(pixels, width, height, basePathNoExt, null);
+        }
+        
+        /// <summary>
+        /// ピクセルデータをPNGとして保存（元テクスチャの設定を継承）
+        /// </summary>
+        public Texture2D SavePixelsAsPngWithSettings(Color32[] pixels, int width, int height, string basePathNoExt, Texture2D originalTexture)
+        {
             if (pixels == null)
                 throw new ArgumentNullException(nameof(pixels));
             if (pixels.Length != width * height)
@@ -70,10 +80,16 @@ namespace BitAssistTools.Infrastructure.Unity
             if (string.IsNullOrEmpty(basePathNoExt))
                 throw new ArgumentException("Base path cannot be null or empty", nameof(basePathNoExt));
 
-            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, false);
             try
             {
-                texture.SetPixels32(pixels);
+                // Color32からColorに変換してsRGB色空間を適切に処理
+                var colors = new Color[pixels.Length];
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    colors[i] = pixels[i];
+                }
+                texture.SetPixels(colors);
                 texture.Apply(false, false);
 
                 var path = basePathNoExt + ".png";
@@ -85,6 +101,10 @@ namespace BitAssistTools.Infrastructure.Unity
 
                 File.WriteAllBytes(path, texture.EncodeToPNG());
                 AssetDatabase.ImportAsset(path);
+                
+                // インポート後にテクスチャ設定を適切に設定
+                ConfigureTextureImporter(path, originalTexture);
+                
                 return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             }
             finally
@@ -106,7 +126,7 @@ namespace BitAssistTools.Infrastructure.Unity
             var previousActive = RenderTexture.active;
             RenderTexture.active = renderTexture;
 
-            var texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false, true);
+            var texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false, false);
             try
             {
                 texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0, false);
@@ -121,6 +141,10 @@ namespace BitAssistTools.Infrastructure.Unity
 
                 File.WriteAllBytes(path, texture.EncodeToPNG());
                 AssetDatabase.ImportAsset(path);
+                
+                // インポート後にテクスチャ設定を適切に設定
+                ConfigureTextureImporter(path, null);
+                
                 return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             }
             finally
@@ -222,6 +246,77 @@ namespace BitAssistTools.Infrastructure.Unity
             return result;
         }
 
+        /// <summary>
+        /// テクスチャインポーターを適切に設定
+        /// </summary>
+        private static void ConfigureTextureImporter(string texturePath, Texture2D originalTexture = null)
+        {
+            var importer = AssetImporter.GetAtPath(texturePath) as TextureImporter;
+            if (importer != null)
+            {
+                // 元のテクスチャの設定を取得（可能な場合）
+                TextureImporter originalImporter = null;
+                if (originalTexture != null)
+                {
+                    var originalPath = AssetDatabase.GetAssetPath(originalTexture);
+                    if (!string.IsNullOrEmpty(originalPath))
+                    {
+                        originalImporter = AssetImporter.GetAtPath(originalPath) as TextureImporter;
+                    }
+                }
+                
+                // 基本設定（元の設定を優先）
+                importer.textureType = originalImporter?.textureType ?? TextureImporterType.Default;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.alphaIsTransparency = originalImporter?.alphaIsTransparency ?? true;
+                
+                // sRGB設定を最初に設定（重要）
+                if (originalImporter != null)
+                {
+                    importer.sRGBTexture = originalImporter.sRGBTexture;
+                }
+                else
+                {
+                    // デフォルトは通常のカラーテクスチャとしてsRGB=trueに設定
+                    importer.sRGBTexture = true;
+                }
+                
+                // 圧縮設定（元の設定を優先、ただし品質は維持）
+                importer.textureCompression = originalImporter?.textureCompression ?? TextureImporterCompression.Compressed;
+                
+                // プラットフォーム設定
+                var platformSettings = importer.GetDefaultPlatformTextureSettings();
+                if (originalImporter != null)
+                {
+                    var originalPlatformSettings = originalImporter.GetDefaultPlatformTextureSettings();
+                    platformSettings.format = originalPlatformSettings.format;
+                    platformSettings.textureCompression = originalPlatformSettings.textureCompression;
+                    platformSettings.compressionQuality = Math.Max(originalPlatformSettings.compressionQuality, 90); // 最低90%品質
+                }
+                else
+                {
+                    platformSettings.format = TextureImporterFormat.Automatic;
+                    platformSettings.textureCompression = TextureImporterCompression.Compressed;
+                    platformSettings.compressionQuality = 100; // 最高品質
+                }
+                importer.SetPlatformTextureSettings(platformSettings);
+                
+                // ミップマップ設定（元の設定を優先）
+                importer.mipmapEnabled = originalImporter?.mipmapEnabled ?? true;
+                importer.streamingMipmaps = originalImporter?.streamingMipmaps ?? false;
+                
+                // フィルタリング設定（元の設定を優先）
+                importer.filterMode = originalImporter?.filterMode ?? FilterMode.Bilinear;
+                importer.anisoLevel = originalImporter?.anisoLevel ?? 1;
+                
+                // 変更を適用
+                importer.SaveAndReimport();
+                
+                var settingsInfo = originalImporter != null ? "元設定継承" : "デフォルト設定";
+                UnityEngine.Debug.Log($"[TextureTools] PNG保存完了: {texturePath} ({settingsInfo}, 品質: {platformSettings.compressionQuality}%)");
+            }
+        }
+        
         #region Private Helper Methods
 
         /// <summary>

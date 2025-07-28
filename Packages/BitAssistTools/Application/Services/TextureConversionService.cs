@@ -31,6 +31,23 @@ namespace BitAssistTools.Application.Services
                 if (string.IsNullOrEmpty(sourcePath)) 
                     return Result<Texture2D>.Fail("アセットパスが見つかりません。");
 
+                // 元の画像がすでにPNGの場合の処理
+                var sourceExtension = System.IO.Path.GetExtension(sourcePath).ToLower();
+                var isPngSource = sourceExtension == ".png";
+                
+                if (isPngSource)
+                {
+                    if (deleteOriginal)
+                    {
+                        return Result<Texture2D>.Fail("元の画像がすでにPNG形式のため、変換と削除をスキップしました。");
+                    }
+                    else
+                    {
+                        // 削除なしの場合は、そのまま元のテクスチャを返す
+                        return Result<Texture2D>.Ok(sourceTexture);
+                    }
+                }
+
                 // 保存先パスを生成（拡張子なし）
                 var basePathNoExt = System.IO.Path.Combine(
                     System.IO.Path.GetDirectoryName(sourcePath),
@@ -41,7 +58,17 @@ namespace BitAssistTools.Application.Services
                 repository.WithTextureTypeDefault(sourceTexture, needReadable: true, action: () =>
                 {
                     var pixels = repository.LoadPixels(sourceTexture, out var width, out var height);
-                    savedTexture = repository.SavePixelsAsPng(pixels, width, height, basePathNoExt);
+                    
+                    // SavePixelsAsPngWithSettingsメソッドを使用して元のテクスチャ設定を保持
+                    var unityRepo = repository as Infrastructure.Unity.UnityTextureRepository;
+                    if (unityRepo != null)
+                    {
+                        savedTexture = unityRepo.SavePixelsAsPngWithSettings(pixels, width, height, basePathNoExt, sourceTexture);
+                    }
+                    else
+                    {
+                        savedTexture = repository.SavePixelsAsPng(pixels, width, height, basePathNoExt);
+                    }
                 });
 
                 if (savedTexture == null)

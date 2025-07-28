@@ -1,55 +1,57 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-using BitAssistTools.Application.Services;
+using BitAssistTools.Application.ViewModels;
 using BitAssistTools.Domain.Models.Texture;
 using BitAssistTools.Domain.Models.Shared;
+using BitAssistTools.Domain.Repositories;
+using BitAssistTools.Domain.Services;
+using BitAssistTools.Application.Services;
 using BitAssistTools.Infrastructure.Unity;
+using System.Linq;
 
 namespace BitAssistTools.Editor.View
 {
     /// <summary>
-    /// テクスチャツールのエディターウィンドウ
+    /// 改善されたテクスチャツールのエディターウィンドウ
     /// </summary>
     public class TextureToolsView : EditorWindow
     {
         [MenuItem("Bit Assist Tools/テクスチャ編集支援ツール", priority = 18)]
         public static void Open() => GetWindow<TextureToolsView>("テクスチャツール");
 
-        #region UI State Variables
-
-        // 共通設定
-        private string saveBasePathNoExt = "Assets/Textures/Result";
-        private bool useGpu = true;
+        #region Private Fields
+        private TextureToolsViewModel _viewModel;
+        private Vector2 _leftScrollPos;
+        private Vector2 _rightScrollPos;
+        private string[] _tabNames = { "レシピ", "詳細" };
+        private string[] _gpuModeNames = { "自動（推奨）", "GPU固定", "CPU固定" };
+        private string[] _previewModeNames = { "RGB", "Alpha", "法線" };
+        private Texture2D _previewTexture;
+        private bool _showNotification = false;
+        private string _notificationText = "";
+        private float _notificationTime = 0f;
+        
+        // Repository and Processors
+        private ITextureRepository _repository;
+        private ITextureProcessingService _cpuProcessor;
+        private IGpuTextureOperationService _gpuProcessor;
+        
+        // UI State Variables
+        private bool useGpu = false;
         private ComputeShader computeShader;
-
-        // PNG変換
+        private string saveBasePathNoExt = "Assets/ProcessedTexture";
         private Texture2D convertTarget;
-        private bool deleteOriginal = true;
-
-        // 反転
+        private bool deleteOriginal = false;
         private Texture2D invertTarget;
         private bool invertR = true, invertG = true, invertB = true, invertA = true;
-
-        // 法線マップ
         private Texture2D normalTarget;
         private bool normalInvertR = false, normalInvertG = true;
         private float normalStrength = 1.0f;
-
-        // マスク統合
         private Texture2D rSource, gSource, bSource, aSource;
         private Channel rChannel = Channel.R, gChannel = Channel.G, bChannel = Channel.B, aChannel = Channel.A;
-        private int outputWidth = 1024, outputHeight = 1024;
         private bool rInvert = false, gInvert = false, bInvert = false, aInvert = false;
-
-        #endregion
-
-        #region Service Dependencies
-
-        private UnityTextureRepository _repository;
-        private UnityTextureProcessingService _cpuProcessor;
-        private UnityGpuTextureOperationService _gpuProcessor;
-
+        private int outputWidth = 1024, outputHeight = 1024;
         #endregion
 
         private void OnEnable()
