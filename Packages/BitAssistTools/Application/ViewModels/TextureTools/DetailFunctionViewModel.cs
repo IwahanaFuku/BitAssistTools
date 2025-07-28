@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using BitAssistTools.Domain.Models.TextureTools;
 using BitAssistTools.Domain.Models.Texture;
 
@@ -10,6 +11,10 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
     /// </summary>
     public class DetailFunctionViewModel
     {
+        #region Private Fields
+        private readonly Func<UnityEngine.Texture2D> _getCurrentTexture;
+        #endregion
+
         #region Events
         public event Action OnFunctionChanged;
         public event Action OnSettingsChanged;
@@ -64,8 +69,10 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         #endregion
 
         #region Constructor
-        public DetailFunctionViewModel()
+        public DetailFunctionViewModel(Func<UnityEngine.Texture2D> getCurrentTexture = null)
         {
+            _getCurrentTexture = getCurrentTexture;
+            
             // マスクチャンネルデータを初期化
             for (int i = 0; i < MaskChannels.Length; i++)
             {
@@ -122,8 +129,8 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         /// </summary>
         private UnityEngine.Texture2D GetCurrentTexture()
         {
-            // Selection.activeObjectから現在選択されているテクスチャを取得
-            return UnityEditor.Selection.activeObject as UnityEngine.Texture2D;
+            // 親ViewModelから提供された関数を使用してテクスチャを取得
+            return _getCurrentTexture?.Invoke();
         }
 
         /// <summary>
@@ -191,14 +198,110 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
                 return;
             }
 
+            var sourceTexture = GetCurrentTexture();
+            if (sourceTexture == null)
+            {
+                OnError?.Invoke("対象テクスチャが選択されていません");
+                return;
+            }
+
             try
             {
-                // TODO: 実際の詳細機能実行処理を実装
-                OnNotification?.Invoke($"詳細機能を実行しました");
+                // TexturePreviewServiceを使用して詳細機能を実行
+                var parameters = GetFunctionParameters();
+                var resultTexture = Services.TextureTools.TexturePreviewService.GenerateDetailPreview(sourceTexture, _selectedFunction, parameters);
+                
+                if (resultTexture != null)
+                {
+                    // 結果テクスチャをファイルとして保存
+                    SaveResultTexture(resultTexture, sourceTexture);
+                    OnNotification?.Invoke($"詳細機能「{_selectedFunction}」を実行しました");
+                }
+                else
+                {
+                    OnError?.Invoke("詳細機能の実行に失敗しました");
+                }
             }
             catch (Exception ex)
             {
                 OnError?.Invoke($"詳細機能実行に失敗しました: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 結果テクスチャをファイルとして保存
+        /// </summary>
+        private void SaveResultTexture(UnityEngine.Texture2D resultTexture, UnityEngine.Texture2D sourceTexture)
+        {
+            var sourcePath = UnityEditor.AssetDatabase.GetAssetPath(sourceTexture);
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                throw new InvalidOperationException("ソーステクスチャのパスが取得できません");
+            }
+
+            var directory = System.IO.Path.GetDirectoryName(sourcePath);
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
+            var functionName = GetFunctionSuffix(_selectedFunction);
+            var outputPath = System.IO.Path.Combine(directory, $"{fileName}_{functionName}.png");
+
+            // PNG形式で保存 - Unity 2019.4対応
+            try
+            {
+                var pngData = resultTexture.EncodeToPNG();
+                System.IO.File.WriteAllBytes(outputPath, pngData);
+            }
+            catch (UnityException)
+            {
+                // テクスチャが読み取り可能でない場合の対処
+                var readableTexture = CreateReadableTexture(resultTexture);
+                var pngData = readableTexture.EncodeToPNG();
+                System.IO.File.WriteAllBytes(outputPath, pngData);
+                UnityEngine.Object.DestroyImmediate(readableTexture);
+            }
+            
+            // Unityにアセットを再インポートさせる
+            UnityEditor.AssetDatabase.ImportAsset(outputPath);
+            UnityEditor.AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// 読み取り可能なテクスチャを作成
+        /// </summary>
+        private UnityEngine.Texture2D CreateReadableTexture(UnityEngine.Texture2D source)
+        {
+            var renderTexture = UnityEngine.RenderTexture.GetTemporary(source.width, source.height, 0, UnityEngine.RenderTextureFormat.ARGB32);
+            var oldRT = UnityEngine.RenderTexture.active;
+            
+            try
+            {
+                UnityEngine.RenderTexture.active = renderTexture;
+                UnityEngine.Graphics.Blit(source, renderTexture);
+                
+                var readableTexture = new UnityEngine.Texture2D(source.width, source.height, UnityEngine.TextureFormat.RGBA32, false);
+                readableTexture.ReadPixels(new UnityEngine.Rect(0, 0, source.width, source.height), 0, 0);
+                readableTexture.Apply();
+                
+                return readableTexture;
+            }
+            finally
+            {
+                UnityEngine.RenderTexture.active = oldRT;
+                UnityEngine.RenderTexture.ReleaseTemporary(renderTexture);
+            }
+        }
+
+        /// <summary>
+        /// 詳細機能タイプに応じたファイル名サフィックスを取得
+        /// </summary>
+        private string GetFunctionSuffix(DetailFunction functionType)
+        {
+            switch (functionType)
+            {
+                case DetailFunction.PngConvert: return "png";
+                case DetailFunction.ChannelInvert: return "channel_inverted";
+                case DetailFunction.NormalMap: return "normal_adjusted";
+                case DetailFunction.MaskMerge: return "mask_merged";
+                default: return "processed";
             }
         }
         #endregion

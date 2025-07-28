@@ -137,14 +137,12 @@ namespace BitAssistTools.Application.Services.TextureTools
                 return false;
             }
             
-            Debug.Log($"[TextureDisplayService] EnsureTexturePreviewReady: チェック中 '{texture.name}' (現在のType: {importer.textureType}, Readable: {importer.isReadable})");
             
             // 新しいテクスチャを管理対象にする
             _currentManagedTexture = texture;
             _originalReadableState = importer.isReadable;
             _originalTextureType = importer.textureType;
             
-            Debug.Log($"[TextureDisplayService] 管理開始: '{texture.name}' (Type: {_originalTextureType}, Readable: {_originalReadableState})");
             
             bool needsReimport = false;
             
@@ -153,7 +151,6 @@ namespace BitAssistTools.Application.Services.TextureTools
             {
                 importer.textureType = TextureImporterType.Default;
                 needsReimport = true;
-                Debug.Log($"[TextureDisplayService] Texture Typeを一時的にDefaultに変更: '{texture.name}'");
             }
             
             // Read/Write Enabledをオンにする
@@ -161,7 +158,6 @@ namespace BitAssistTools.Application.Services.TextureTools
             {
                 importer.isReadable = true;
                 needsReimport = true;
-                Debug.Log($"[TextureDisplayService] Read/Write Enabledをオンに変更: '{texture.name}'");
             }
             
             // 変更があった場合のみ再インポート
@@ -201,7 +197,6 @@ namespace BitAssistTools.Application.Services.TextureTools
             {
                 importer.textureType = _originalTextureType;
                 needsReimport = true;
-                Debug.Log($"[TextureDisplayService] Texture Typeを復元: '{_currentManagedTexture.name}' -> {_originalTextureType}");
             }
             
             // Read/Write設定の復元
@@ -210,7 +205,6 @@ namespace BitAssistTools.Application.Services.TextureTools
                 importer.isReadable = _originalReadableState;
                 needsReimport = true;
                 var stateText = _originalReadableState ? "Read/Write Enabled" : "Read/Write Disabled";
-                Debug.Log($"[TextureDisplayService] Read/Write設定を復元: '{_currentManagedTexture.name}' -> {stateText}");
             }
             
             // 変更があった場合のみ再インポート

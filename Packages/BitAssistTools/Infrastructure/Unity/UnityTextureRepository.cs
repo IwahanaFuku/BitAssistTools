@@ -311,9 +311,6 @@ namespace BitAssistTools.Infrastructure.Unity
                 
                 // 変更を適用
                 importer.SaveAndReimport();
-                
-                var settingsInfo = originalImporter != null ? "元設定継承" : "デフォルト設定";
-                UnityEngine.Debug.Log($"[TextureTools] PNG保存完了: {texturePath} ({settingsInfo}, 品質: {platformSettings.compressionQuality}%)");
             }
         }
         

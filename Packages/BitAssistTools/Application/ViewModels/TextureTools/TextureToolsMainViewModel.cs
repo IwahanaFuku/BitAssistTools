@@ -30,8 +30,8 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         {
             // サブViewModelを初期化
             Selection = new TextureSelectionViewModel();
-            Recipe = new RecipeViewModel();
-            DetailFunction = new DetailFunctionViewModel();
+            Recipe = new RecipeViewModel(() => Selection.TargetTexture);
+            DetailFunction = new DetailFunctionViewModel(() => Selection.TargetTexture);
             Preview = new PreviewViewModel();
 
             // イベントハンドラーを設定

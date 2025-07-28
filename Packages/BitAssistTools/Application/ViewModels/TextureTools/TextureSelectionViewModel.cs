@@ -71,7 +71,6 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
             if (selected != null)
             {
                 TargetTexture = selected;
-                OnNotification?.Invoke($"テクスチャを設定: {selected.name}");
             }
         }
 
