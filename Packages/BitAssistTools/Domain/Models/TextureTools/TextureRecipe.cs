@@ -54,7 +54,6 @@ namespace BitAssistTools.Domain.Models.TextureTools
         InvertAll,      // 全チャンネル反転
         NormalGInvert,  // 法線G反転
         NormalStrength15, // 法線強度1.5
-        ORMMerge,       // ORM統合
-        MRAMerge        // MRA統合
+        RMAToUnity      // RMA → Unity Standard変換
     }
 }

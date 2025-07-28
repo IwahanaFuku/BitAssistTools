@@ -118,26 +118,51 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         }
 
         /// <summary>
-        /// ORMプリセットを適用
+        /// 現在選択されているテクスチャを取得
         /// </summary>
-        public void ApplyORMPreset()
+        private UnityEngine.Texture2D GetCurrentTexture()
         {
-            // AO(R) + Roughness(G) + Metallic(B)
-            ClearMaskChannels();
-            // 実際のプリセット適用は、テクスチャが設定されている場合に自動で行う
-            OnNotification?.Invoke("ORMプリセットを適用しました: AO(R) + Roughness(G) + Metallic(B)");
-            NotifySettingsChanged();
+            // Selection.activeObjectから現在選択されているテクスチャを取得
+            return UnityEditor.Selection.activeObject as UnityEngine.Texture2D;
         }
 
         /// <summary>
-        /// MRAプリセットを適用
+        /// RMA → Unity Standardプリセットを適用
         /// </summary>
-        public void ApplyMRAPreset()
+        public void ApplyRMAToUnityPreset()
         {
-            // Metallic(R) + Roughness(G) + AO(B)
+            // RMAテクスチャをUnity Standardシェーダ用に変換
+            // UE4形式RMA: R=AO, G=Roughness, B=Metallic
+            // Unity Standard: R=Metallic, G=AO, B=0, Alpha=Smoothness(1-Roughness)
+            
             ClearMaskChannels();
-            // 実際のプリセット適用は、テクスチャが設定されている場合に自動で行う
-            OnNotification?.Invoke("MRAプリセットを適用しました: Metallic(R) + Roughness(G) + AO(B)");
+            
+            // 現在選択されているテクスチャを全チャンネルのソースとして設定
+            var currentTexture = GetCurrentTexture();
+            if (currentTexture != null)
+            {
+                // R出力 = Metallic (元のBチャンネル)
+                MaskChannels[0].Source = currentTexture;
+                MaskChannels[0].SourceChannel = Channel.B;
+                MaskChannels[0].Invert = false;
+                
+                // G出力 = AO (元のRチャンネル)
+                MaskChannels[1].Source = currentTexture;
+                MaskChannels[1].SourceChannel = Channel.R;
+                MaskChannels[1].Invert = false;
+                
+                // B出力 = 0 (使用しない)
+                MaskChannels[2].Source = null;
+                MaskChannels[2].SourceChannel = Channel.B;
+                MaskChannels[2].Invert = false;
+                
+                // Alpha出力 = Smoothness (元のGチャンネルを反転)
+                MaskChannels[3].Source = currentTexture;
+                MaskChannels[3].SourceChannel = Channel.G;
+                MaskChannels[3].Invert = true; // Roughness → Smoothness
+            }
+            
+            OnNotification?.Invoke("RMA → Unity Standardプリセットを適用しました");
             NotifySettingsChanged();
         }
 

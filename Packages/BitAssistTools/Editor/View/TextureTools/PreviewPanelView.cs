@@ -51,11 +51,9 @@ namespace BitAssistTools.Editor.View.TextureTools
                 {
                     // 基本モード
                     var newMode = viewModel.Preview.Settings.Mode;
-                    if (GUILayout.Toggle(newMode == PreviewMode.RGB, "RGB", "Button", GUILayout.Width(45)))
+                    if (GUILayout.Toggle(newMode == PreviewMode.RGB, "RGB", "Button", GUILayout.Width(40)))
                         newMode = PreviewMode.RGB;
-                    if (GUILayout.Toggle(newMode == PreviewMode.Alpha, "Alpha", "Button", GUILayout.Width(45)))
-                        newMode = PreviewMode.Alpha;
-                    if (GUILayout.Toggle(newMode == PreviewMode.Normal, "法線", "Button", GUILayout.Width(45)))
+                    if (GUILayout.Toggle(newMode == PreviewMode.Normal, "法線", "Button", GUILayout.Width(40)))
                         newMode = PreviewMode.Normal;
                         
                     // 設定が変更された場合は更新
@@ -69,12 +67,14 @@ namespace BitAssistTools.Editor.View.TextureTools
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     var newMode = viewModel.Preview.Settings.Mode;
-                    if (GUILayout.Toggle(newMode == PreviewMode.R, "R", "Button", GUILayout.Width(30)))
+                    if (GUILayout.Toggle(newMode == PreviewMode.R, "R", "Button", GUILayout.Width(25)))
                         newMode = PreviewMode.R;
-                    if (GUILayout.Toggle(newMode == PreviewMode.G, "G", "Button", GUILayout.Width(30)))
+                    if (GUILayout.Toggle(newMode == PreviewMode.G, "G", "Button", GUILayout.Width(25)))
                         newMode = PreviewMode.G;
-                    if (GUILayout.Toggle(newMode == PreviewMode.B, "B", "Button", GUILayout.Width(30)))
+                    if (GUILayout.Toggle(newMode == PreviewMode.B, "B", "Button", GUILayout.Width(25)))
                         newMode = PreviewMode.B;
+                    if (GUILayout.Toggle(newMode == PreviewMode.Alpha, "A", "Button", GUILayout.Width(25)))
+                        newMode = PreviewMode.Alpha;
                         
                     // 設定が変更された場合は更新
                     if (newMode != viewModel.Preview.Settings.Mode)
@@ -87,10 +87,6 @@ namespace BitAssistTools.Editor.View.TextureTools
                 if (viewModel.Preview.Settings.Mode == PreviewMode.Normal)
                 {
                     EditorGUILayout.HelpBox("法線ベクトルを黄色い矢印で表示", MessageType.Info);
-                }
-                else if (viewModel.Preview.Settings.Mode >= PreviewMode.R)
-                {
-                    EditorGUILayout.HelpBox("選択したチャンネルをグレースケールで表示", MessageType.Info);
                 }
             }
         }

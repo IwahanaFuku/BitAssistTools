@@ -40,10 +40,8 @@ namespace BitAssistTools.Application.Services.TextureTools
                         return GenerateNormalGInvertPreview(sourceTexture);
                     case RecipeType.NormalStrength15:
                         return GenerateNormalStrengthPreview(sourceTexture, 1.5f);
-                    case RecipeType.ORMMerge:
-                        return sourceTexture; // 統合プレビューは複雑なので後で実装
-                    case RecipeType.MRAMerge:
-                        return sourceTexture; // 統合プレビューは複雑なので後で実装
+                    case RecipeType.RMAToUnity:
+                        return GenerateRMAToUnityPreview(sourceTexture);
                     default:
                         return null;
                 }
@@ -139,6 +137,27 @@ namespace BitAssistTools.Application.Services.TextureTools
                 g = Mathf.Clamp(g * 0.5f + 0.5f, 0f, 1f);
                 
                 colors[i] = new Color(r, g, colors[i].b, colors[i].a);
+            }
+            
+            var result = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
+            result.SetPixels(colors);
+            result.Apply();
+            return result;
+        }
+
+        private static Texture2D GenerateRMAToUnityPreview(Texture2D source)
+        {
+            var colors = source.GetPixels();
+            for (int i = 0; i < colors.Length; i++)
+            {
+                // UE4形式のRMAテクスチャ: R=AO, G=Roughness, B=Metallic
+                // Unity Standard用に変換: R=Metallic, G=AO, B=0, Alpha=Smoothness (1 - Roughness)
+                var ao = colors[i].r;        // R → G
+                var roughness = colors[i].g; // G → Alpha (反転してSmoothness)
+                var metallic = colors[i].b;  // B → R
+                var smoothness = 1f - roughness; // RoughnessをSmoothnessに変換
+                
+                colors[i] = new Color(metallic, ao, 0f, smoothness);
             }
             
             var result = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);

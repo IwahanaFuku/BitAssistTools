@@ -195,22 +195,13 @@ namespace BitAssistTools.Editor.View.TextureTools
                 
                 var selected = _viewModel.Recipe.SelectedRecipe;
                 
-                using (new EditorGUILayout.HorizontalScope())
+                bool rmaToUnityToggle = EditorGUILayout.ToggleLeft("RMA → Unity Standard", selected == Domain.Models.TextureTools.RecipeType.RMAToUnity);
+                if (rmaToUnityToggle != (selected == Domain.Models.TextureTools.RecipeType.RMAToUnity))
                 {
-                    bool ormToggle = EditorGUILayout.ToggleLeft("ORM", selected == Domain.Models.TextureTools.RecipeType.ORMMerge);
-                    if (ormToggle != (selected == Domain.Models.TextureTools.RecipeType.ORMMerge))
-                    {
-                        _viewModel.Recipe.SelectedRecipe = ormToggle ? Domain.Models.TextureTools.RecipeType.ORMMerge : Domain.Models.TextureTools.RecipeType.None;
-                    }
-                    
-                    bool mraToggle = EditorGUILayout.ToggleLeft("MRA", selected == Domain.Models.TextureTools.RecipeType.MRAMerge);
-                    if (mraToggle != (selected == Domain.Models.TextureTools.RecipeType.MRAMerge))
-                    {
-                        _viewModel.Recipe.SelectedRecipe = mraToggle ? Domain.Models.TextureTools.RecipeType.MRAMerge : Domain.Models.TextureTools.RecipeType.None;
-                    }
+                    _viewModel.Recipe.SelectedRecipe = rmaToUnityToggle ? Domain.Models.TextureTools.RecipeType.RMAToUnity : Domain.Models.TextureTools.RecipeType.None;
                 }
                 
-                EditorGUILayout.HelpBox("ORM = AO(R) + Roughness(G) + Metallic(B)\nMRA = Metallic(R) + Roughness(G) + AO(B)", MessageType.Info);
+                EditorGUILayout.HelpBox("UE4形式RMAテクスチャをUnity Standardシェーダ用に変換\nRMA(R=AO, G=Roughness, B=Metallic) → Unity(R=Metallic, G=AO, Alpha=Smoothness)", MessageType.Info);
             }
             
             EditorGUILayout.Space();
@@ -378,15 +369,42 @@ namespace BitAssistTools.Editor.View.TextureTools
                 
                 // 強度設定
                 EditorGUILayout.LabelField("法線強度", EditorStyles.boldLabel);
+                
+                // プリセットボタン
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUI.BeginChangeCheck();
-                    _viewModel.DetailFunction.NormalStrength = EditorGUILayout.Slider(_viewModel.DetailFunction.NormalStrength, 0.0f, 3.0f);
-                    if (EditorGUI.EndChangeCheck())
+                    if (GUILayout.Button("0.5", GUILayout.Height(25))) 
                     {
+                        _viewModel.DetailFunction.NormalStrength = 0.5f;
                         _viewModel.DetailFunction.NotifySettingsChanged();
+                        ShowNotification("法線強度: 0.5（弱め）");
                     }
-                    EditorGUILayout.LabelField(_viewModel.DetailFunction.NormalStrength.ToString("F2"), GUILayout.Width(40));
+                    if (GUILayout.Button("1.0", GUILayout.Height(25))) 
+                    {
+                        _viewModel.DetailFunction.NormalStrength = 1.0f;
+                        _viewModel.DetailFunction.NotifySettingsChanged();
+                        ShowNotification("法線強度: 1.0（標準）");
+                    }
+                    if (GUILayout.Button("1.5", GUILayout.Height(25))) 
+                    {
+                        _viewModel.DetailFunction.NormalStrength = 1.5f;
+                        _viewModel.DetailFunction.NotifySettingsChanged();
+                        ShowNotification("法線強度: 1.5（強め）");
+                    }
+                    if (GUILayout.Button("2.0", GUILayout.Height(25))) 
+                    {
+                        _viewModel.DetailFunction.NormalStrength = 2.0f;
+                        _viewModel.DetailFunction.NotifySettingsChanged();
+                        ShowNotification("法線強度: 2.0（非常に強い）");
+                    }
+                }
+                
+                // スライダー
+                EditorGUI.BeginChangeCheck();
+                _viewModel.DetailFunction.NormalStrength = EditorGUILayout.Slider(_viewModel.DetailFunction.NormalStrength, 0.0f, 3.0f);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    _viewModel.DetailFunction.NotifySettingsChanged();
                 }
                 
                 if (GUILayout.Button("法線マップ調整実行", GUILayout.Height(30)))
@@ -405,13 +423,9 @@ namespace BitAssistTools.Editor.View.TextureTools
                 
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    if (GUILayout.Button("ORM", GUILayout.Height(25)))
+                    if (GUILayout.Button("RMA → Unity", GUILayout.Height(25)))
                     {
-                        _viewModel.DetailFunction.ApplyORMPreset();
-                    }
-                    if (GUILayout.Button("MRA", GUILayout.Height(25)))
-                    {
-                        _viewModel.DetailFunction.ApplyMRAPreset();
+                        _viewModel.DetailFunction.ApplyRMAToUnityPreset();
                     }
                     if (GUILayout.Button("クリア", GUILayout.Height(25)))
                     {
@@ -419,7 +433,7 @@ namespace BitAssistTools.Editor.View.TextureTools
                     }
                 }
                 
-                EditorGUILayout.HelpBox("ORM = AO(R) + Roughness(G) + Metallic(B)\nMRA = Metallic(R) + Roughness(G) + AO(B)", MessageType.Info);
+                EditorGUILayout.HelpBox("RMA → Unity Standard変換\nUE4形式RMAテクスチャをUnityのStandardシェーダ用に変換します", MessageType.Info);
             }
 
             EditorGUILayout.Space();

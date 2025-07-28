@@ -39,8 +39,7 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
             new TextureRecipe(RecipeType.InvertAll, "全チャンネル反転", "RGB全チャンネルを反転します"),
             new TextureRecipe(RecipeType.NormalGInvert, "G反転（OpenGL→DirectX）", "法線マップのGチャンネルを反転します"),
             new TextureRecipe(RecipeType.NormalStrength15, "強度1.5倍", "法線マップの強度を1.5倍にします"),
-            new TextureRecipe(RecipeType.ORMMerge, "ORM", "AO(R) + Roughness(G) + Metallic(B)"),
-            new TextureRecipe(RecipeType.MRAMerge, "MRA", "Metallic(R) + Roughness(G) + AO(B)")
+            new TextureRecipe(RecipeType.RMAToUnity, "RMA → Unity Standard", "UE4形式RMAテクスチャをUnity Standardシェーダ用に変換します（R=Metallic, G=AO, Alpha=Smoothness）")
         };
         #endregion
 
