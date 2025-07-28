@@ -52,6 +52,44 @@ namespace BitAssistTools.Application.ViewModels
 
         // 対象テクスチャ（自動設定対応）
         public Texture2D TargetTexture { get; set; }
+        
+        /// <summary>
+        /// 表示用のターゲットテクスチャ（NormalMapの場合は変換済み）
+        /// </summary>
+        public Texture2D DisplayTargetTexture
+        {
+            get
+            {
+                // ターゲットテクスチャが変更された場合、キャッシュをクリア
+                if (_lastTargetTexture != TargetTexture)
+                {
+                    if (_cachedDisplayTexture != null && _lastTargetTexture != null)
+                    {
+                        // 前のキャッシュが変換済みテクスチャの場合は破棄
+                        var lastAssetPath = UnityEditor.AssetDatabase.GetAssetPath(_lastTargetTexture);
+                        if (!string.IsNullOrEmpty(lastAssetPath))
+                        {
+                            var lastImporter = UnityEditor.AssetImporter.GetAtPath(lastAssetPath) as UnityEditor.TextureImporter;
+                            if (lastImporter?.textureType == UnityEditor.TextureImporterType.NormalMap)
+                            {
+                                UnityEngine.Object.DestroyImmediate(_cachedDisplayTexture);
+                            }
+                        }
+                    }
+                    
+                    _cachedDisplayTexture = null;
+                    _lastTargetTexture = TargetTexture;
+                }
+                
+                // キャッシュされていない場合は新しく作成
+                if (_cachedDisplayTexture == null)
+                {
+                    _cachedDisplayTexture = CreateDisplayableTexture(TargetTexture);
+                }
+                
+                return _cachedDisplayTexture;
+            }
+        }
 
         // PNG変換
         public bool DeleteOriginal { get; set; } = false;
@@ -85,6 +123,10 @@ namespace BitAssistTools.Application.ViewModels
         
         // プレビューテクスチャ（レシピ適用結果）
         public Texture2D PreviewTexture { get; private set; }
+        
+        // 表示用テクスチャのキャッシュ
+        private Texture2D _cachedDisplayTexture;
+        private Texture2D _lastTargetTexture;
         
         // Read/Write設定の自動管理用
         private readonly Dictionary<string, bool> _originalReadableStates = new Dictionary<string, bool>();
@@ -392,8 +434,8 @@ namespace BitAssistTools.Application.ViewModels
                         PreviewTexture = null;
                         break;
                     case RecipeType.PngConversion:
-                        // PNG変換の場合は元テクスチャをそのまま表示
-                        PreviewTexture = TargetTexture;
+                        // PNG変換の場合は元テクスチャを表示（NormalMapの場合は通常表示用にコピー）
+                        PreviewTexture = CreateDisplayableTexture(TargetTexture);
                         break;
                     case RecipeType.InvertAll:
                         PreviewTexture = GenerateInvertAllPreview();
@@ -454,8 +496,8 @@ namespace BitAssistTools.Application.ViewModels
                         PreviewTexture = null;
                         break;
                     case DetailFunction.PngConvert:
-                        // PNG変換の場合は元テクスチャをそのまま表示
-                        PreviewTexture = TargetTexture;
+                        // PNG変換の場合は元テクスチャを表示（NormalMapの場合は通常表示用にコピー）
+                        PreviewTexture = CreateDisplayableTexture(TargetTexture);
                         break;
                     case DetailFunction.ChannelInvert:
                         PreviewTexture = GenerateCustomInvertPreview();
@@ -663,6 +705,54 @@ namespace BitAssistTools.Application.ViewModels
             catch
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// NormalMapタイプのテクスチャを通常表示用のテクスチャに変換
+        /// </summary>
+        private Texture2D CreateDisplayableTexture(Texture2D originalTexture)
+        {
+            if (originalTexture == null) return null;
+            
+            // テクスチャタイプを確認
+            var assetPath = UnityEditor.AssetDatabase.GetAssetPath(originalTexture);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                return originalTexture; // ランタイム生成テクスチャはそのまま返す
+            }
+            
+            var importer = UnityEditor.AssetImporter.GetAtPath(assetPath) as UnityEditor.TextureImporter;
+            if (importer?.textureType != UnityEditor.TextureImporterType.NormalMap)
+            {
+                return originalTexture; // NormalMapタイプでなければそのまま返す
+            }
+            
+            // NormalMapタイプの場合は、RenderTextureを使用して互換性のある形式に変換
+            try
+            {
+                // RenderTextureを使用してテクスチャを変換
+                var renderTexture = RenderTexture.GetTemporary(originalTexture.width, originalTexture.height, 0, RenderTextureFormat.ARGB32);
+                var oldRT = RenderTexture.active;
+                
+                RenderTexture.active = renderTexture;
+                Graphics.Blit(originalTexture, renderTexture);
+                
+                // 新しいテクスチャを作成（RGBA32フォーマットで確実に読み書き可能）
+                var newTexture = new Texture2D(originalTexture.width, originalTexture.height, TextureFormat.RGBA32, false);
+                newTexture.ReadPixels(new Rect(0, 0, originalTexture.width, originalTexture.height), 0, 0);
+                newTexture.Apply();
+                
+                // リソースクリーンアップ
+                RenderTexture.active = oldRT;
+                RenderTexture.ReleaseTemporary(renderTexture);
+                
+                return newTexture;
+            }
+            catch (System.Exception ex)
+            {
+                OnError?.Invoke($"表示用テクスチャの作成に失敗しました: {ex.Message}");
+                return originalTexture;
             }
         }
 
@@ -983,6 +1073,35 @@ namespace BitAssistTools.Application.ViewModels
             
             // テクスチャのRead/Write設定を元に戻す
             RestoreAllTextureReadable();
+            
+            // キャッシュされた表示用テクスチャを破棄
+            CleanupDisplayTextureCache();
+        }
+
+        /// <summary>
+        /// 表示用テクスチャのキャッシュをクリーンアップ
+        /// </summary>
+        private void CleanupDisplayTextureCache()
+        {
+            if (_cachedDisplayTexture != null && _lastTargetTexture != null)
+            {
+                // NormalMapから変換されたテクスチャの場合は破棄
+                var assetPath = UnityEditor.AssetDatabase.GetAssetPath(_lastTargetTexture);
+                if (!string.IsNullOrEmpty(assetPath))
+                {
+                    var importer = UnityEditor.AssetImporter.GetAtPath(assetPath) as UnityEditor.TextureImporter;
+                    if (importer?.textureType == UnityEditor.TextureImporterType.NormalMap)
+                    {
+                        if (_cachedDisplayTexture != _lastTargetTexture) // 元テクスチャと異なる場合のみ破棄
+                        {
+                            UnityEngine.Object.DestroyImmediate(_cachedDisplayTexture);
+                        }
+                    }
+                }
+            }
+            
+            _cachedDisplayTexture = null;
+            _lastTargetTexture = null;
         }
 
         #endregion

@@ -848,7 +848,7 @@ namespace BitAssistTools.Editor.View
         {
             if (_viewModel.TargetTexture == null) return;
 
-            var texture = _viewModel.TargetTexture;
+            var texture = _viewModel.DisplayTargetTexture;
             var previewTexture = _viewModel.PreviewTexture ?? texture;
             
             if (_viewModel.ShowBeforeAfter)
@@ -915,16 +915,16 @@ namespace BitAssistTools.Editor.View
 
         private void DrawTextureAsDefault(Rect rect, Texture2D texture)
         {
-            // テクスチャタイプに関係なく、常にDefaultタイプとして表示
-            var originalTextureType = GetTextureType(texture);
-            
-            if (originalTextureType == TextureImporterType.NormalMap)
+            // ViewModelで既にNormalMapの変換処理が行われているので、
+            // プレビューテクスチャは常に通常表示、元テクスチャも通常表示でOK
+            try
             {
-                // NormalMapタイプの場合は、カスタムマテリアルを使用してDefaultとして描画
-                DrawNormalMapAsDefault(rect, texture);
+                // GUI.DrawTextureを使用してNormalMapの特殊表示を完全に回避
+                GUI.DrawTexture(rect, texture, ScaleMode.ScaleToFit, true);
             }
-            else
+            catch
             {
+                // フォールバック: EditorGUI.DrawPreviewTextureを使用
                 EditorGUI.DrawPreviewTexture(rect, texture);
             }
         }
@@ -940,18 +940,18 @@ namespace BitAssistTools.Editor.View
 
         private void DrawNormalMapAsDefault(Rect rect, Texture2D texture)
         {
-            // NormalMapをDefaultタイプのように表示するためのマテリアル
-            var material = new Material(Shader.Find("Hidden/Internal-GUITexture"));
-            
-            // マテリアルのプロパティを調整してDefaultタイプのような表示にする
-            material.SetTexture("_MainTex", texture);
-            material.SetFloat("_ColorMask", 15); // RGBA全チャンネル表示
-            
-            // 通常のテクスチャ表示（法線マップの特殊な色調整を無効化）
-            EditorGUI.DrawPreviewTexture(rect, texture, material);
-            
-            // マテリアルを破棄
-            DestroyImmediate(material);
+            // NormalMapを通常のテクスチャとして表示
+            // Unity内部のNormalMap特殊表示を回避するため、GUI.DrawTextureを使用
+            try
+            {
+                // 通常のGUI.DrawTextureを使用してNormalMapの特殊処理を回避
+                GUI.DrawTexture(rect, texture, ScaleMode.ScaleToFit, true);
+            }
+            catch
+            {
+                // フォールバック: 通常のEditorGUI.DrawPreviewTextureを使用
+                EditorGUI.DrawPreviewTexture(rect, texture);
+            }
         }
         
         private void DrawAlphaChannel(Rect rect, Texture2D texture)
