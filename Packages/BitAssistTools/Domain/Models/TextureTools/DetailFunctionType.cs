@@ -52,7 +52,7 @@ namespace BitAssistTools.Domain.Models.TextureTools
         None,           // 未選択
         PngConvert,     // PNG変換
         ChannelInvert,  // チャンネル反転
-        NormalMap,      // 法線マップ調整
+        NormalMap,      // 法線マップ編集
         MaskMerge       // マスク統合
     }
 }

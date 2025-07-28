@@ -82,7 +82,7 @@ namespace BitAssistTools.Application.Services
             }
             catch (Exception ex)
             {
-                return Result<Texture2D>.Fail($"法線マップ調整中にエラーが発生しました: {ex.Message}");
+                return Result<Texture2D>.Fail($"法線マップ編集中にエラーが発生しました: {ex.Message}");
             }
         }
 

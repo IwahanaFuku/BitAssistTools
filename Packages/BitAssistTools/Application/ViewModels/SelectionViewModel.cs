@@ -59,6 +59,24 @@ namespace BitAssistTools.Application.ViewModels
         public List<bool> HistoryItemCheckStates { get; private set; }
         public List<string> HistoryItemNames { get; private set; }
 
+        // プレビュー状態
+        private HierarchicalSelectionPreview _currentPreview;
+        public HierarchicalSelectionPreview CurrentPreview 
+        { 
+            get => _currentPreview; 
+            private set 
+            { 
+                _currentPreview = value; 
+                OnUIStateChanged?.Invoke();
+                
+                // ハイライトが有効な場合は更新
+                if (BitAssistTools.Infrastructure.Unity.UnityHierarchyHighlighter.IsHighlightEnabled)
+                {
+                    BitAssistTools.Infrastructure.Unity.UnityHierarchyHighlighter.UpdatePreview(value);
+                }
+            } 
+        }
+
         public SelectionViewModel()
         {
             UI = new UIExpansionState();
@@ -215,6 +233,35 @@ namespace BitAssistTools.Application.ViewModels
             );
 
             return HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
+        }
+
+        /// <summary>
+        /// 階層選択のプレビューを更新
+        /// </summary>
+        public void UpdateHierarchicalSelectionPreview()
+        {
+            try
+            {
+                var rule = new HierarchicalSelectionRule(
+                    HierarchicalSelection.ParentDepth,
+                    HierarchicalSelection.OnlyOrder,
+                    HierarchicalSelection.SelectChildren
+                );
+
+                CurrentPreview = HierarchicalSelectionService.GetDetailedPreview(rule);
+            }
+            catch (Exception ex)
+            {
+                CurrentPreview = HierarchicalSelectionPreview.Invalid($"プレビュー更新中にエラーが発生しました: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 階層選択設定の変更通知（プレビュー自動更新）
+        /// </summary>
+        public void OnHierarchicalSelectionSettingsChanged()
+        {
+            UpdateHierarchicalSelectionPreview();
         }
 
         /// <summary>

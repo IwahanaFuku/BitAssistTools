@@ -44,7 +44,7 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         {
             new DetailFunctionType(DetailFunction.PngConvert, "PNG変換", "PNG形式に変換します"),
             new DetailFunctionType(DetailFunction.ChannelInvert, "チャンネル反転", "指定したチャンネルを反転します"),
-            new DetailFunctionType(DetailFunction.NormalMap, "法線マップ調整", "法線マップの反転や強度を調整します"),
+            new DetailFunctionType(DetailFunction.NormalMap, "法線マップ編集", "法線マップの反転や強度を調整します"),
             new DetailFunctionType(DetailFunction.MaskMerge, "マスク統合", "複数のマスクを1つのテクスチャに統合します")
         };
 

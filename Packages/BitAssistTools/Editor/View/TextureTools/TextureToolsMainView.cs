@@ -265,8 +265,8 @@ namespace BitAssistTools.Editor.View.TextureTools
                     _viewModel.DetailFunction.SelectedFunction = invertToggle ? Domain.Models.TextureTools.DetailFunction.ChannelInvert : Domain.Models.TextureTools.DetailFunction.None;
                 }
                 
-                // 法線マップ調整
-                bool normalToggle = EditorGUILayout.ToggleLeft("法線マップ調整", selected == Domain.Models.TextureTools.DetailFunction.NormalMap);
+                // 法線マップ編集
+                bool normalToggle = EditorGUILayout.ToggleLeft("法線マップ編集", selected == Domain.Models.TextureTools.DetailFunction.NormalMap);
                 if (normalToggle != (selected == Domain.Models.TextureTools.DetailFunction.NormalMap))
                 {
                     _viewModel.DetailFunction.SelectedFunction = normalToggle ? Domain.Models.TextureTools.DetailFunction.NormalMap : Domain.Models.TextureTools.DetailFunction.None;
@@ -407,7 +407,7 @@ namespace BitAssistTools.Editor.View.TextureTools
                     _viewModel.DetailFunction.NotifySettingsChanged();
                 }
                 
-                if (GUILayout.Button("法線マップ調整実行", GUILayout.Height(30)))
+                if (GUILayout.Button("法線マップ編集実行", GUILayout.Height(30)))
                 {
                     _viewModel.DetailFunction.ExecuteSelectedFunction();
                 }
