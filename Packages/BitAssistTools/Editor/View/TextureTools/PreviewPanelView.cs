@@ -226,7 +226,24 @@ namespace BitAssistTools.Editor.View.TextureTools
         {
             if (!IsTextureReadable(texture))
             {
-                // 読み取り不可の場合は表示用テクスチャを作成してから処理
+                // まず自動でプレビュー準備をする（Read/Write Enabled + Texture Type調整）
+                if (BitAssistTools.Application.Services.TextureTools.TextureDisplayService.EnsureTexturePreviewReady(texture))
+                {
+                    // 自動オンが成功した場合は通常処理を続行
+                    try
+                    {
+                        var tempTexture = CreateAlphaChannelTexture(texture);
+                        EditorGUI.DrawPreviewTexture(rect, tempTexture);
+                        UnityEngine.Object.DestroyImmediate(tempTexture);
+                        return;
+                    }
+                    catch (System.Exception ex)
+                    {
+                        UnityEngine.Debug.LogWarning($"[PreviewPanelView] Alphaチャンネル表示エラー (自動オン後): {ex.Message}");
+                    }
+                }
+                
+                // 自動オンに失敗した場合は表示用テクスチャを作成してから処理
                 var displayTexture = BitAssistTools.Application.Services.TextureTools.TextureDisplayService.CreateDisplayableTexture(texture);
                 if (displayTexture != null && IsTextureReadable(displayTexture))
                 {
@@ -243,8 +260,9 @@ namespace BitAssistTools.Editor.View.TextureTools
                         }
                         return;
                     }
-                    catch
+                    catch (System.Exception ex)
                     {
+                        UnityEngine.Debug.LogWarning($"[PreviewPanelView] Alphaチャンネル表示エラー (表示用テクスチャ): {ex.Message}");
                         if (displayTexture != texture)
                         {
                             UnityEngine.Object.DestroyImmediate(displayTexture);
@@ -263,8 +281,9 @@ namespace BitAssistTools.Editor.View.TextureTools
                 EditorGUI.DrawPreviewTexture(rect, tempTexture);
                 UnityEngine.Object.DestroyImmediate(tempTexture);
             }
-            catch
+            catch (System.Exception ex)
             {
+                UnityEngine.Debug.LogWarning($"[PreviewPanelView] Alphaチャンネル表示エラー: {ex.Message}");
                 // エラー時は通常表示
                 EditorGUI.DrawPreviewTexture(rect, texture);
             }
@@ -315,7 +334,31 @@ namespace BitAssistTools.Editor.View.TextureTools
             
             if (!IsTextureReadable(texture))
             {
-                // 読み取り不可の場合は表示用テクスチャを作成してから処理
+                // まず自動でプレビュー準備をする（Read/Write Enabled + Texture Type調整）
+                if (BitAssistTools.Application.Services.TextureTools.TextureDisplayService.EnsureTexturePreviewReady(texture))
+                {
+                    // 自動オンが成功した場合は通常処理を続行
+                    try
+                    {
+                        var tempTexture = CreateSingleChannelTexture(texture, channel);
+                        if (tempTexture != null)
+                        {
+                            EditorGUI.DrawPreviewTexture(rect, tempTexture);
+                            UnityEngine.Object.DestroyImmediate(tempTexture);
+                        }
+                        else
+                        {
+                            EditorGUI.DrawPreviewTexture(rect, texture);
+                        }
+                        return;
+                    }
+                    catch (System.Exception ex)
+                    {
+                        UnityEngine.Debug.LogWarning($"[PreviewPanelView] {channelName}チャンネル表示エラー (自動オン後): {ex.Message}");
+                    }
+                }
+                
+                // 自動オンに失敗した場合は表示用テクスチャを作成してから処理
                 var displayTexture = BitAssistTools.Application.Services.TextureTools.TextureDisplayService.CreateDisplayableTexture(texture);
                 if (displayTexture != null && IsTextureReadable(displayTexture))
                 {

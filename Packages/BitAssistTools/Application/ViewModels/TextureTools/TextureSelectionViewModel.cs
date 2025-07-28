@@ -41,6 +41,13 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
                 if (_displayTextureCache == null || _lastCachedTexture != _targetTexture)
                 {
                     ClearDisplayTextureCache();
+                    
+                    // 自動でプレビュー準備（Read/Write Enabled + Texture Type調整）
+                    if (_targetTexture != null)
+                    {
+                        TextureDisplayService.EnsureTexturePreviewReady(_targetTexture);
+                    }
+                    
                     _displayTextureCache = TextureDisplayService.CreateDisplayableTexture(_targetTexture);
                     _lastCachedTexture = _targetTexture;
                 }

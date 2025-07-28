@@ -132,34 +132,8 @@ namespace BitAssistTools.Editor.View.TextureTools
             {
                 EditorGUILayout.LabelField(_viewModel.Selection.GetTextureInfo(), EditorStyles.miniLabel);
                 
-                // Read/Write設定の自動管理状態を表示
-                if (_viewModel.HasManagedTextures())
-                {
-                    EditorGUILayout.HelpBox("一部のテクスチャのRead/Write設定を一時的に変更中です。\nツール終了時に自動で元に戻されます。", MessageType.Info);
-                    
-                    using (new EditorGUILayout.HorizontalScope())
-                    {
-                        if (GUILayout.Button("今すぐ元に戻す", GUILayout.Height(20)))
-                        {
-                            _viewModel.RestoreAllTextureReadable();
-                            ShowNotification("全てのテクスチャ設定を元に戻しました。");
-                        }
-                        
-                        if (GUILayout.Button("管理状態を確認", GUILayout.Height(20)))
-                        {
-                            ShowManagedTexturesInfo();
-                        }
-                    }
-                }
-                else if (!_viewModel.Selection.IsTargetTextureReadable())
-                {
-                    EditorGUILayout.HelpBox("プレビュー機能を使用するには、テクスチャのRead/Write Enabledをオンにしてください。", MessageType.Warning);
-                    
-                    if (GUILayout.Button("Read/Write Enabledをオンにする", GUILayout.Height(20)))
-                    {
-                        EnableTextureReadWrite(_viewModel.Selection.TargetTexture);
-                    }
-                }
+                // ライブプレビュー情報表示
+                EditorGUILayout.HelpBox("ライブプレビュー中、テクスチャの設定が変更されます。", MessageType.Info);
             }
         }
 
@@ -551,61 +525,6 @@ namespace BitAssistTools.Editor.View.TextureTools
         }
         #endregion
 
-        #region Helper Methods
-        /// <summary>
-        /// テクスチャのRead/Write Enabledを手動でオンにする
-        /// </summary>
-        private void EnableTextureReadWrite(Texture2D texture)
-        {
-            if (texture == null) return;
-            
-            var path = UnityEditor.AssetDatabase.GetAssetPath(texture);
-            if (string.IsNullOrEmpty(path)) return;
-            
-            var importer = UnityEditor.AssetImporter.GetAtPath(path) as UnityEditor.TextureImporter;
-            if (importer == null) return;
-            
-            if (!importer.isReadable)
-            {
-                // 確認ダイアログ
-                if (EditorUtility.DisplayDialog("テクスチャ設定変更", 
-                    $"テクスチャ '{texture.name}' のRead/Write Enabledをオンにしますか？\n\nこの変更によりメモリ使用量が増加する可能性があります。", 
-                    "変更する", "キャンセル"))
-                {
-                    importer.isReadable = true;
-                    importer.SaveAndReimport();
-                    
-                    ShowNotification($"テクスチャ '{texture.name}' をRead/Write Enabledに設定しました。");
-                    
-                    // プレビューを再生成
-                    _viewModel.UpdateSelectedTexture();
-                }
-            }
-            else
-            {
-                ShowNotification($"テクスチャ '{texture.name}' は既にRead/Write Enabledです。");
-            }
-        }
-
-        /// <summary>
-        /// 管理中のテクスチャ情報を表示
-        /// </summary>
-        private void ShowManagedTexturesInfo()
-        {
-            var managedTextures = _viewModel.GetManagedTextureInfo();
-            if (managedTextures.Count == 0)
-            {
-                EditorUtility.DisplayDialog("管理状態", "現在管理中のテクスチャはありません。", "OK");
-                return;
-            }
-
-            var message = "以下のテクスチャのRead/Write設定を一時的に変更中です：\n\n";
-            message += string.Join("\n", managedTextures);
-            message += "\n\nツール終了時に自動で元の状態に戻されます。";
-
-            EditorUtility.DisplayDialog("管理中のテクスチャ", message, "OK");
-        }
-        #endregion
 
         #region Notification
         private void ShowNotification(string message)

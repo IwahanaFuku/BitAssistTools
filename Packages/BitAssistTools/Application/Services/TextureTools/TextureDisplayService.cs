@@ -89,94 +89,138 @@ namespace BitAssistTools.Application.Services.TextureTools
             }
         }
 
-        #region Read/Write Enable Auto Management
+        #region Single Texture Management
 
         /// <summary>
-        /// 元のRead/Write設定を記録する辞書（パス -> 元の設定）
+        /// 現在管理中のテクスチャ
         /// </summary>
-        private static readonly Dictionary<string, bool> _originalReadableStates = new Dictionary<string, bool>();
+        private static Texture2D _currentManagedTexture = null;
 
         /// <summary>
-        /// テクスチャのRead/Write設定を自動管理してプレビューに必要な状態にする
+        /// 元のRead/Write設定
         /// </summary>
-        public static bool EnsureTextureReadable(Texture2D texture)
+        private static bool _originalReadableState = false;
+
+        /// <summary>
+        /// 元のTexture Type設定
+        /// </summary>
+        private static TextureImporterType _originalTextureType = TextureImporterType.Default;
+
+        /// <summary>
+        /// テクスチャを一時的にDefaultタイプに変更してプレビューに適した状態にする
+        /// </summary>
+        public static bool EnsureTexturePreviewReady(Texture2D texture)
         {
-            if (texture == null) return false;
-            
-            var path = GetAssetPath(texture);
-            if (string.IsNullOrEmpty(path)) return false;
-            
-            var importer = GetTextureImporter(texture);
-            if (importer == null) return false;
-            
-            // 元の状態を記録（初回のみ）
-            if (!_originalReadableStates.ContainsKey(path))
+            if (texture == null) 
             {
-                _originalReadableStates[path] = importer.isReadable;
+                Debug.LogWarning("[TextureDisplayService] EnsureTexturePreviewReady: texture is null");
+                return false;
             }
             
-            // 既に読み取り可能な場合は何もしない
-            if (importer.isReadable) return true;
+            // 前のテクスチャがある場合は復元
+            if (_currentManagedTexture != null && _currentManagedTexture != texture)
+            {
+                RestoreCurrentTexture();
+            }
+            
+            var path = GetAssetPath(texture);
+            if (string.IsNullOrEmpty(path)) 
+            {
+                Debug.LogWarning($"[TextureDisplayService] EnsureTexturePreviewReady: path is empty for texture '{texture.name}'");
+                return false;
+            }
+            
+            var importer = GetTextureImporter(texture);
+            if (importer == null) 
+            {
+                Debug.LogWarning($"[TextureDisplayService] EnsureTexturePreviewReady: importer is null for texture '{texture.name}'");
+                return false;
+            }
+            
+            Debug.Log($"[TextureDisplayService] EnsureTexturePreviewReady: チェック中 '{texture.name}' (現在のType: {importer.textureType}, Readable: {importer.isReadable})");
+            
+            // 新しいテクスチャを管理対象にする
+            _currentManagedTexture = texture;
+            _originalReadableState = importer.isReadable;
+            _originalTextureType = importer.textureType;
+            
+            Debug.Log($"[TextureDisplayService] 管理開始: '{texture.name}' (Type: {_originalTextureType}, Readable: {_originalReadableState})");
+            
+            bool needsReimport = false;
+            
+            // NormalMapの場合はDefaultに変更
+            if (importer.textureType == TextureImporterType.NormalMap)
+            {
+                importer.textureType = TextureImporterType.Default;
+                needsReimport = true;
+                Debug.Log($"[TextureDisplayService] Texture Typeを一時的にDefaultに変更: '{texture.name}'");
+            }
             
             // Read/Write Enabledをオンにする
-            importer.isReadable = true;
-            importer.SaveAndReimport();
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                needsReimport = true;
+                Debug.Log($"[TextureDisplayService] Read/Write Enabledをオンに変更: '{texture.name}'");
+            }
             
-            Debug.Log($"[TextureDisplayService] テクスチャ '{texture.name}' を一時的にRead/Write Enabledに設定しました。");
+            // 変更があった場合のみ再インポート
+            if (needsReimport)
+            {
+                importer.SaveAndReimport();
+            }
+            
             return true;
         }
 
         /// <summary>
-        /// 指定されたテクスチャのRead/Write設定を元に戻す
+        /// 現在管理中のテクスチャを元の状態に復元
         /// </summary>
-        public static void RestoreTextureReadable(Texture2D texture)
+        public static void RestoreCurrentTexture()
         {
-            if (texture == null) return;
+            if (_currentManagedTexture == null) return;
             
-            var path = GetAssetPath(texture);
-            if (string.IsNullOrEmpty(path)) return;
-            
-            // 元の状態が記録されていない場合は何もしない
-            if (!_originalReadableStates.ContainsKey(path)) return;
-            
-            var originalState = _originalReadableStates[path];
-            var importer = GetTextureImporter(texture);
-            if (importer == null) return;
-            
-            // 元の状態と現在の状態が異なる場合のみ復元
-            if (importer.isReadable != originalState)
+            var path = GetAssetPath(_currentManagedTexture);
+            if (string.IsNullOrEmpty(path)) 
             {
-                importer.isReadable = originalState;
+                _currentManagedTexture = null;
+                return;
+            }
+            
+            var importer = GetTextureImporter(_currentManagedTexture);
+            if (importer == null) 
+            {
+                _currentManagedTexture = null;
+                return;
+            }
+            
+            bool needsReimport = false;
+            
+            // Texture Typeの復元
+            if (importer.textureType != _originalTextureType)
+            {
+                importer.textureType = _originalTextureType;
+                needsReimport = true;
+                Debug.Log($"[TextureDisplayService] Texture Typeを復元: '{_currentManagedTexture.name}' -> {_originalTextureType}");
+            }
+            
+            // Read/Write設定の復元
+            if (importer.isReadable != _originalReadableState)
+            {
+                importer.isReadable = _originalReadableState;
+                needsReimport = true;
+                var stateText = _originalReadableState ? "Read/Write Enabled" : "Read/Write Disabled";
+                Debug.Log($"[TextureDisplayService] Read/Write設定を復元: '{_currentManagedTexture.name}' -> {stateText}");
+            }
+            
+            // 変更があった場合のみ再インポート
+            if (needsReimport)
+            {
                 importer.SaveAndReimport();
-                
-                var stateText = originalState ? "Read/Write Enabled" : "Read/Write Disabled";
-                Debug.Log($"[TextureDisplayService] テクスチャ '{texture.name}' を{stateText}に復元しました。");
             }
             
-            // 記録から削除
-            _originalReadableStates.Remove(path);
-        }
-
-        /// <summary>
-        /// 全てのテクスチャのRead/Write設定を元に戻す
-        /// </summary>
-        public static void RestoreAllTextureReadable()
-        {
-            var pathsToRestore = new List<string>(_originalReadableStates.Keys);
-            
-            foreach (var path in pathsToRestore)
-            {
-                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-                if (texture != null)
-                {
-                    RestoreTextureReadable(texture);
-                }
-                else
-                {
-                    // テクスチャが見つからない場合は記録だけ削除
-                    _originalReadableStates.Remove(path);
-                }
-            }
+            // 管理対象クリア
+            _currentManagedTexture = null;
         }
 
         /// <summary>
@@ -184,7 +228,7 @@ namespace BitAssistTools.Application.Services.TextureTools
         /// </summary>
         public static bool HasManagedTextures()
         {
-            return _originalReadableStates.Count > 0;
+            return _currentManagedTexture != null;
         }
 
         /// <summary>
@@ -194,24 +238,44 @@ namespace BitAssistTools.Application.Services.TextureTools
         {
             var info = new List<string>();
             
-            foreach (var kvp in _originalReadableStates)
+            if (_currentManagedTexture != null)
             {
-                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(kvp.Key);
-                if (texture != null)
-                {
-                    var originalStateText = kvp.Value ? "Enabled" : "Disabled";
-                    info.Add($"• {texture.name} (元: {originalStateText})");
-                }
+                var details = new List<string>();
+                details.Add($"Read/Write元: {(_originalReadableState ? "Enabled" : "Disabled")}");
+                details.Add($"Type元: {_originalTextureType}");
+                info.Add($"• {_currentManagedTexture.name} ({string.Join(", ", details)})");
             }
             
             return info;
         }
 
+        /// <summary>
+        /// 全てのテクスチャ設定を元に戻す（現在管理中のテクスチャのみ）
+        /// </summary>
+        public static void RestoreAllTextureSettings()
+        {
+            RestoreCurrentTexture();
+        }
+
+        /// <summary>
+        /// 従来のRestoreAllTextureReadableメソッドとの互換性維持
+        /// </summary>
+        public static void RestoreAllTextureReadable()
+        {
+            RestoreAllTextureSettings();
+        }
+
+        /// <summary>
+        /// ヘルパーメソッド: アセットパス取得
+        /// </summary>
         private static string GetAssetPath(Texture2D texture)
         {
             return AssetDatabase.GetAssetPath(texture);
         }
 
+        /// <summary>
+        /// ヘルパーメソッド: TextureImporter取得
+        /// </summary>
         private static TextureImporter GetTextureImporter(Texture2D texture)
         {
             var path = GetAssetPath(texture);

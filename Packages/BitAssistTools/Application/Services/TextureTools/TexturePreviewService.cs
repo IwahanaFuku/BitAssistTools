@@ -19,14 +19,11 @@ namespace BitAssistTools.Application.Services.TextureTools
         {
             if (sourceTexture == null) return null;
             
-            // テクスチャが読み取り可能かチェック、必要に応じて自動設定
-            if (!TextureDisplayService.IsTextureReadable(sourceTexture))
+            // プレビュー用にテクスチャを準備（Read/Write Enabled + Texture Type調整）
+            if (!TextureDisplayService.EnsureTexturePreviewReady(sourceTexture))
             {
-                if (!TextureDisplayService.EnsureTextureReadable(sourceTexture))
-                {
-                    // 自動設定に失敗した場合は表示用テクスチャを作成
-                    return TextureDisplayService.CreateDisplayableTexture(sourceTexture);
-                }
+                // 自動設定に失敗した場合は表示用テクスチャを作成
+                return TextureDisplayService.CreateDisplayableTexture(sourceTexture);
             }
 
             try
@@ -65,14 +62,11 @@ namespace BitAssistTools.Application.Services.TextureTools
         {
             if (sourceTexture == null) return null;
             
-            // テクスチャが読み取り可能かチェック、必要に応じて自動設定
-            if (!TextureDisplayService.IsTextureReadable(sourceTexture))
+            // プレビュー用にテクスチャを準備（Read/Write Enabled + Texture Type調整）
+            if (!TextureDisplayService.EnsureTexturePreviewReady(sourceTexture))
             {
-                if (!TextureDisplayService.EnsureTextureReadable(sourceTexture))
-                {
-                    // 自動設定に失敗した場合は表示用テクスチャを作成
-                    return TextureDisplayService.CreateDisplayableTexture(sourceTexture);
-                }
+                // 自動設定に失敗した場合は表示用テクスチャを作成
+                return TextureDisplayService.CreateDisplayableTexture(sourceTexture);
             }
 
             try

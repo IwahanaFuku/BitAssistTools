@@ -164,8 +164,8 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         #region Cleanup
         public void Dispose()
         {
-            // ツール終了時に自動でRead/Write設定を復元
-            RestoreAllTextureReadable();
+            // ツール終了時に自動で全ての設定を復元（Read/Write + Texture Type）
+            Services.TextureTools.TextureDisplayService.RestoreAllTextureSettings();
             
             Selection?.Dispose();
             Preview?.Dispose();
