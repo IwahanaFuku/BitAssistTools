@@ -88,8 +88,17 @@ namespace BitAssistTools.Application.Services
                     var originalData = TransformData.FromTransform(obj.transform);
                     var originalParent = obj.transform.parent;
 
-                    // Prefab インスタンス化
-                    var newObject = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+                    // Prefab インスタンス化（Prefabアセットの場合はPrefabUtility、そうでなければInstantiate）
+                    GameObject newObject;
+                    if (PrefabUtility.IsPartOfPrefabAsset(prefab))
+                    {
+                        newObject = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+                    }
+                    else
+                    {
+                        newObject = GameObject.Instantiate(prefab);
+                    }
+                    
                     if (newObject == null)
                     {
                         Debug.LogError("Error instantiating prefab.");

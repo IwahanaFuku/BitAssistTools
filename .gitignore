@@ -66,3 +66,5 @@ Assets/AnimationConverterExamples.meta
 Assets/MeshBaker.meta
 Assets/MeshBaker
 Plugins/FFmpeg/*
+
+/[Cc]odeCoverage/

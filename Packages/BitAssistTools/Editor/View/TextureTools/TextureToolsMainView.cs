@@ -10,10 +10,10 @@ namespace BitAssistTools.Editor.View.TextureTools
     /// </summary>
     public class TextureToolsMainView : EditorWindow
     {
-        [MenuItem("Bit Assist Tools/テクスチャツール（改善版）")]
+        [MenuItem("Bit Assist Tools/テクスチャ編集支援ツール", priority = 14)]
         public static void Open()
         {
-            var window = GetWindow<TextureToolsMainView>("テクスチャツール改");
+            var window = GetWindow<TextureToolsMainView>("テクスチャ編集支援ツール");
             window.minSize = new Vector2(600, 400);
         }
 
@@ -37,7 +37,7 @@ namespace BitAssistTools.Editor.View.TextureTools
             // 選択中のテクスチャを自動設定
             _viewModel.UpdateSelectedTexture();
             
-            titleContent = new GUIContent("テクスチャツール改");
+            titleContent = new GUIContent("テクスチャ編集支援ツール");
         }
 
         private void OnDisable()

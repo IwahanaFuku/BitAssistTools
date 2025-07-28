@@ -2,6 +2,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.TestTools;
+using System.Linq;
 using BitAssistTools.Application.Services;
 using BitAssistTools.Domain.Models.Transform;
 using BitAssistTools.Domain.Models.Placement;
@@ -46,7 +47,7 @@ namespace BitAssistTools.Tests.Application.Services
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
             foreach (var obj in createdObjects)
             {
-                if (obj.name.Contains("Copy") || obj.name.Contains("Group") || obj.name.Contains("TestPrefab"))
+                if (obj != null && (obj.name.Contains("Copy") || obj.name.Contains("Group") || obj.name.Contains("TestPrefab")))
                 {
                     UnityEngine.Object.DestroyImmediate(obj);
                 }
@@ -74,15 +75,17 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var copies = System.Array.FindAll(createdObjects, obj => obj.name == "TestObject1" && obj != _testObject1);
+            var copies = System.Array.FindAll(createdObjects, obj => 
+                obj.name == "TestObject1" && obj != _testObject1 && !obj.name.Contains("Group"));
             
             Assert.AreEqual(copyCount, copies.Length, "Should create the specified number of copies");
             
             if (copies.Length >= 2)
             {
-                // 複利効果の確認：最初のコピーは(2,0,0)、次のコピーは(4,0,0)
-                Assert.AreEqual(2f, copies[0].transform.position.x, 0.001f, "First copy should be at offset position");
-                Assert.AreEqual(4f, copies[1].transform.position.x, 0.001f, "Second copy should show compound effect");
+                // 複利効果の確認：位置でソートして順序を確定
+                var sortedCopies = copies.OrderBy(c => c.transform.position.x).ToArray();
+                Assert.AreEqual(2f, sortedCopies[0].transform.position.x, 0.001f, "First copy should be at offset position");
+                Assert.AreEqual(4f, sortedCopies[1].transform.position.x, 0.001f, "Second copy should show compound effect");
             }
         }
 
@@ -105,7 +108,8 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var copies = System.Array.FindAll(createdObjects, obj => obj.name == "TestObject1" && obj != _testObject1);
+            var copies = System.Array.FindAll(createdObjects, obj => 
+                obj.name == "TestObject1" && obj != _testObject1 && !obj.name.Contains("Group"));
             
             Assert.AreEqual(copyCount, copies.Length, "Should create the specified number of copies");
             
@@ -150,8 +154,10 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var object1Copies = System.Array.FindAll(createdObjects, obj => obj.name == "TestObject1" && obj != _testObject1);
-            var object2Copies = System.Array.FindAll(createdObjects, obj => obj.name == "TestObject2" && obj != _testObject2);
+            var object1Copies = System.Array.FindAll(createdObjects, obj => 
+                obj.name == "TestObject1" && obj != _testObject1 && !obj.name.Contains("Group"));
+            var object2Copies = System.Array.FindAll(createdObjects, obj => 
+                obj.name == "TestObject2" && obj != _testObject2 && !obj.name.Contains("Group"));
             
             Assert.AreEqual(copyCount, object1Copies.Length, "Should create copies of first object");
             Assert.AreEqual(copyCount, object2Copies.Length, "Should create copies of second object");
@@ -171,7 +177,7 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var replacementObjects = System.Array.FindAll(createdObjects, obj => obj.name.Contains("TestPrefab"));
+            var replacementObjects = System.Array.FindAll(createdObjects, obj => obj.name.Contains("TestPrefab") && obj != _testPrefab);
             
             Assert.AreEqual(1, replacementObjects.Length, "Should create one replacement object");
             
@@ -214,7 +220,7 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var replacementObjects = System.Array.FindAll(createdObjects, obj => obj.name.Contains("TestPrefab"));
+            var replacementObjects = System.Array.FindAll(createdObjects, obj => obj.name.Contains("TestPrefab") && obj != _testPrefab);
             
             Assert.AreEqual(2, replacementObjects.Length, "Should create replacement for each selected object");
 
@@ -243,15 +249,17 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var copies = System.Array.FindAll(createdObjects, obj => obj.name == "TestObject1" && obj != _testObject1);
+            var copies = System.Array.FindAll(createdObjects, obj => 
+                obj.name == "TestObject1" && obj != _testObject1 && !obj.name.Contains("Group"));
             
             Assert.AreEqual(copyCount, copies.Length, "Should create the specified number of copies");
             
             if (copies.Length >= 2)
             {
-                // 複利効果の確認：最初のコピーは(2,1,1)、次のコピーは(4,1,1)
-                Assert.AreEqual(2f, copies[0].transform.localScale.x, 0.001f, "First copy should have 2x scale");
-                Assert.AreEqual(4f, copies[1].transform.localScale.x, 0.001f, "Second copy should show compound scaling (2x2=4)");
+                // 複利効果の確認：スケールでソートして順序を確定
+                var sortedCopies = copies.OrderBy(c => c.transform.localScale.x).ToArray();
+                Assert.AreEqual(2f, sortedCopies[0].transform.localScale.x, 0.001f, "First copy should have 2x scale");
+                Assert.AreEqual(4f, sortedCopies[1].transform.localScale.x, 0.001f, "Second copy should show compound scaling (2x2=4)");
             }
         }
 
@@ -273,15 +281,17 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-            var copies = System.Array.FindAll(createdObjects, obj => obj.name == "TestObject1" && obj != _testObject1);
+            var copies = System.Array.FindAll(createdObjects, obj => 
+                obj.name == "TestObject1" && obj != _testObject1 && !obj.name.Contains("Group"));
             
             Assert.AreEqual(copyCount, copies.Length, "Should create the specified number of copies");
             
             if (copies.Length >= 2)
             {
-                // 複利効果の確認：最初のコピーは90度、次のコピーは180度
-                Assert.AreEqual(90f, copies[0].transform.rotation.eulerAngles.y, 1f, "First copy should have 90 degree rotation");
-                Assert.AreEqual(180f, copies[1].transform.rotation.eulerAngles.y, 1f, "Second copy should show compound rotation (90+90=180)");
+                // 複利効果の確認：Y軸回転でソートして順序を確定
+                var sortedCopies = copies.OrderBy(c => c.transform.rotation.eulerAngles.y).ToArray();
+                Assert.AreEqual(90f, sortedCopies[0].transform.rotation.eulerAngles.y, 1f, "First copy should have 90 degree rotation");
+                Assert.AreEqual(180f, sortedCopies[1].transform.rotation.eulerAngles.y, 1f, "Second copy should show compound rotation (90+90=180)");
             }
         }
 
@@ -300,7 +310,7 @@ namespace BitAssistTools.Tests.Application.Services
 
                 // Assert
                 var createdObjects = GameObject.FindObjectsOfType<GameObject>();
-                var replacementObjects = System.Array.FindAll(createdObjects, obj => obj.name.Contains("TestPrefab"));
+                var replacementObjects = System.Array.FindAll(createdObjects, obj => obj.name.Contains("TestPrefab") && obj != _testPrefab);
                 
                 Assert.AreEqual(1, replacementObjects.Length, "Should create one replacement object");
                 

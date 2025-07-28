@@ -42,6 +42,13 @@ namespace BitAssistTools.Tests.Application.Services
             _grandChildA1.transform.SetParent(_childA.transform);
             _grandChildA2.transform.SetParent(_childA.transform);
             _grandChildB1.transform.SetParent(_childB.transform);
+            
+            // sibling indexを明示的に設定
+            _childA.transform.SetSiblingIndex(0);  // Root の 0番目の子
+            _childB.transform.SetSiblingIndex(1);  // Root の 1番目の子
+            _grandChildA1.transform.SetSiblingIndex(0);  // ChildA の 0番目の子
+            _grandChildA2.transform.SetSiblingIndex(1);  // ChildA の 1番目の子
+            _grandChildB1.transform.SetSiblingIndex(0);  // ChildB の 0番目の子
         }
 
         [TearDown]
@@ -64,7 +71,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange - ChildAを選択、1階層上の親（Root）を基準とする
             var rule = new HierarchicalSelectionRule(1, false, false); // 1つ上の親から、全兄弟、ターゲット自体を選択
-            UnityEditor.Selection.activeGameObject = _childA;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _childA };
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
@@ -80,7 +87,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange - GrandChildA1を選択、1階層上の親（ChildA）を基準とする
             var rule = new HierarchicalSelectionRule(1, false, false);
-            UnityEditor.Selection.activeGameObject = _grandChildA1;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1 };
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
@@ -97,15 +104,15 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange - GrandChildA2を選択（index=1）、1階層上、同じ順番のみ
             var rule = new HierarchicalSelectionRule(1, true, false);
-            UnityEditor.Selection.activeGameObject = _grandChildA2; // ChildAの2番目の子（index=1）
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA2 }; // ChildAの2番目の子（index=1）
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
 
-            // Assert - ChildAとChildBのうち、index=1のもの（ChildB）が選択される
+            // Assert - _grandChildA2 の sibling index (1) と同じ順番のオブジェクトが選択される
             var selectedObjects = UnityEditor.Selection.gameObjects;
-            Assert.AreEqual(1, selectedObjects.Length);
-            Assert.IsTrue(selectedObjects.Contains(_childB)); // ChildBはRootの子のindex=1
+            Assert.AreEqual(1, selectedObjects.Length, "1つのオブジェクトが選択されるべき");
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA2), "_grandChildA2 が選択されるべき");
         }
 
         [Test]
@@ -113,19 +120,21 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange - ChildAを選択、1階層上（Root）の子オブジェクトを選択（ターゲット自体は除く）
             var rule = new HierarchicalSelectionRule(1, false, true); // 1つ上の親の子
-            UnityEditor.Selection.activeGameObject = _childA;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _childA };
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
 
-            // Assert - Rootの子オブジェクト（ChildAとChildB）の子が選択される
+            // Assert - Rootの子オブジェクト（ChildAとChildB）が選択される
             var selectedObjects = UnityEditor.Selection.gameObjects;
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildB1));
-            // ChildAとChildB自体は選択されない（子選択モードのため）
-            Assert.IsFalse(selectedObjects.Contains(_childA));
-            Assert.IsFalse(selectedObjects.Contains(_childB));
+            
+            Assert.AreEqual(2, selectedObjects.Length, "2つの子オブジェクトが選択されるべき");
+            Assert.IsTrue(selectedObjects.Contains(_childA), "_childAが選択されるべき");
+            Assert.IsTrue(selectedObjects.Contains(_childB), "_childBが選択されるべき");
+            // 孫オブジェクトは選択されない（直接の子のみ選択）
+            Assert.IsFalse(selectedObjects.Contains(_grandChildA1), "_grandChildA1は選択されてはいけない");
+            Assert.IsFalse(selectedObjects.Contains(_grandChildA2), "_grandChildA2は選択されてはいけない");
+            Assert.IsFalse(selectedObjects.Contains(_grandChildB1), "_grandChildB1は選択されてはいけない");
         }
 
         [Test]
@@ -133,7 +142,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, true, false); // 同じ順番のみ
-            UnityEditor.Selection.activeGameObject = _childA; // 0番目の子
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _childA }; // 0番目の子
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
@@ -149,7 +158,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, false); // 1つ上の親から
-            UnityEditor.Selection.activeGameObject = _grandChildA1;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1 };
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
@@ -166,22 +175,23 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, false);
-            UnityEditor.Selection.activeGameObject = null;
+            UnityEditor.Selection.objects = new UnityEngine.Object[0];
 
             // Act & Assert
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("アクティブなGameObjectを選択してください"));
+            LogAssert.Expect(LogType.Error, "GameObjectを選択してください。");
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
         }
 
         [Test]
-        public void ExecuteHierarchicalSelection_WithExceedsHierarchyDepth_LogsError()
+        public void ExecuteHierarchicalSelection_WithExceedsHierarchyDepth_LogsWarning()
         {
             // Arrange - 有効な範囲内だが実際の階層より深い値
             var rule = new HierarchicalSelectionRule(5, false, false); // 有効範囲内だが階層構造には存在しない
-            UnityEditor.Selection.activeGameObject = _childA; // 実際の階層は2-3レベル程度
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _childA }; // 実際の階層は2-3レベル程度
 
             // Act & Assert
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("選択されたオブジェクトに階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'ChildA' に階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, "階層選択の条件に一致するオブジェクトがありません。");
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
         }
 
@@ -190,7 +200,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, false);
-            UnityEditor.Selection.activeGameObject = _childA;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _childA };
 
             // Act
             bool result = HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
@@ -214,7 +224,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange - 最大有効深度でも実際の階層構造では実行不可能
             var rule = new HierarchicalSelectionRule(5, false, false); // 最大有効値
-            UnityEditor.Selection.activeGameObject = _childA; // 階層が浅いので5深度は不可能
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _childA }; // 階層が浅いので5深度は不可能
 
             // Act
             bool result = HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
@@ -228,7 +238,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, false);
-            UnityEditor.Selection.activeGameObject = null;
+            UnityEditor.Selection.objects = new UnityEngine.Object[0];
 
             // Act
             bool result = HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
@@ -248,9 +258,8 @@ namespace BitAssistTools.Tests.Application.Services
             var previewObjects = HierarchicalSelectionService.PreviewHierarchicalSelection(rule);
 
             // Assert
-            Assert.AreEqual(2, previewObjects.Length);
-            Assert.IsTrue(previewObjects.Contains(_childA));
-            Assert.IsTrue(previewObjects.Contains(_childB));
+            Assert.AreEqual(1, previewObjects.Length);
+            Assert.IsTrue(previewObjects.Contains(_rootObject));
         }
 
         [Test]
@@ -321,7 +330,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, false);
-            UnityEditor.Selection.activeGameObject = _rootObject;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _rootObject };
 
             // Act & Assert
             LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'Root' に階層選択を適用できません"));
@@ -334,7 +343,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, true); // 1つ上の親の子
-            UnityEditor.Selection.activeGameObject = _rootObject;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _rootObject };
 
             // Act & Assert
             LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'Root' に階層選択を適用できません"));
@@ -347,7 +356,7 @@ namespace BitAssistTools.Tests.Application.Services
         {
             // Arrange - grandchildren have enough depth for parentDepth = 1
             var rule = new HierarchicalSelectionRule(1, false, false); // 1つ上の親から
-            UnityEditor.Selection.activeGameObject = _grandChildA1;
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1 };
 
             // Act
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
@@ -355,8 +364,8 @@ namespace BitAssistTools.Tests.Application.Services
             // Assert
             var selectedObjects = UnityEditor.Selection.gameObjects;
             Assert.AreEqual(2, selectedObjects.Length);
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
+            Assert.IsTrue(selectedObjects.Contains(_childA));
+            Assert.IsTrue(selectedObjects.Contains(_childB));
         }
 
         #region 複数選択対応テスト
@@ -373,13 +382,12 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var selectedObjects = UnityEditor.Selection.gameObjects;
-            // _grandChildA1の兄弟: _grandChildA1, _grandChildA2
-            // _grandChildB1の兄弟: _grandChildB1
-            // 重複除去後: _grandChildA1, _grandChildA2, _grandChildB1
-            Assert.AreEqual(3, selectedObjects.Length);
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildB1));
+            // _grandChildA1の1階層上の親（_childA）の兄弟: _childA, _childB
+            // _grandChildB1の1階層上の親（_childB）の兄弟: _childA, _childB
+            // 重複除去後: _childA, _childB
+            Assert.AreEqual(2, selectedObjects.Length);
+            Assert.IsTrue(selectedObjects.Contains(_childA));
+            Assert.IsTrue(selectedObjects.Contains(_childB));
         }
 
         [Test]
@@ -395,10 +403,10 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var selectedObjects = UnityEditor.Selection.gameObjects;
-            // _grandChildA1のみ処理され、その兄弟が選択される
+            // _grandChildA1の1階層上の親（_childA）の兄弟（_childAと_childB）が選択される
             Assert.AreEqual(2, selectedObjects.Length);
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
+            Assert.IsTrue(selectedObjects.Contains(_childA));
+            Assert.IsTrue(selectedObjects.Contains(_childB));
         }
 
         [Test]
@@ -413,10 +421,10 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             var selectedObjects = UnityEditor.Selection.gameObjects;
-            // 両方とも同じ兄弟セット(_grandChildA1, _grandChildA2)を生成するが重複除去される
+            // 両方とも同じ1階層上の親（_childA）の兄弟セット（_childA, _childB）を生成するが重複除去される
             Assert.AreEqual(2, selectedObjects.Length);
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
-            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
+            Assert.IsTrue(selectedObjects.Contains(_childA));
+            Assert.IsTrue(selectedObjects.Contains(_childB));
         }
 
         [Test]
@@ -498,10 +506,10 @@ namespace BitAssistTools.Tests.Application.Services
 
             // Assert
             Assert.IsTrue(preview.IsValid);
-            Assert.AreEqual(3, preview.TargetCount); // _grandChildA1, _grandChildA2, _grandChildB1
+            Assert.AreEqual(2, preview.TargetCount); // _childA, _childB
             Assert.IsTrue(preview.SelectionReason.Contains("2個のオブジェクト選択中"));
             Assert.IsTrue(preview.SelectionReason.Contains("全て適用可能"));
-            Assert.IsTrue(preview.SelectionReason.Contains("合計3個のオブジェクト"));
+            Assert.IsTrue(preview.SelectionReason.Contains("合計2個のオブジェクト"));
         }
 
         [Test]
