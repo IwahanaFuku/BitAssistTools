@@ -317,26 +317,28 @@ namespace BitAssistTools.Tests.Application.Services
         }
 
         [Test]
-        public void ExecuteHierarchicalSelection_WithRootObject_LogsError()
+        public void ExecuteHierarchicalSelection_WithRootObject_LogsWarning()
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, false);
             UnityEditor.Selection.activeGameObject = _rootObject;
 
             // Act & Assert
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("選択されたオブジェクトに階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'Root' に階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, "階層選択の条件に一致するオブジェクトがありません。");
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
         }
 
         [Test]
-        public void ExecuteHierarchicalSelection_WithChildrenFromRoot_LogsError()
+        public void ExecuteHierarchicalSelection_WithChildrenFromRoot_LogsWarning()
         {
             // Arrange
             var rule = new HierarchicalSelectionRule(1, false, true); // 1つ上の親の子
             UnityEditor.Selection.activeGameObject = _rootObject;
 
             // Act & Assert
-            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("選択されたオブジェクトに階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'Root' に階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, "階層選択の条件に一致するオブジェクトがありません。");
             HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
         }
 
@@ -356,5 +358,199 @@ namespace BitAssistTools.Tests.Application.Services
             Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
             Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
         }
+
+        #region 複数選択対応テスト
+
+        [Test]
+        public void ExecuteHierarchicalSelection_WithMultipleValidObjects_SelectsAllCorrespondingObjects()
+        {
+            // Arrange - 複数の有効なオブジェクトを選択
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _grandChildB1 };
+
+            // Act
+            HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
+
+            // Assert
+            var selectedObjects = UnityEditor.Selection.gameObjects;
+            // _grandChildA1の兄弟: _grandChildA1, _grandChildA2
+            // _grandChildB1の兄弟: _grandChildB1
+            // 重複除去後: _grandChildA1, _grandChildA2, _grandChildB1
+            Assert.AreEqual(3, selectedObjects.Length);
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
+            Assert.IsTrue(selectedObjects.Contains(_grandChildB1));
+        }
+
+        [Test]
+        public void ExecuteHierarchicalSelection_WithMixedValidInvalidObjects_SelectsOnlyValidResults()
+        {
+            // Arrange - 有効と無効なオブジェクトを混在
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _rootObject }; // rootObjectは無効
+
+            // Act
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'Root' に階層選択を適用できません"));
+            HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
+
+            // Assert
+            var selectedObjects = UnityEditor.Selection.gameObjects;
+            // _grandChildA1のみ処理され、その兄弟が選択される
+            Assert.AreEqual(2, selectedObjects.Length);
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
+        }
+
+        [Test]
+        public void ExecuteHierarchicalSelection_WithMultipleObjectsSameParent_RemovesDuplicates()
+        {
+            // Arrange - 同じ親を持つ複数オブジェクトを選択
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _grandChildA2 };
+
+            // Act
+            HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
+
+            // Assert
+            var selectedObjects = UnityEditor.Selection.gameObjects;
+            // 両方とも同じ兄弟セット(_grandChildA1, _grandChildA2)を生成するが重複除去される
+            Assert.AreEqual(2, selectedObjects.Length);
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA1));
+            Assert.IsTrue(selectedObjects.Contains(_grandChildA2));
+        }
+
+        [Test]
+        public void ExecuteHierarchicalSelection_WithOnlyInvalidObjects_LogsWarningAndDoesNothing()
+        {
+            // Arrange - 全て無効なオブジェクト
+            var rule = new HierarchicalSelectionRule(2, false, false); // 2階層必要だがrootObjectは親がない
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _rootObject };
+
+            // Act
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("オブジェクト 'Root' に階層選択を適用できません"));
+            LogAssert.Expect(LogType.Warning, "階層選択の条件に一致するオブジェクトがありません。");
+            HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
+        }
+
+        [Test]
+        public void ExecuteHierarchicalSelection_WithNoSelection_LogsError()
+        {
+            // Arrange - 何も選択されていない状態
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[0];
+
+            // Act & Assert
+            LogAssert.Expect(LogType.Error, "GameObjectを選択してください。");
+            HierarchicalSelectionService.ExecuteHierarchicalSelection(rule);
+        }
+
+        [Test]
+        public void CanExecuteHierarchicalSelection_WithMultipleValidObjects_ReturnsTrue()
+        {
+            // Arrange - 複数の有効なオブジェクト
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _grandChildB1 };
+
+            // Act
+            bool result = HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void CanExecuteHierarchicalSelection_WithMixedValidInvalidObjects_ReturnsTrue()
+        {
+            // Arrange - 一部有効なオブジェクト
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _rootObject };
+
+            // Act
+            bool result = HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
+
+            // Assert
+            Assert.IsTrue(result); // 1つでも有効なら実行可能
+        }
+
+        [Test]
+        public void CanExecuteHierarchicalSelection_WithOnlyInvalidObjects_ReturnsFalse()
+        {
+            // Arrange - 全て無効なオブジェクト
+            var rule = new HierarchicalSelectionRule(2, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _rootObject };
+
+            // Act
+            bool result = HierarchicalSelectionService.CanExecuteHierarchicalSelection(rule);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void GetDetailedPreview_WithMultipleValidObjects_GeneratesCorrectPreview()
+        {
+            // Arrange - 複数の有効なオブジェクト
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _grandChildB1 };
+
+            // Act
+            var preview = HierarchicalSelectionService.GetDetailedPreview(rule);
+
+            // Assert
+            Assert.IsTrue(preview.IsValid);
+            Assert.AreEqual(3, preview.TargetCount); // _grandChildA1, _grandChildA2, _grandChildB1
+            Assert.IsTrue(preview.SelectionReason.Contains("2個のオブジェクト選択中"));
+            Assert.IsTrue(preview.SelectionReason.Contains("全て適用可能"));
+            Assert.IsTrue(preview.SelectionReason.Contains("合計3個のオブジェクト"));
+        }
+
+        [Test]
+        public void GetDetailedPreview_WithMixedValidInvalidObjects_GeneratesPartialPreview()
+        {
+            // Arrange - 一部有効なオブジェクト
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _grandChildA1, _rootObject };
+
+            // Act
+            var preview = HierarchicalSelectionService.GetDetailedPreview(rule);
+
+            // Assert
+            Assert.IsTrue(preview.IsValid);
+            Assert.IsTrue(preview.SelectionReason.Contains("2個のオブジェクト選択中"));
+            Assert.IsTrue(preview.SelectionReason.Contains("1個が適用可能"));
+            Assert.IsTrue(preview.SelectionReason.Contains("1個のオブジェクトは親階層不足のためスキップ"));
+        }
+
+        [Test]
+        public void GetDetailedPreview_WithOnlyInvalidObjects_ReturnsInvalidPreview()
+        {
+            // Arrange - 全て無効なオブジェクト
+            var rule = new HierarchicalSelectionRule(2, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[] { _rootObject };
+
+            // Act
+            var preview = HierarchicalSelectionService.GetDetailedPreview(rule);
+
+            // Assert
+            Assert.IsFalse(preview.IsValid);
+            Assert.IsTrue(preview.ErrorMessage.Contains("階層選択を適用できません"));
+        }
+
+        [Test]  
+        public void GetDetailedPreview_WithNoSelection_ReturnsInvalidPreview()
+        {
+            // Arrange - 何も選択されていない
+            var rule = new HierarchicalSelectionRule(1, false, false);
+            UnityEditor.Selection.objects = new UnityEngine.Object[0];
+
+            // Act
+            var preview = HierarchicalSelectionService.GetDetailedPreview(rule);
+
+            // Assert
+            Assert.IsFalse(preview.IsValid);
+            Assert.AreEqual("GameObjectを選択してください。", preview.ErrorMessage);
+        }
+
+        #endregion
     }
 }
