@@ -15,7 +15,7 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         #endregion
 
         #region Properties
-        public PreviewSettings Settings { get; private set; } = new PreviewSettings(PreviewMode.RGB, false);
+        public PreviewSettings Settings { get; private set; } = new PreviewSettings(PreviewMode.RGB, false, 256);
         
         private Texture2D _previewTexture;
         public Texture2D PreviewTexture
@@ -36,9 +36,9 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         /// <summary>
         /// プレビュー設定を更新
         /// </summary>
-        public void UpdateSettings(PreviewMode mode, bool showBeforeAfter)
+        public void UpdateSettings(PreviewMode mode, bool showBeforeAfter, int previewSize = 256)
         {
-            Settings = new PreviewSettings(mode, showBeforeAfter);
+            Settings = new PreviewSettings(mode, showBeforeAfter, previewSize);
             OnPreviewChanged?.Invoke();
         }
 

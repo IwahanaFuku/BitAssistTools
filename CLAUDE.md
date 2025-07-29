@@ -157,3 +157,5 @@ public class PlacementView : EditorWindow
 - Undo操作が正常動作するか
 - UI状態とViewModelの同期
 - 名前空間競合によるコンパイルエラー
+
+# TODO

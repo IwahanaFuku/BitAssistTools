@@ -239,7 +239,8 @@ namespace BitAssistTools.Application.Services.TextureTools
                     return MaskMergeService.GenerateMergePreview(
                         detailViewModel.MaskChannels, 
                         detailViewModel.OutputWidth, 
-                        detailViewModel.OutputHeight);
+                        detailViewModel.OutputHeight,
+                        detailViewModel.PreviewSize);
                 }
             }
             

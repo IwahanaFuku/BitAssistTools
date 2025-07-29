@@ -9,16 +9,18 @@ namespace BitAssistTools.Domain.Models.TextureTools
     {
         public readonly PreviewMode Mode;
         public readonly bool ShowBeforeAfter;
+        public readonly int PreviewSize;
 
-        public PreviewSettings(PreviewMode mode, bool showBeforeAfter)
+        public PreviewSettings(PreviewMode mode, bool showBeforeAfter, int previewSize = 256)
         {
             Mode = mode;
             ShowBeforeAfter = showBeforeAfter;
+            PreviewSize = previewSize;
         }
 
         public bool Equals(PreviewSettings other)
         {
-            return Mode == other.Mode && ShowBeforeAfter == other.ShowBeforeAfter;
+            return Mode == other.Mode && ShowBeforeAfter == other.ShowBeforeAfter && PreviewSize == other.PreviewSize;
         }
 
         public override bool Equals(object obj)
@@ -33,6 +35,7 @@ namespace BitAssistTools.Domain.Models.TextureTools
                 int hash = 17;
                 hash = hash * 23 + (int)Mode;
                 hash = hash * 23 + ShowBeforeAfter.GetHashCode();
+                hash = hash * 23 + PreviewSize.GetHashCode();
                 return hash;
             }
         }

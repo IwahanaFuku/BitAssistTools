@@ -59,7 +59,7 @@ namespace BitAssistTools.Editor.View.TextureTools
                     // 設定が変更された場合は更新
                     if (newMode != viewModel.Preview.Settings.Mode || newShowBeforeAfter != viewModel.Preview.Settings.ShowBeforeAfter)
                     {
-                        viewModel.Preview.UpdateSettings(newMode, newShowBeforeAfter);
+                        viewModel.Preview.UpdateSettings(newMode, newShowBeforeAfter, viewModel.Preview.Settings.PreviewSize);
                     }
                 }
                 
@@ -79,7 +79,7 @@ namespace BitAssistTools.Editor.View.TextureTools
                     // 設定が変更された場合は更新
                     if (newMode != viewModel.Preview.Settings.Mode)
                     {
-                        viewModel.Preview.UpdateSettings(newMode, viewModel.Preview.Settings.ShowBeforeAfter);
+                        viewModel.Preview.UpdateSettings(newMode, viewModel.Preview.Settings.ShowBeforeAfter, viewModel.Preview.Settings.PreviewSize);
                     }
                 }
                 
@@ -132,9 +132,8 @@ namespace BitAssistTools.Editor.View.TextureTools
 
         private static void DrawSinglePreview(Rect rect, Texture2D texture, TextureToolsMainViewModel viewModel, Texture2D displayTexture)
         {
-            // レシピまたは詳細機能が選択されている場合はプレビューを、そうでなければ元テクスチャを表示
-            bool hasPreview = (viewModel.Recipe.SelectedRecipe != RecipeType.None || 
-                             viewModel.DetailFunction.SelectedFunction != DetailFunction.None) 
+            // 詳細機能が選択されている場合はプレビューを、そうでなければ元テクスチャを表示
+            bool hasPreview = viewModel.DetailFunction.SelectedFunction != DetailFunction.None 
                              && viewModel.Preview.PreviewTexture != null;
             
             var displayTex = hasPreview ? viewModel.Preview.PreviewTexture : displayTexture;
@@ -495,12 +494,17 @@ namespace BitAssistTools.Editor.View.TextureTools
             using (new EditorGUILayout.VerticalScope("box"))
             {
                 EditorGUILayout.LabelField("テクスチャ情報", EditorStyles.boldLabel);
-                EditorGUILayout.LabelField(viewModel.Selection.GetTextureInfo(), EditorStyles.miniLabel);
                 
                 if (viewModel.Selection.TargetTexture != null)
                 {
-                    EditorGUILayout.LabelField($"フォーマット: {viewModel.Selection.TargetTexture.format}");
-                    EditorGUILayout.LabelField($"ミップマップ: {(viewModel.Selection.TargetTexture.mipmapCount > 1 ? "有" : "無")}");
+                    EditorGUILayout.LabelField($"Raw: {viewModel.Selection.GetRawTextureSize()}");
+                    EditorGUILayout.LabelField($"Resize: {viewModel.Selection.GetResizeTextureSize()}");
+                    EditorGUILayout.LabelField($"Format: {viewModel.Selection.TargetTexture.format}");
+                    EditorGUILayout.LabelField($"Mip Map: {(viewModel.Selection.TargetTexture.mipmapCount > 1 ? "有" : "無")}");
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("テクスチャが選択されていません");
                 }
             }
         }
