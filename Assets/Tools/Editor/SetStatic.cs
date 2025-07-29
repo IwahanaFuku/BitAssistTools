@@ -47,7 +47,7 @@ public class SetStatic : EditorWindow
     private void Awake()
     {
         obj1 = Selection.activeGameObject;
-        objectName = obj1.name;
+        objectName = obj1 != null ? obj1.name : "None";
     }
 
 
@@ -91,7 +91,7 @@ public class SetStatic : EditorWindow
         separator();
         if (GUILayout.Button("All"))
         {
-            objectName = obj1.name;
+            objectName = obj1 != null ? obj1.name : "None";
             if (isLightmap && isOcculuder && isOccludee && isBatching && isNavigation && isOffMesh && isReflection)
             {
                 isLightmap = false;
@@ -348,7 +348,6 @@ public class SetStatic : EditorWindow
             AddStatic(fromTableList[i]);
         }
         
-        Debug.Log("Successfully SetStatic.");
         if (isClose == true)
         {
             this.Close();
@@ -379,7 +378,10 @@ public class SetStatic : EditorWindow
         if (isOffMesh) { flags = flags | StaticEditorFlags.OffMeshLinkGeneration; }
         if (isReflection) { flags = flags | StaticEditorFlags.ReflectionProbeStatic; }
         work1.layer = layerIdx;
-        obj1.name = objectName;
+        if (obj1 != null)
+        {
+            obj1.name = objectName;
+        }
         GameObjectUtility.SetStaticEditorFlags(work1, flags);
     }
 }

@@ -1,0 +1,126 @@
+#pragma kernel Invert
+#pragma kernel MergeMasks
+#pragma kernel NormalOps
+#pragma target 4.5
+
+SamplerState sampler_linear_clamp;
+
+Texture2D<float4> _Src;
+RWTexture2D<float4> _Dst;
+
+// Merge input
+Texture2D<float4> _Rsrc;
+Texture2D<float4> _Gsrc;
+Texture2D<float4> _Bsrc;
+Texture2D<float4> _Asrc;
+
+int2 _Size;
+
+// Invert
+int _InvR, _InvG, _InvB, _InvA;
+
+// Merge
+int _Rch, _Gch, _Bch, _Ach;
+int _HasR, _HasG, _HasB, _HasA;
+int _InvRsrc, _InvGsrc, _InvBsrc, _InvAsrc; // 各入力の反転フラグ
+float _Rfill, _Gfill, _Bfill, _Afill;
+
+// Normal
+int _NInvR, _NInvG;
+float _Strength;
+
+/// <summary>
+/// 指定されたチャンネルから値を取得
+/// </summary>
+float pickChannel(float4 c, int ch)
+{
+    if (ch == 0) return c.r;
+    if (ch == 1) return c.g;
+    if (ch == 2) return c.b;
+    return c.a;
+}
+
+/// <summary>
+/// テクスチャチャンネル反転カーネル
+/// </summary>
+[numthreads(8,8,1)]
+void Invert(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _Size.x || id.y >= _Size.y) return;
+    float2 uv = (float2(id.xy) + 0.5) / float2(_Size);
+    float4 c = _Src.SampleLevel(sampler_linear_clamp, uv, 0);
+    if (_InvR != 0) c.r = 1.0 - c.r;
+    if (_InvG != 0) c.g = 1.0 - c.g;
+    if (_InvB != 0) c.b = 1.0 - c.b;
+    if (_InvA != 0) c.a = 1.0 - c.a;
+    _Dst[id.xy] = c;
+}
+
+/// <summary>
+/// マスク統合カーネル
+/// </summary>
+[numthreads(8,8,1)]
+void MergeMasks(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _Size.x || id.y >= _Size.y) return;
+    float2 uv = (float2(id.xy) + 0.5) / float2(_Size);
+
+    // 各チャンネルのソーステクスチャから値を取得（なければデフォルト値を使用）
+    float4 rC = (_HasR != 0) ? _Rsrc.SampleLevel(sampler_linear_clamp, uv, 0) : float4(_Rfill, _Rfill, _Rfill, _Rfill);
+    float4 gC = (_HasG != 0) ? _Gsrc.SampleLevel(sampler_linear_clamp, uv, 0) : float4(_Gfill, _Gfill, _Gfill, _Gfill);
+    float4 bC = (_HasB != 0) ? _Bsrc.SampleLevel(sampler_linear_clamp, uv, 0) : float4(_Bfill, _Bfill, _Bfill, _Bfill);
+    float4 aC = (_HasA != 0) ? _Asrc.SampleLevel(sampler_linear_clamp, uv, 0) : float4(_Afill, _Afill, _Afill, _Afill);
+
+    // 指定されたチャンネルから値を抽出
+    float r = pickChannel(rC, _Rch);
+    float g = pickChannel(gC, _Gch);
+    float b = pickChannel(bC, _Bch);
+    float a = pickChannel(aC, _Ach);
+
+    // 反転処理
+    if (_InvRsrc != 0) r = 1.0 - r;
+    if (_InvGsrc != 0) g = 1.0 - g;
+    if (_InvBsrc != 0) b = 1.0 - b;
+    if (_InvAsrc != 0) a = 1.0 - a;
+
+    _Dst[id.xy] = float4(r, g, b, a);
+}
+
+/// <summary>
+/// 法線マップ処理カーネル
+/// </summary>
+[numthreads(8,8,1)]
+void NormalOps(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _Size.x || id.y >= _Size.y) return;
+    float2 uv = (float2(id.xy) + 0.5) / float2(_Size);
+    float4 c = _Src.SampleLevel(sampler_linear_clamp, uv, 0);
+
+    // チャンネル反転
+    if (_NInvR != 0) c.r = 1.0 - c.r;
+    if (_NInvG != 0) c.g = 1.0 - c.g;
+
+    // 法線ベクトルのXY成分を -1～1 の範囲に変換
+    float nx = c.r * 2.0 - 1.0;
+    float ny = c.g * 2.0 - 1.0;
+
+    // 強度を適用
+    nx *= _Strength;
+    ny *= _Strength;
+
+    // Z成分を計算（法線ベクトルの長さが1になるように）
+    float nz = sqrt(max(0.0, 1.0 - nx*nx - ny*ny));
+    
+    // 法線ベクトルを正規化
+    float len = max(1e-6, sqrt(nx*nx + ny*ny + nz*nz));
+    nx /= len; 
+    ny /= len; 
+    nz /= len;
+
+    // 0～1の範囲に戻す
+    c.r = nx * 0.5 + 0.5;
+    c.g = ny * 0.5 + 0.5;
+    c.b = nz * 0.5 + 0.5;
+
+    _Dst[id.xy] = c;
+}

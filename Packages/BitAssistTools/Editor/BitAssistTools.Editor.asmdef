@@ -1,0 +1,21 @@
+
+{
+    "name": "BitAssistTools.Editor",
+    "rootNamespace": "BitAssistTools.Editor",
+    "references": [
+        "BitAssistTools.Application",
+        "BitAssistTools.Domain",
+        "BitAssistTools.Infrastructure"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
