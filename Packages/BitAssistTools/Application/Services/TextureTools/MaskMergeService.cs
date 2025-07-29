@@ -46,16 +46,17 @@ namespace BitAssistTools.Application.Services.TextureTools
         /// <summary>
         /// マスク統合のプレビューを生成
         /// </summary>
-        public static Texture2D GenerateMergePreview(MaskChannelData[] channels, int outputWidth, int outputHeight)
+        public static Texture2D GenerateMergePreview(MaskChannelData[] channels, int outputWidth, int outputHeight, int previewSize = 256)
         {
             try
             {
-                return MergeChannels(channels, outputWidth, outputHeight);
+                // プレビュー用には指定されたプレビューサイズを使用
+                return MergeChannels(channels, previewSize, previewSize);
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[MaskMergeService] マスク統合プレビュー生成に失敗: {ex.Message}");
-                return CreateDefaultTexture(outputWidth, outputHeight);
+                return CreateDefaultTexture(previewSize, previewSize);
             }
         }
 
@@ -121,13 +122,30 @@ namespace BitAssistTools.Application.Services.TextureTools
             if (channelData.Source == null)
             {
                 // デフォルト値を返す（RGB=0, A=1）
-                return channelData.SourceChannel == Channel.A ? 1.0f : 0.0f;
+                float defaultValue = channelData.SourceChannel == Channel.A ? 1.0f : 0.0f;
+                
+                // 反転処理
+                if (channelData.Invert)
+                {
+                    defaultValue = 1.0f - defaultValue;
+                }
+                
+                return defaultValue;
             }
 
             // テクスチャが読み取り可能かチェック
             if (!TextureDisplayService.IsTextureReadable(channelData.Source))
             {
-                return channelData.SourceChannel == Channel.A ? 1.0f : 0.0f;
+                // デフォルト値を返す（RGB=0, A=1）
+                float defaultValue = channelData.SourceChannel == Channel.A ? 1.0f : 0.0f;
+                
+                // 反転処理
+                if (channelData.Invert)
+                {
+                    defaultValue = 1.0f - defaultValue;
+                }
+                
+                return defaultValue;
             }
 
             try
@@ -177,7 +195,17 @@ namespace BitAssistTools.Application.Services.TextureTools
             catch (Exception ex)
             {
                 Debug.LogWarning($"[MaskMergeService] チャンネル値取得に失敗: {ex.Message}");
-                return channelData.SourceChannel == Channel.A ? 1.0f : 0.0f;
+                
+                // デフォルト値を返す（RGB=0, A=1）
+                float defaultValue = channelData.SourceChannel == Channel.A ? 1.0f : 0.0f;
+                
+                // 反転処理
+                if (channelData.Invert)
+                {
+                    defaultValue = 1.0f - defaultValue;
+                }
+                
+                return defaultValue;
             }
         }
 

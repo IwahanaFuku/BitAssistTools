@@ -19,8 +19,7 @@ namespace BitAssistTools.Infrastructure.Package
 
         static PackageManagementService()
         {
-            //自動アップデートチェックを廃止
-            //EditorApplication.delayCall += CheckVersionOnStartup;
+            EditorApplication.delayCall += CheckVersionOnStartup;
         }
 
         [MenuItem("Bit Assist Tools/バージョンアップデート", priority = 200)]

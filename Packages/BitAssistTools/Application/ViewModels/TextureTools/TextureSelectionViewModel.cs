@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using BitAssistTools.Application.Services.TextureTools;
+using BitAssistTools.Infrastructure.Unity.ImageParsers;
 
 namespace BitAssistTools.Application.ViewModels.TextureTools
 {
@@ -75,13 +76,48 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         }
 
         /// <summary>
-        /// テクスチャ情報を取得
+        /// テクスチャの元解像度を取得
         /// </summary>
-        public string GetTextureInfo()
+        public string GetRawTextureSize()
         {
-            if (TargetTexture == null) return "テクスチャが選択されていません";
+            if (TargetTexture == null) return "不明";
+            return GetOriginalTextureSize(TargetTexture);
+        }
+
+        /// <summary>
+        /// テクスチャのリサイズ後解像度を取得
+        /// </summary>
+        public string GetResizeTextureSize()
+        {
+            if (TargetTexture == null) return "不明";
+            return $"{TargetTexture.width}×{TargetTexture.height}";
+        }
+
+        /// <summary>
+        /// テクスチャの元の解像度を取得
+        /// </summary>
+        private string GetOriginalTextureSize(UnityEngine.Texture2D texture)
+        {
+            if (texture == null) return "不明";
             
-            return $"{TargetTexture.width}×{TargetTexture.height}, {TargetTexture.format}";
+            var path = UnityEditor.AssetDatabase.GetAssetPath(texture);
+            if (string.IsNullOrEmpty(path)) return $"{texture.width}×{texture.height}";
+            
+            try
+            {
+                // ファクトリーを使用してファイルサイズを解析
+                var originalSize = ImageSizeParserFactory.ParseImageSize(path);
+                if (originalSize.HasValue)
+                {
+                    return $"{originalSize.Value.width}×{originalSize.Value.height}";
+                }
+            }
+            catch (System.Exception)
+            {
+                // エラー時は現在サイズを使用
+            }
+            
+            return $"{texture.width}×{texture.height}";
         }
 
         /// <summary>

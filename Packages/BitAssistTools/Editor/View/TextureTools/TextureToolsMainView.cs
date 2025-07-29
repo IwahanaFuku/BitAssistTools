@@ -20,10 +20,10 @@ namespace BitAssistTools.Editor.View.TextureTools
         #region Private Fields
         private TextureToolsMainViewModel _viewModel;
         private Vector2 _leftScrollPos;
-        private string[] _tabNames = { "レシピ", "詳細" };
         private bool _showNotification = false;
         private string _notificationText = "";
         private float _notificationTime = 0f;
+        private bool _isSettingsMode = false;
         #endregion
 
         #region Unity Lifecycle
@@ -57,10 +57,26 @@ namespace BitAssistTools.Editor.View.TextureTools
 
             DrawHeader();
             
-            using (new EditorGUILayout.HorizontalScope())
+            if (_isSettingsMode)
             {
-                DrawLeftPanel();
-                PreviewPanelView.DrawPreviewPanel(_viewModel);
+                // 設定モード：設定ビューのみ表示
+                SettingsView.DrawSettingsView(_viewModel);
+                
+                // ESCキーで設定モードを終了
+                if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
+                {
+                    _isSettingsMode = false;
+                    Event.current.Use();
+                }
+            }
+            else
+            {
+                // 通常モード：メインビューとプレビューパネルを表示
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    DrawLeftPanel();
+                    PreviewPanelView.DrawPreviewPanel(_viewModel);
+                }
             }
             
             DrawNotification();
@@ -72,15 +88,14 @@ namespace BitAssistTools.Editor.View.TextureTools
         {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
-                // タブ切り替え
-                _viewModel.SelectedTab = GUILayout.Toolbar(_viewModel.SelectedTab, _tabNames, EditorStyles.toolbarButton);
+                EditorGUILayout.LabelField("テクスチャ編集支援ツール", EditorStyles.boldLabel);
                 
                 GUILayout.FlexibleSpace();
                 
                 // 設定ボタン
                 if (GUILayout.Button("設定", EditorStyles.toolbarButton))
                 {
-                    // TODO: 設定メニューを実装
+                    _isSettingsMode = !_isSettingsMode;
                 }
             }
         }
@@ -95,15 +110,8 @@ namespace BitAssistTools.Editor.View.TextureTools
                 DrawTargetTextureField();
                 EditorGUILayout.Space();
                 
-                // タブ別コンテンツ
-                if (_viewModel.SelectedTab == 0)
-                {
-                    DrawRecipeTab();
-                }
-                else
-                {
-                    DrawDetailTab();
-                }
+                // 詳細タブコンテンツ
+                DrawDetailTab();
                 
                 EditorGUILayout.EndScrollView();
             }
@@ -120,6 +128,8 @@ namespace BitAssistTools.Editor.View.TextureTools
                 if (EditorGUI.EndChangeCheck())
                 {
                     _viewModel.Selection.TargetTexture = newTexture;
+                    // テクスチャが変更されたときにデフォルトファイル名を更新
+                    _viewModel.DetailFunction.UpdateDefaultFileName();
                 }
                 
                 if (GUILayout.Button("選択中", GUILayout.Width(60)))
@@ -128,116 +138,8 @@ namespace BitAssistTools.Editor.View.TextureTools
                 }
             }
 
-            if (_viewModel.Selection.TargetTexture != null)
-            {
-                EditorGUILayout.LabelField(_viewModel.Selection.GetTextureInfo(), EditorStyles.miniLabel);
-                
-                // ライブプレビュー情報表示
-                EditorGUILayout.HelpBox("ライブプレビュー中、テクスチャの設定が変更されます。", MessageType.Info);
-            }
         }
 
-        private void DrawRecipeTab()
-        {
-            EditorGUILayout.LabelField("クイックレシピ", EditorStyles.boldLabel);
-            EditorGUILayout.Space();
-
-            // レシピ選択（ラジオボタン形式）
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("基本操作", EditorStyles.boldLabel);
-                
-                var selected = _viewModel.Recipe.SelectedRecipe;
-                
-                // PNG変換
-                bool pngToggle = EditorGUILayout.ToggleLeft("PNG変換＋元削除", selected == Domain.Models.TextureTools.RecipeType.PngConversion);
-                if (pngToggle != (selected == Domain.Models.TextureTools.RecipeType.PngConversion))
-                {
-                    _viewModel.Recipe.SelectedRecipe = pngToggle ? Domain.Models.TextureTools.RecipeType.PngConversion : Domain.Models.TextureTools.RecipeType.None;
-                }
-                
-                // 全チャンネル反転
-                bool invertToggle = EditorGUILayout.ToggleLeft("全チャンネル反転", selected == Domain.Models.TextureTools.RecipeType.InvertAll);
-                if (invertToggle != (selected == Domain.Models.TextureTools.RecipeType.InvertAll))
-                {
-                    _viewModel.Recipe.SelectedRecipe = invertToggle ? Domain.Models.TextureTools.RecipeType.InvertAll : Domain.Models.TextureTools.RecipeType.None;
-                }
-            }
-
-            EditorGUILayout.Space();
-
-            // 法線マップ
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("法線マップ", EditorStyles.boldLabel);
-                
-                var selected = _viewModel.Recipe.SelectedRecipe;
-                
-                bool normalGToggle = EditorGUILayout.ToggleLeft("G反転（OpenGL→DirectX）", selected == Domain.Models.TextureTools.RecipeType.NormalGInvert);
-                if (normalGToggle != (selected == Domain.Models.TextureTools.RecipeType.NormalGInvert))
-                {
-                    _viewModel.Recipe.SelectedRecipe = normalGToggle ? Domain.Models.TextureTools.RecipeType.NormalGInvert : Domain.Models.TextureTools.RecipeType.None;
-                }
-                
-                bool normalStrengthToggle = EditorGUILayout.ToggleLeft("強度1.5倍", selected == Domain.Models.TextureTools.RecipeType.NormalStrength15);
-                if (normalStrengthToggle != (selected == Domain.Models.TextureTools.RecipeType.NormalStrength15))
-                {
-                    _viewModel.Recipe.SelectedRecipe = normalStrengthToggle ? Domain.Models.TextureTools.RecipeType.NormalStrength15 : Domain.Models.TextureTools.RecipeType.None;
-                }
-            }
-
-            EditorGUILayout.Space();
-
-            // マスク統合プリセット
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("マスク統合プリセット", EditorStyles.boldLabel);
-                
-                var selected = _viewModel.Recipe.SelectedRecipe;
-                
-                bool rmaToUnityToggle = EditorGUILayout.ToggleLeft("RMA → Unity Standard", selected == Domain.Models.TextureTools.RecipeType.RMAToUnity);
-                if (rmaToUnityToggle != (selected == Domain.Models.TextureTools.RecipeType.RMAToUnity))
-                {
-                    _viewModel.Recipe.SelectedRecipe = rmaToUnityToggle ? Domain.Models.TextureTools.RecipeType.RMAToUnity : Domain.Models.TextureTools.RecipeType.None;
-                }
-                
-                EditorGUILayout.HelpBox("UE4形式RMAテクスチャをUnity Standardシェーダ用に変換\nRMA(R=AO, G=Roughness, B=Metallic) → Unity(R=Metallic, G=AO, Alpha=Smoothness)", MessageType.Info);
-            }
-            
-            EditorGUILayout.Space();
-            
-            // レシピの説明表示
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("選択中のレシピ", EditorStyles.boldLabel);
-                var description = _viewModel.Recipe.GetSelectedRecipeDescription();
-                EditorGUILayout.HelpBox(description, MessageType.Info);
-            }
-            
-            EditorGUILayout.Space();
-            
-            // 実行ボタン
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                GUI.enabled = _viewModel.Recipe.SelectedRecipe != Domain.Models.TextureTools.RecipeType.None && _viewModel.Selection.TargetTexture != null;
-                
-                if (GUILayout.Button("選択レシピを実行", GUILayout.Height(40)))
-                {
-                    _viewModel.Recipe.ExecuteSelectedRecipe();
-                }
-                
-                GUI.enabled = true;
-                
-                if (_viewModel.Recipe.SelectedRecipe == Domain.Models.TextureTools.RecipeType.None)
-                {
-                    EditorGUILayout.HelpBox("レシピを選択してください", MessageType.Warning);
-                }
-                else if (_viewModel.Selection.TargetTexture == null)
-                {
-                    EditorGUILayout.HelpBox("テクスチャを選択してください", MessageType.Warning);
-                }
-            }
-        }
 
         private void DrawDetailTab()
         {
@@ -504,6 +406,25 @@ namespace BitAssistTools.Editor.View.TextureTools
             {
                 EditorGUILayout.LabelField("出力設定", EditorStyles.boldLabel);
                 
+                // ファイル名設定
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField("ファイル名:", GUILayout.Width(60));
+                    EditorGUI.BeginChangeCheck();
+                    _viewModel.DetailFunction.OutputFileName = EditorGUILayout.TextField(_viewModel.DetailFunction.OutputFileName);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        _viewModel.DetailFunction.NotifySettingsChanged();
+                    }
+                    
+                    if (GUILayout.Button("デフォルト", GUILayout.Width(70)))
+                    {
+                        _viewModel.DetailFunction.UpdateDefaultFileName();
+                        _viewModel.DetailFunction.NotifySettingsChanged();
+                    }
+                }
+                
+                // サイズ設定
                 using (new EditorGUILayout.HorizontalScope())
                 {
                     EditorGUILayout.LabelField("サイズ:", GUILayout.Width(40));
@@ -526,8 +447,6 @@ namespace BitAssistTools.Editor.View.TextureTools
                         }
                     }
                 }
-                
-                EditorGUILayout.HelpBox("デフォルト値（未設定時）: R=0, G=0, B=0, A=1", MessageType.Info);
             }
 
             EditorGUILayout.Space();
@@ -569,6 +488,7 @@ namespace BitAssistTools.Editor.View.TextureTools
                 _showNotification = false;
             }
         }
+
         #endregion
     }
 }

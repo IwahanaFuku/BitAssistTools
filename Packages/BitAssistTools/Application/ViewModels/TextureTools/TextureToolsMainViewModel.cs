@@ -16,13 +16,11 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
 
         #region Sub ViewModels
         public TextureSelectionViewModel Selection { get; }
-        public RecipeViewModel Recipe { get; }
         public DetailFunctionViewModel DetailFunction { get; }
         public PreviewViewModel Preview { get; }
         #endregion
 
         #region Properties
-        public int SelectedTab { get; set; } = 0; // 0=レシピ, 1=詳細
         #endregion
 
         #region Constructor
@@ -30,7 +28,6 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         {
             // サブViewModelを初期化
             Selection = new TextureSelectionViewModel();
-            Recipe = new RecipeViewModel(() => Selection.TargetTexture);
             DetailFunction = new DetailFunctionViewModel(() => Selection.TargetTexture);
             Preview = new PreviewViewModel();
 
@@ -46,11 +43,6 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
             Selection.OnTextureChanged += OnTextureChanged;
             Selection.OnNotification += (msg) => OnNotification?.Invoke(msg);
             Selection.OnError += (msg) => OnError?.Invoke(msg);
-
-            // レシピ変更時の処理
-            Recipe.OnRecipeChanged += OnRecipeChanged;
-            Recipe.OnNotification += (msg) => OnNotification?.Invoke(msg);
-            Recipe.OnError += (msg) => OnError?.Invoke(msg);
 
             // 詳細機能変更時の処理
             DetailFunction.OnFunctionChanged += OnDetailFunctionChanged;
@@ -69,18 +61,10 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
             OnStateChanged?.Invoke();
         }
 
-        private void OnRecipeChanged()
-        {
-            // レシピが変更されたら、詳細機能をクリアしてプレビューを更新
-            DetailFunction.SelectedFunction = Domain.Models.TextureTools.DetailFunction.None;
-            UpdatePreview();
-            OnStateChanged?.Invoke();
-        }
 
         private void OnDetailFunctionChanged()
         {
-            // 詳細機能が変更されたら、レシピをクリアしてプレビューを更新
-            Recipe.SelectedRecipe = Domain.Models.TextureTools.RecipeType.None;
+            // 詳細機能が変更されたらプレビューを更新
             UpdatePreview();
             OnStateChanged?.Invoke();
         }
@@ -101,12 +85,8 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
                 return;
             }
 
-            // レシピまたは詳細機能のプレビューを生成
-            if (Recipe.SelectedRecipe != Domain.Models.TextureTools.RecipeType.None)
-            {
-                Preview.GenerateRecipePreview(sourceTexture, Recipe.SelectedRecipe);
-            }
-            else if (DetailFunction.SelectedFunction != Domain.Models.TextureTools.DetailFunction.None)
+            // 詳細機能のプレビューを生成
+            if (DetailFunction.SelectedFunction != Domain.Models.TextureTools.DetailFunction.None)
             {
                 Preview.GenerateDetailPreview(sourceTexture, DetailFunction.SelectedFunction, DetailFunction.GetFunctionParameters());
             }
@@ -124,6 +104,8 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
         public void UpdateSelectedTexture()
         {
             Selection.UpdateFromSelection();
+            // テクスチャが更新されたときにデフォルトファイル名を更新
+            DetailFunction.UpdateDefaultFileName();
         }
 
         /// <summary>
