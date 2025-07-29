@@ -8,13 +8,6 @@
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.0.2"
   },
-  "files": [
-    "Application/**",
-    "Domain/**",
-    "Editor/**",
-    "Infrastructure/**",
-    "package.json"
-  ],
   "asmdef": [
     "Application/BitAssistTools.Application.asmdef",
     "Domain/BitAssistTools.Domain.asmdef",
