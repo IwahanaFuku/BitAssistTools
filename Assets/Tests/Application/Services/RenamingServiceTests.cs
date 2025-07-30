@@ -242,7 +242,7 @@ namespace BitAssistTools.Tests.Application.Services
         public void RenamingStats_ToString_WithSelection_ReturnsFormattedString()
         {
             // Arrange
-            var stats = new RenamingService.RenamingStats(2, 1, 0, 1);
+            var stats = new RenamingService.RenamingStats(2, 1, 0, 1, 0);
 
             // Act
             var result = stats.ToString();
@@ -258,7 +258,7 @@ namespace BitAssistTools.Tests.Application.Services
         public void RenamingStats_ToString_WithNoSelection_ReturnsNoSelectionMessage()
         {
             // Arrange
-            var stats = new RenamingService.RenamingStats(0, 0, 0, 0);
+            var stats = new RenamingService.RenamingStats(0, 0, 0, 0, 0);
 
             // Act
             var result = stats.ToString();

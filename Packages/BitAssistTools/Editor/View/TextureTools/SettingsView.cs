@@ -115,9 +115,10 @@ namespace BitAssistTools.Editor.View.TextureTools
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.LabelField("", GUILayout.Width(120)); // インデント用
-                string description = viewModel.DetailFunction.OutputSizeReference == OutputSizeReference.Raw
-                    ? "PNG変換・チャンネル反転・法線マップ編集で元画像サイズを使用"
-                    : "PNG変換・チャンネル反転・法線マップ編集でUnityリサイズ後サイズを使用";
+                string reference = viewModel.DetailFunction.OutputSizeReference == OutputSizeReference.Raw
+                    ? "元画像サイズ"
+                    : "Unityリサイズ後サイズ";
+                string description = $"PNG変換・チャンネル反転・法線マップ編集・マスク統合の「参照サイズ」で、{reference}を適用";
                 EditorGUILayout.LabelField(description, EditorStyles.miniLabel);
             }
         }

@@ -437,12 +437,53 @@ namespace BitAssistTools.Editor.View.TextureTools
                         _viewModel.DetailFunction.NotifySettingsChanged();
                     }
                     
-                    if (GUILayout.Button("元サイズ", GUILayout.Width(60)))
+                    if (GUILayout.Button("参照サイズ", GUILayout.Width(70)))
                     {
                         if (_viewModel.Selection.TargetTexture != null)
                         {
-                            _viewModel.DetailFunction.OutputWidth = _viewModel.Selection.TargetTexture.width;
-                            _viewModel.DetailFunction.OutputHeight = _viewModel.Selection.TargetTexture.height;
+                            // Raw/Resize設定に基づいて適切なサイズを設定
+                            if (_viewModel.DetailFunction.OutputSizeReference == BitAssistTools.Domain.Models.TextureTools.OutputSizeReference.Raw)
+                            {
+                                // Raw: 元画像の実際のサイズを取得
+                                try
+                                {
+                                    var path = UnityEditor.AssetDatabase.GetAssetPath(_viewModel.Selection.TargetTexture);
+                                    if (!string.IsNullOrEmpty(path))
+                                    {
+                                        var originalSize = Infrastructure.Unity.ImageParsers.ImageSizeParserFactory.ParseImageSize(path);
+                                        if (originalSize.HasValue)
+                                        {
+                                            _viewModel.DetailFunction.OutputWidth = originalSize.Value.width;
+                                            _viewModel.DetailFunction.OutputHeight = originalSize.Value.height;
+                                        }
+                                        else
+                                        {
+                                            // フォールバック: Unityでリサイズされたサイズを使用
+                                            _viewModel.DetailFunction.OutputWidth = _viewModel.Selection.TargetTexture.width;
+                                            _viewModel.DetailFunction.OutputHeight = _viewModel.Selection.TargetTexture.height;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // フォールバック: Unityでリサイズされたサイズを使用
+                                        _viewModel.DetailFunction.OutputWidth = _viewModel.Selection.TargetTexture.width;
+                                        _viewModel.DetailFunction.OutputHeight = _viewModel.Selection.TargetTexture.height;
+                                    }
+                                }
+                                catch (System.Exception ex)
+                                {
+                                    UnityEngine.Debug.LogWarning($"Raw画像サイズの取得に失敗: {ex.Message}");
+                                    // フォールバック: Unityでリサイズされたサイズを使用
+                                    _viewModel.DetailFunction.OutputWidth = _viewModel.Selection.TargetTexture.width;
+                                    _viewModel.DetailFunction.OutputHeight = _viewModel.Selection.TargetTexture.height;
+                                }
+                            }
+                            else
+                            {
+                                // Resize: Unityでリサイズされたサイズを使用
+                                _viewModel.DetailFunction.OutputWidth = _viewModel.Selection.TargetTexture.width;
+                                _viewModel.DetailFunction.OutputHeight = _viewModel.Selection.TargetTexture.height;
+                            }
                             _viewModel.DetailFunction.NotifySettingsChanged();
                         }
                     }

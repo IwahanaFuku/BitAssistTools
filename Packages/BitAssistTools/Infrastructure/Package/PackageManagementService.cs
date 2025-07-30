@@ -8,116 +8,35 @@ using Newtonsoft.Json.Linq;
 namespace BitAssistTools.Infrastructure.Package
 {
     /// <summary>
-    /// パッケージバージョン管理の統合サービス
+    /// パッケージバージョン管理の初期化サービス
     /// システム全体のライフサイクル管理を担当
     /// </summary>
     [InitializeOnLoad]
-    public class PackageManagementService : EditorWindow
+    public static class PackageManagementService
     {
-        private static PackageVersionChecker _checker;
-        private const string RELEASE_NOTE_URL = "https://scrapbox.io/BitAssistTools/%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E3%83%8E%E3%83%BC%E3%83%88";
-
         static PackageManagementService()
         {
             EditorApplication.delayCall += CheckVersionOnStartup;
-        }
-
-        [MenuItem("Bit Assist Tools/バージョンアップデート", priority = 200)]
-        private static void ShowWindow()
-        {
-            var window = GetWindow<PackageManagementService>("Bit Assist Tools Update");
-            Vector2 windowSize = new Vector2(350, 115);
-            window.minSize = windowSize;
-            window.maxSize = windowSize;
-            window.Show();
         }
 
         private static void CheckVersionOnStartup()
         {
             if (EditorApplication.isPlaying) return;
 
-            _checker = new PackageVersionChecker();
-            if (_checker.HasNewerVersion())
+            var settingsService = SettingsServiceLocator.GetService();
+            if (settingsService != null && !settingsService.IsAutoUpdateNotificationEnabled())
             {
-                ShowWindow();
+                return;
+            }
+
+            var checker = new PackageVersionChecker();
+            if (checker.HasNewerVersion())
+            {
+                OnUpdateAvailable?.Invoke();
             }
         }
 
-        private void OnGUI()
-        {
-            if (_checker == null)
-            {
-                _checker = new PackageVersionChecker();
-            }
-
-            var hyperlinkStyle = new GUIStyle(GUI.skin.label)
-            {
-                normal = { textColor = new Color(32f / 255f, 157f / 255f, 240f / 255f) },
-                stretchWidth = true,
-                wordWrap = true
-            };
-
-            GUILayout.Space(10);
-
-            if (_checker.HasNewerVersion())
-            {
-                DrawUpdateAvailableUI(hyperlinkStyle);
-            }
-            else
-            {
-                DrawUpToDateUI(hyperlinkStyle);
-            }
-        }
-
-        private void DrawUpdateAvailableUI(GUIStyle hyperlinkStyle)
-        {
-            var info = _checker.GetPackageInfo();
-            GUILayout.Label($"{info.DisplayName} の最新バージョン【{info.LatestVersion}】がリリースされています。 \nアップデートしますか？");
-            GUILayout.Label($"現在のバージョン：{info.CurrentVersion} ");
-            
-            DrawReleaseNoteLink(hyperlinkStyle);
-
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginHorizontal();
-            
-            if (GUILayout.Button("いいえ"))
-            {
-                Close();
-            }
-
-            if (GUILayout.Button("はい"))
-            {
-                _checker.UpdatePackage();
-                Close();
-            }
-            
-            GUILayout.EndHorizontal();
-        }
-
-        private void DrawUpToDateUI(GUIStyle hyperlinkStyle)
-        {
-            var info = _checker.GetPackageInfo();
-            GUILayout.Label($"ご使用の{info.DisplayName} は最新です");
-            GUILayout.Label($"現在のバージョン：{info.CurrentVersion} ");
-            
-            DrawReleaseNoteLink(hyperlinkStyle);
-            
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("閉じる"))
-            {
-                Close();
-            }
-        }
-
-        private void DrawReleaseNoteLink(GUIStyle hyperlinkStyle)
-        {
-            GUILayout.Label("リリースノートを確認", hyperlinkStyle);
-            if (Event.current.type == EventType.MouseDown && 
-                GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
-            {
-                Application.OpenURL(RELEASE_NOTE_URL);
-            }
-        }
+        public static System.Action OnUpdateAvailable;
     }
 
     /// <summary>

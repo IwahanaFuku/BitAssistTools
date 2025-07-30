@@ -17,6 +17,7 @@ namespace BitAssistTools.Application.Services
     {
         /// <summary>
         /// 接頭辞・接尾辞を追加（DDDベース、Undo対応）
+        /// GameObjectとアセット両方に対応
         /// </summary>
         public static void AddPrefixAndSuffix(PrefixSuffixRule rule)
         {
@@ -31,17 +32,52 @@ namespace BitAssistTools.Application.Services
                 Undo.SetCurrentGroupName("Add Prefix And Suffix");
                 int undoGroup = Undo.GetCurrentGroup();
 
-                var selectedObjects = UnityEditor.Selection.gameObjects;
+                var selectedObjects = UnityEditor.Selection.objects;
                 if (selectedObjects == null || selectedObjects.Length == 0)
                 {
-                    Debug.LogError("リネームするGameObjectを選択してください。");
+                    Debug.LogError("リネームするオブジェクトまたはアセットを選択してください。");
                     return;
                 }
 
+                int renamedCount = 0;
                 foreach (var obj in selectedObjects)
                 {
-                    Undo.RecordObject(obj, "Add Prefix And Suffix");
-                    obj.name = rule.ApplyTo(obj.name);
+                    if (obj is GameObject gameObj)
+                    {
+                        // GameObjectの場合
+                        Undo.RecordObject(gameObj, "Add Prefix And Suffix");
+                        gameObj.name = rule.ApplyTo(gameObj.name);
+                        renamedCount++;
+                    }
+                    else
+                    {
+                        // アセットの場合
+                        string assetPath = AssetDatabase.GetAssetPath(obj);
+                        if (!string.IsNullOrEmpty(assetPath) && !AssetDatabase.IsValidFolder(assetPath))
+                        {
+                            string currentName = obj.name;
+                            string newName = rule.ApplyTo(currentName);
+                            
+                            if (currentName != newName)
+                            {
+                                string result = AssetDatabase.RenameAsset(assetPath, newName);
+                                if (string.IsNullOrEmpty(result))
+                                {
+                                    renamedCount++;
+                                }
+                                else
+                                {
+                                    Debug.LogWarning($"アセットリネームに失敗: {result}");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (renamedCount > 0)
+                {
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
                 }
 
                 Undo.CollapseUndoOperations(undoGroup);
@@ -55,6 +91,7 @@ namespace BitAssistTools.Application.Services
 
         /// <summary>
         /// 文字列を置換（DDDベース、Undo対応）
+        /// GameObjectとアセット両方に対応
         /// </summary>
         public static void ReplaceString(StringReplaceRule rule)
         {
@@ -69,25 +106,58 @@ namespace BitAssistTools.Application.Services
                 Undo.SetCurrentGroupName("Replace String");
                 int undoGroup = Undo.GetCurrentGroup();
 
-                var selectedObjects = UnityEditor.Selection.gameObjects;
+                var selectedObjects = UnityEditor.Selection.objects;
                 if (selectedObjects == null || selectedObjects.Length == 0)
                 {
-                    Debug.LogError("リネームするGameObjectを選択してください。");
+                    Debug.LogError("リネームするオブジェクトまたはアセットを選択してください。");
                     return;
                 }
 
                 int changedCount = 0;
                 foreach (var obj in selectedObjects)
                 {
-                    string originalName = obj.name;
-                    string newName = rule.ApplyTo(originalName);
-                    
-                    if (originalName != newName)
+                    if (obj is GameObject gameObj)
                     {
-                        Undo.RecordObject(obj, "Replace String");
-                        obj.name = newName;
-                        changedCount++;
+                        // GameObjectの場合
+                        string originalName = gameObj.name;
+                        string newName = rule.ApplyTo(originalName);
+                        
+                        if (originalName != newName)
+                        {
+                            Undo.RecordObject(gameObj, "Replace String");
+                            gameObj.name = newName;
+                            changedCount++;
+                        }
                     }
+                    else
+                    {
+                        // アセットの場合
+                        string assetPath = AssetDatabase.GetAssetPath(obj);
+                        if (!string.IsNullOrEmpty(assetPath) && !AssetDatabase.IsValidFolder(assetPath))
+                        {
+                            string originalName = obj.name;
+                            string newName = rule.ApplyTo(originalName);
+                            
+                            if (originalName != newName)
+                            {
+                                string result = AssetDatabase.RenameAsset(assetPath, newName);
+                                if (string.IsNullOrEmpty(result))
+                                {
+                                    changedCount++;
+                                }
+                                else
+                                {
+                                    Debug.LogWarning($"アセットリネームに失敗: {result}");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (changedCount > 0)
+                {
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
                 }
 
                 Undo.CollapseUndoOperations(undoGroup);
@@ -332,6 +402,7 @@ namespace BitAssistTools.Application.Services
 
         /// <summary>
         /// 各操作が実行可能かどうかを判定
+        /// GameObjectとアセット両方に対応
         /// </summary>
         public static bool CanExecuteOperation(RenameOperationType operationType)
         {
@@ -343,6 +414,12 @@ namespace BitAssistTools.Application.Services
             {
                 case RenameOperationType.PrefixSuffix:
                 case RenameOperationType.StringReplace:
+                    // GameObjectまたはアセット（フォルダ以外）が選択されている
+                    return selectedObjects.Any(obj => 
+                        obj is GameObject || 
+                        (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(obj)) && !AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(obj)))
+                    );
+                
                 case RenameOperationType.AddNumber:
                 case RenameOperationType.RemoveNumber:
                     return UnityEditor.Selection.gameObjects.Length > 0;
@@ -366,11 +443,20 @@ namespace BitAssistTools.Application.Services
 
         /// <summary>
         /// 選択されたオブジェクトの統計を取得
+        /// GameObjectとアセット両方に対応
         /// </summary>
         public static RenamingStats GetRenamingStats()
         {
-            var gameObjects = UnityEditor.Selection.gameObjects;
-            var materials = UnityEditor.Selection.objects.OfType<Material>().ToArray();
+            var selectedObjects = UnityEditor.Selection.objects;
+            var gameObjects = selectedObjects.OfType<GameObject>().ToArray();
+            var materials = selectedObjects.OfType<Material>().ToArray();
+            var assets = selectedObjects.Where(obj => 
+            {
+                if (obj is GameObject) return false;
+                string assetPath = AssetDatabase.GetAssetPath(obj);
+                return !string.IsNullOrEmpty(assetPath) && !AssetDatabase.IsValidFolder(assetPath);
+            }).ToArray();
+            
             var prefabs = gameObjects.Where(obj => !string.IsNullOrEmpty(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(obj))).ToArray();
             var objectsWithRenderer = gameObjects.Where(obj => {
                 var renderer = obj.GetComponent<Renderer>();
@@ -381,7 +467,8 @@ namespace BitAssistTools.Application.Services
                 gameObjects.Length,
                 materials.Length,
                 prefabs.Length,
-                objectsWithRenderer.Length
+                objectsWithRenderer.Length,
+                assets.Length
             );
         }
 
@@ -408,16 +495,18 @@ namespace BitAssistTools.Application.Services
             public readonly int MaterialCount;
             public readonly int PrefabCount;
             public readonly int RendererObjectCount;
+            public readonly int AssetCount;
 
-            public RenamingStats(int gameObjectCount, int materialCount, int prefabCount, int rendererObjectCount)
+            public RenamingStats(int gameObjectCount, int materialCount, int prefabCount, int rendererObjectCount, int assetCount)
             {
                 GameObjectCount = gameObjectCount;
                 MaterialCount = materialCount;
                 PrefabCount = prefabCount;
                 RendererObjectCount = rendererObjectCount;
+                AssetCount = assetCount;
             }
 
-            public bool HasSelection => GameObjectCount > 0 || MaterialCount > 0;
+            public bool HasSelection => GameObjectCount > 0 || MaterialCount > 0 || AssetCount > 0;
 
             public override string ToString()
             {
@@ -426,6 +515,7 @@ namespace BitAssistTools.Application.Services
                 var parts = new List<string>();
                 if (GameObjectCount > 0) parts.Add($"GameObject: {GameObjectCount}個");
                 if (MaterialCount > 0) parts.Add($"Material: {MaterialCount}個");
+                if (AssetCount > 0) parts.Add($"アセット: {AssetCount}個");
                 if (PrefabCount > 0) parts.Add($"Prefab: {PrefabCount}個");
                 if (RendererObjectCount > 0) parts.Add($"Renderer付き: {RendererObjectCount}個");
                 
