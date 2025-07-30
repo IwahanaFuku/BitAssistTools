@@ -153,6 +153,7 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
             }
         }
 
+
         /// <summary>
         /// 現在選択されているテクスチャを取得
         /// </summary>
@@ -285,13 +286,7 @@ namespace BitAssistTools.Application.ViewModels.TextureTools
                 return null;
             }
 
-            // マスク統合の場合は既存の処理をそのまま使用（設定で指定されたサイズを使用）
-            if (_selectedFunction == DetailFunction.MaskMerge)
-            {
-                return sourceTexture;
-            }
-
-            // PNG変換、チャンネル反転、法線マップ編集の場合のみサイズ参照設定を適用
+            // 全ての機能で出力サイズ参照設定を適用
             try
             {
                 if (OutputSizeReference == OutputSizeReference.Raw)

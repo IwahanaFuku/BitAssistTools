@@ -159,5 +159,3 @@ public class PlacementView : EditorWindow
 - 名前空間競合によるコンパイルエラー
 
 # TODO
-リネーマーをプロジェクト内でも利用できるようにする
-出力設定で元サイズを選ぶときは、Rawの方を利用する
